@@ -55,7 +55,7 @@ export function LeaffOsBridgeButton({
                   <h3 className="font-display text-base font-semibold text-fg">
                     Launching in LeaFF OS
                   </h3>
-                  <p className="text-xs text-muted">DripLink Desktop CAD & Slicing Suite</p>
+                  <p className="text-xs text-muted">DripLnk Desktop CAD & Slicing Suite</p>
                 </div>
               </div>
 
@@ -63,10 +63,10 @@ export function LeaffOsBridgeButton({
                 We signaled your browser to launch <span className="font-medium text-fg">{modelTitle}</span> inside LeaFF OS via <code className="font-mono text-[11px] text-accent">leaffos://open</code>.
               </div>
 
-              {/* The DripLink Loop Story */}
+              {/* The DripLnk Loop Story */}
               <div className="flex flex-col gap-2 rounded-xl border border-line/60 bg-surface/80 p-3.5">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-faint">
-                  The DripLink Loop
+                  The DripLnk Loop
                 </span>
                 <div className="flex items-center justify-between text-xs text-muted">
                   <span className="flex items-center gap-1.5 text-fg font-medium">

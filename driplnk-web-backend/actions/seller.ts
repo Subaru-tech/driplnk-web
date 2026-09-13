@@ -2,8 +2,8 @@
 
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 
 export type BecomeSellerResult = {
   success: boolean;

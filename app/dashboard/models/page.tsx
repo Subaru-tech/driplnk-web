@@ -23,11 +23,11 @@ import {
   getCreatorStudioModels,
   getUserAcquiredModels,
   type CreatorStudioModel,
-} from "@/driplink-web-backend";
+} from "@/driplnk-web-backend";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
-  title: "My Models — Creator Studio | DripLink",
+  title: "My Models — Creator Studio | DripLnk",
 };
 
 export const dynamic = "force-dynamic";

@@ -26,7 +26,7 @@ export const INTRO = {
   /** Monogram starts arriving BEFORE assembly finishes — overlap on purpose. */
   MARK_IN_START: 1.05,
   MARK_IN_END: 1.75,
-  /** "DripLink" wipes on beside it. */
+  /** "DripLnk" wipes on beside it. */
   WORD_IN_END: 2.15,
   /** Brief beat to let the badged machine read. */
   HOLD_END: 2.25,

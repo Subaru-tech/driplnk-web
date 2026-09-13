@@ -3,7 +3,7 @@ import { User } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Why we're building DripLink, and who's building it.",
+  description: "Why we're building DripLnk, and who's building it.",
 };
 
 /* Spec §3.3 — single column, max-width 720px, editorial. No dashboard-style
@@ -37,7 +37,7 @@ export default function AboutPage() {
           isn&apos;t the design. The work is the handoff.
         </p>
         <p className="text-fg">
-          DripLink exists to delete that handoff. One pipeline: describe the part, refine it with
+          DripLnk exists to delete that handoff. One pipeline: describe the part, refine it with
           tools that understand manufacturing, send it to a printer. No exporting, no re-modelling,
           no second application.
         </p>

@@ -4,8 +4,8 @@
  * Manual Vendor Approval & Pricing Seed Script
  * ============================================
  * Usage:
- *   node driplink-web-backend/scripts/approve_vendor.mjs <provider_id_or_business_name>
- *   node driplink-web-backend/scripts/approve_vendor.mjs --seed-second
+ *   node driplnk-web-backend/scripts/approve_vendor.mjs <provider_id_or_business_name>
+ *   node driplnk-web-backend/scripts/approve_vendor.mjs --seed-second
  *
  * This script is used by the founder to manually review and approve pending vendor
  * applications and establish their pricing rules in Supabase.

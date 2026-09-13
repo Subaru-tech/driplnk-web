@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { DripLinkMark } from "@/components/marketing/wordmark";
+import { DripLnkMark } from "@/components/marketing/wordmark";
 import {
   INTRO,
   endIntro,
@@ -135,7 +135,7 @@ export function IntroSequence() {
       aria-hidden="true"
       className="pointer-events-none fixed top-0 left-0 z-[60] opacity-0 will-change-transform"
     >
-      <DripLinkMark className="h-full w-auto" />
+      <DripLnkMark className="h-full w-auto" />
     </div>
   );
 }

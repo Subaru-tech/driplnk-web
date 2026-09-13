@@ -5,9 +5,9 @@ import { Section } from "@/components/marketing/section";
 import { CtaBand } from "@/components/marketing/cta-band";
 
 export const metadata: Metadata = {
-  title: "Download — LeaFF OS Desktop & DripLink Mobile App",
+  title: "Download — LeaFF OS Desktop & DripLnk Mobile App",
   description:
-    "Download LeaFF OS parametric CAD and slicing software for macOS, Windows, and Linux, or get the DripLink companion app for iOS and Android.",
+    "Download LeaFF OS parametric CAD and slicing software for macOS, Windows, and Linux, or get the DripLnk companion app for iOS and Android.",
 };
 
 export default function DownloadPage() {

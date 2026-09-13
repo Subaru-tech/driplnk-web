@@ -33,11 +33,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DripLink — One-stop platform for turning ideas into products",
-    template: "%s · DripLink",
+    default: "DripLnk — One-stop platform for turning ideas into products",
+    template: "%s · DripLnk",
   },
   description:
-    "DripLink — design, build, source, and manufacture — without the friction.",
+    "DripLnk — design, build, source, and manufacture — without the friction.",
 };
 
 const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

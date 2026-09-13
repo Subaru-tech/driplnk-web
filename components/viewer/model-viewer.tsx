@@ -316,7 +316,7 @@ export function ModelViewer({
             try {
               const dataUrl = renderer.domElement.toDataURL("image/webp", 0.85);
               if (dataUrl && dataUrl.length > 200) {
-                const { updateModelThumbnail } = await import("@/driplink-web-backend/actions/upload");
+                const { updateModelThumbnail } = await import("@/driplnk-web-backend/actions/upload");
                 await updateModelThumbnail({ id: modelId, thumbnailUrl: dataUrl });
               }
             } catch (err) {

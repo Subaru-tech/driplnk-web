@@ -33,9 +33,9 @@ const columns = [
   {
     heading: "Social",
     links: [
-      { href: "https://x.com/driplink", label: "X", external: true },
-      { href: "https://github.com/driplink", label: "GitHub", external: true },
-      { href: "https://linkedin.com/company/driplink", label: "LinkedIn", external: true },
+      { href: "https://x.com/driplnk", label: "X", external: true },
+      { href: "https://github.com/driplnk", label: "GitHub", external: true },
+      { href: "https://linkedin.com/company/driplnk", label: "LinkedIn", external: true },
     ],
   },
 ];
@@ -77,7 +77,7 @@ export function SiteFooter() {
         </div>
 
         <p className="mt-16 border-t border-line pt-8 text-sm text-faint">
-          © {new Date().getFullYear()} DripLink. All rights reserved.
+          © {new Date().getFullYear()} DripLnk. All rights reserved.
         </p>
       </div>
     </footer>

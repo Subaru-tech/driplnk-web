@@ -9,10 +9,10 @@ import { ModelsHeader } from "@/components/marketing/models-header";
 import { ModelsPagination } from "@/components/marketing/models-pagination";
 import { Section } from "@/components/marketing/section";
 import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
-import { getMarketplaceCategoryCounts, getMarketplaceModels } from "@/driplink-web-backend";
+import { getMarketplaceCategoryCounts, getMarketplaceModels } from "@/driplnk-web-backend";
 
 export const metadata: Metadata = {
-  title: "Browse 3D Models & CAD Marketplace — DripLink",
+  title: "Browse 3D Models & CAD Marketplace — DripLnk",
   description:
     "Discover, download, customize, and build from a growing library of 3D models and CAD parts. Ready for 3D printing and LeaFF OS.",
 };

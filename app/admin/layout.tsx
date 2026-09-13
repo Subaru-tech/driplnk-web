@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/dashboard/account-menu";
 import { DashboardShell, SIDEBAR_COOKIE } from "@/components/dashboard/dashboard-shell";
 import { StatusPill } from "@/components/ui/status-pill";
-import { getProfile, getSellerProfile, getUnifiedUser, isClerkConfigured } from "@/driplink-web-backend";
+import { getProfile, getSellerProfile, getUnifiedUser, isClerkConfigured } from "@/driplnk-web-backend";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";

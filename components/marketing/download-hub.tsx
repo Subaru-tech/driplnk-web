@@ -78,7 +78,7 @@ const CHECKSUMS: Record<string, ChecksumInfo[]> = {
   ],
   Mobile: [
     {
-      filename: "DripLink-Companion-1.2.0.apk",
+      filename: "DripLnk-Companion-1.2.0.apk",
       sha256: "5d41402abc4b2a76b9719d911017c592ff37c7849c9a09156477e5fc73305419",
       size: "34.2 MB",
     },
@@ -204,7 +204,7 @@ export function DownloadHub() {
         return {
           title: "Download for Android",
           badge: "Google Play / APK",
-          file: "DripLink-Companion-1.2.0.apk",
+          file: "DripLnk-Companion-1.2.0.apk",
           href: "#mobile-android",
           size: "34.2 MB",
           subtext: "Android 10+ • Remote Monitoring",
@@ -322,7 +322,7 @@ export function DownloadHub() {
                 Cryptographic Release Hashes (SHA-256)
               </span>
             </div>
-            <span className="font-mono text-xs text-muted">Signed by DripLink Release PGP Key</span>
+            <span className="font-mono text-xs text-muted">Signed by DripLnk Release PGP Key</span>
           </div>
 
           <div className="mt-4 space-y-4 font-mono text-xs">
@@ -410,7 +410,7 @@ export function DownloadHub() {
             )}
           >
             <Smartphone className="size-4" />
-            DripLink Mobile
+            DripLnk Mobile
           </button>
         </div>
 
@@ -529,7 +529,7 @@ export function DownloadHub() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleCopy("brew install --cask driplink-leaff-os", "brew")
+                        handleCopy("brew install --cask driplnk-leaff-os", "brew")
                       }
                       className="text-muted hover:text-fg"
                     >
@@ -541,7 +541,7 @@ export function DownloadHub() {
                     </button>
                   </div>
                   <code className="block select-all font-mono text-[11px] text-accent">
-                    brew install --cask driplink-leaff-os
+                    brew install --cask driplnk-leaff-os
                   </code>
                 </div>
               </div>
@@ -647,7 +647,7 @@ export function DownloadHub() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleCopy("winget install DripLink.LeaFFOS", "winget")
+                        handleCopy("winget install DripLnk.LeaFFOS", "winget")
                       }
                       className="text-muted hover:text-fg"
                     >
@@ -659,7 +659,7 @@ export function DownloadHub() {
                     </button>
                   </div>
                   <code className="block select-all font-mono text-[11px] text-accent">
-                    winget install DripLink.LeaFFOS
+                    winget install DripLnk.LeaFFOS
                   </code>
                 </div>
               </div>
@@ -764,7 +764,7 @@ export function DownloadHub() {
                       type="button"
                       onClick={() =>
                         handleCopy(
-                          "flatpak install flathub com.driplink.leaffos",
+                          "flatpak install flathub com.driplnk.leaffos",
                           "flatpak"
                         )
                       }
@@ -778,7 +778,7 @@ export function DownloadHub() {
                     </button>
                   </div>
                   <code className="block select-all font-mono text-[11px] text-accent">
-                    flatpak install flathub com.driplink.leaffos
+                    flatpak install flathub com.driplnk.leaffos
                   </code>
                 </div>
               </div>
@@ -844,7 +844,7 @@ export function DownloadHub() {
                 </div>
                 <h4 className="font-medium text-fg text-sm">One-Click Mart Dispatch</h4>
                 <p className="text-xs leading-relaxed text-muted">
-                  Send ready models straight into DripLink Mart for automated quoting and verified
+                  Send ready models straight into DripLnk Mart for automated quoting and verified
                   local manufacturing in under 10 seconds.
                 </p>
               </div>
@@ -853,7 +853,7 @@ export function DownloadHub() {
         </section>
       )}
 
-      {/* SECTION 2: DRIPLINK MOBILE COMPANION APP */}
+      {/* SECTION 2: DRIPLNK MOBILE COMPANION APP */}
       {(activeTab === "all" || activeTab === "mobile") && (
         <section id="mobile-section" className="flex flex-col gap-8">
           <div className="flex flex-col gap-3">
@@ -864,7 +864,7 @@ export function DownloadHub() {
               <span className="font-mono text-xs text-muted">iOS & Android</span>
             </div>
             <h2 className="font-display text-3xl font-semibold tracking-tight text-fg">
-              DripLink Companion for Mobile
+              DripLnk Companion for Mobile
             </h2>
             <p className="max-w-3xl text-base text-muted">
               The companion app for monitoring live prints, managing Mart manufacturing orders,
@@ -919,7 +919,7 @@ export function DownloadHub() {
               </div>
 
               <div className="mt-6 flex flex-col gap-2">
-                <DownloadButton label="Install via Apple TestFlight" filename="ios-testflight" href="https://testflight.apple.com/join/driplink" />
+                <DownloadButton label="Install via Apple TestFlight" filename="ios-testflight" href="https://testflight.apple.com/join/driplnk" />
                 <ButtonLink
                   href="/signup"
                   size="md"
@@ -977,7 +977,7 @@ export function DownloadHub() {
 
               <div className="mt-6 flex flex-col gap-2">
                 <ButtonLink
-                  href="https://play.google.com/store/apps/details?id=com.driplink.companion"
+                  href="https://play.google.com/store/apps/details?id=com.driplnk.companion"
                   size="md"
                   className="w-full"
                   target="_blank"
@@ -987,7 +987,7 @@ export function DownloadHub() {
                   Get it on Google Play
                 </ButtonLink>
                 <DownloadButton
-                  filename="DripLink-Companion-1.2.0.apk"
+                  filename="DripLnk-Companion-1.2.0.apk"
                   label="Direct APK (34.2 MB)"
                   variant="secondary"
                 />
@@ -1013,7 +1013,7 @@ export function DownloadHub() {
                     viewBox="0 0 100 100"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="QR code for DripLink Mobile App"
+                    aria-label="QR code for DripLnk Mobile App"
                   >
                     {/* Corner 1 */}
                     <rect x="5" y="5" width="26" height="26" rx="4" fill="#262b21" />
@@ -1164,7 +1164,7 @@ export function DownloadHub() {
             </h3>
             <p className="text-xs leading-relaxed text-muted">
               Yes. All desktop modeling, slicing, and mesh export tools are completely free during
-              the beta. You only pay if you choose to dispatch physical prints through the DripLink
+              the beta. You only pay if you choose to dispatch physical prints through the DripLnk
               Mart network or hire certified freelance CAD engineers.
             </p>
           </Card>
@@ -1185,7 +1185,7 @@ export function DownloadHub() {
               How does the mobile companion sync with desktop?
             </h3>
             <p className="text-xs leading-relaxed text-muted">
-              When logged into the same DripLink account, your active print jobs and Mart orders sync
+              When logged into the same DripLnk account, your active print jobs and Mart orders sync
               end-to-end. You can also pair directly over your local Wi-Fi or scan your 3D printer&apos;s
               QR code to receive instant telemetry on your phone.
             </p>

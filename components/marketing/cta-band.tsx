@@ -10,7 +10,7 @@ import { Reveal } from "@/components/marketing/reveal";
  */
 export function CtaBand({
   title = "Start building today",
-  description = "DripLink is live. Create an account and go from idea to printed part — no CAD experience needed.",
+  description = "DripLnk is live. Create an account and go from idea to printed part — no CAD experience needed.",
   /** Drop the panel background so a glow behind it can show through. */
   bare = false,
 }: {

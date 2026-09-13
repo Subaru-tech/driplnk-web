@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Sparkles, Printer } from "lucide-react";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getMyVendorProvider } from "@/driplink-web-backend/actions/vendor";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getMyVendorProvider } from "@/driplnk-web-backend/actions/vendor";
 import { VendorApplyForm } from "@/components/vendor/apply-form";
 import { Section } from "@/components/marketing/section";
 
 export const metadata: Metadata = {
-  title: "Apply as a Print Vendor — DripLink Mart",
+  title: "Apply as a Print Vendor — DripLnk Mart",
   description:
-    "Join the DripLink Mart multi-vendor print farm network. Fulfill precision 3D printing orders for CAD models, electronics enclosures, and hardware prototypes.",
+    "Join the DripLnk Mart multi-vendor print farm network. Fulfill precision 3D printing orders for CAD models, electronics enclosures, and hardware prototypes.",
 };
 
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export default async function VendorApplyPage() {
                 : "Partner Your 3D Print Farm with Mart"}
             </h1>
             <p className="text-base leading-relaxed text-muted">
-              DripLink Mart matches hardware engineers and product teams with vetted regional print farms. We generate automatic quotes based on true CAD geometry and route production-ready orders straight to your printers.
+              DripLnk Mart matches hardware engineers and product teams with vetted regional print farms. We generate automatic quotes based on true CAD geometry and route production-ready orders straight to your printers.
             </p>
           </div>
         </div>

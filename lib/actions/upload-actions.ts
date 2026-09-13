@@ -1,8 +1,8 @@
 "use server";
 
-import * as actions from "@/driplink-web-backend/actions/upload";
+import * as actions from "@/driplnk-web-backend/actions/upload";
 
-export type { UploadSession } from "@/driplink-web-backend/actions/upload";
+export type { UploadSession } from "@/driplnk-web-backend/actions/upload";
 
 export async function getUploadSession() {
   return actions.getUploadSession();

@@ -31,7 +31,7 @@ import {
   getPublicListing,
   getUnifiedUser,
   isModelAcquired,
-} from "@/driplink-web-backend";
+} from "@/driplnk-web-backend";
 
 import { ModelFavoriteButton } from "@/components/marketing/model-favorite-button";
 
@@ -47,22 +47,22 @@ export async function generateMetadata({
 
   if (model) {
     return {
-      title: `${model.title} — 3D Model | DripLink`,
+      title: `${model.title} — 3D Model | DripLnk`,
       description:
         model.description?.slice(0, 160) ??
-        `3D Model by ${model.seller_name || "DripLink Creator"} on DripLink. Discover, acquire, and open directly in LeaFF OS.`,
+        `3D Model by ${model.seller_name || "DripLnk Creator"} on DripLnk. Discover, acquire, and open directly in LeaFF OS.`,
     };
   }
 
   const { data: listing } = await getPublicListing(id);
   if (listing) {
     return {
-      title: `${listing.title} — 3D Model | DripLink`,
-      description: listing.description?.slice(0, 160) ?? "3D Model on DripLink.",
+      title: `${listing.title} — 3D Model | DripLnk`,
+      description: listing.description?.slice(0, 160) ?? "3D Model on DripLnk.",
     };
   }
 
-  return { title: "Model Not Found — DripLink" };
+  return { title: "Model Not Found — DripLnk" };
 }
 
 export default async function ModelDetailPage({
@@ -98,7 +98,7 @@ export default async function ModelDetailPage({
   };
 
   const isFree = model.price === 0;
-  const sellerName = model.seller_name || model.seller?.full_name || "DripLink Creator";
+  const sellerName = model.seller_name || model.seller?.full_name || "DripLnk Creator";
   const previewImages = model.preview_image_paths || [];
 
   // Filter out current model from related items
@@ -351,7 +351,7 @@ export default async function ModelDetailPage({
                 <span>Want this model manufactured for you?</span>
               </div>
               <p className="text-xs text-muted leading-relaxed">
-                Send this CAD model directly to DripLink Mart for instant vendor quoting across SLA, FDM, SLS, or CNC machining with doorstep shipping across India.
+                Send this CAD model directly to DripLnk Mart for instant vendor quoting across SLA, FDM, SLS, or CNC machining with doorstep shipping across India.
               </p>
               <Link
                 href={`/mart?modelId=${model.id}`}

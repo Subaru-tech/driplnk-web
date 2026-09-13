@@ -17,7 +17,7 @@ import {
   storagePathFor,
   uploadToStorage,
 } from "@/lib/uploads";
-import { getUploadSession, recordUploadedListing } from "@/driplink-web-backend/actions/upload";
+import { getUploadSession, recordUploadedListing } from "@/driplnk-web-backend/actions/upload";
 
 /**
  * Create a listing from a file in the browser.

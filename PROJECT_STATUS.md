@@ -1,14 +1,14 @@
-# DripLink Platform — Comprehensive Feature & Architecture Status
+# DripLnk Platform — Comprehensive Feature & Architecture Status
 
 **Generated On:** September 12, 2026  
-**Codebase:** `Subaru-tech/driplinkk-website`  
+**Codebase:** `Subaru-tech/driplnkk-website`  
 **Stack:** Next.js 16.3.1 (App Router) · React 19.2.8 · Tailwind CSS v4 · Three.js 0.185.1 · Clerk Authentication · Supabase (PostgreSQL + RLS + Storage)
 
 ---
 
 ## 1. Executive Summary & Core Architecture
 
-DripLink is an integrated 3D manufacturing, CAD marketplace, and freelance platform designed with a high-performance CAD/precision engineering visual language. The architecture is organized into three decoupled, secure layers:
+DripLnk is an integrated 3D manufacturing, CAD marketplace, and freelance platform designed with a high-performance CAD/precision engineering visual language. The architecture is organized into three decoupled, secure layers:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
@@ -20,7 +20,7 @@ DripLink is an integrated 3D manufacturing, CAD marketplace, and freelance platf
 └────────────────────────────────────────┬─────────────────────────────────────────┘
                                          │ Server Actions & Queries
 ┌────────────────────────────────────────▼─────────────────────────────────────────┐
-│              driplink-web-backend (server-only Isolated Boundary)                │
+│              driplnk-web-backend (server-only Isolated Boundary)                │
 │  ┌───────────────────────┬─────────────────────────┬──────────────────────────┐  │
 │  │ Clerk Auth & Sessions │  DB Queries (Resilient) │ Server Actions (Upload,  │  │
 │  │ (Shadow Sync Bridge)  │  (30+ Data Access Fns)  │ Mart, Freelance, Admin)  │  │
@@ -109,9 +109,9 @@ DripLink is an integrated 3D manufacturing, CAD marketplace, and freelance platf
 
 ## 3. Backend Architecture & Features Status
 
-The backend layer is fully encapsulated within `driplink-web-backend/` and guarded with Next.js `server-only` to guarantee zero client bundle leakage.
+The backend layer is fully encapsulated within `driplnk-web-backend/` and guarded with Next.js `server-only` to guarantee zero client bundle leakage.
 
-### 3.1 Authentication & User Resolution (`driplink-web-backend/auth/`)
+### 3.1 Authentication & User Resolution (`driplnk-web-backend/auth/`)
 
 - **`clerk.ts`**:
   - `getUnifiedUser()`: Unified user resolver that transparently normalizes Clerk user sessions and Supabase native JWT sessions into a single identity object.
@@ -123,7 +123,7 @@ The backend layer is fully encapsulated within `driplink-web-backend/` and guard
 
 ---
 
-### 3.2 Data Access Layer (`driplink-web-backend/db/queries.ts`)
+### 3.2 Data Access Layer (`driplnk-web-backend/db/queries.ts`)
 
 All database queries implement graceful fallback patterns (`backendReady: boolean` flag) so that unconfigured or cold environments render clean empty states rather than throwing runtime errors:
 
@@ -149,7 +149,7 @@ All database queries implement graceful fallback patterns (`backendReady: boolea
 
 ---
 
-### 3.3 Server Actions Layer (`driplink-web-backend/actions/`)
+### 3.3 Server Actions Layer (`driplnk-web-backend/actions/`)
 
 All actions run exclusively on the server with caller verification, parameter sanitization, and database transactions:
 

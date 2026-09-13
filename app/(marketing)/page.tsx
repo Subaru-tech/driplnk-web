@@ -46,7 +46,7 @@ const pillars = [
     kicker: "Ecosystem",
     title: "Download",
     description:
-      "Get LeaFF OS for desktop and the DripLink companion app for iOS and Android.",
+      "Get LeaFF OS for desktop and the DripLnk companion app for iOS and Android.",
     href: "/download",
   },
 ];

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { getSupabaseServerClient, getSupabaseServiceClient, getCurrentUser as getSupabaseUser } from "@/driplink-web-backend/db/client";
+import { getSupabaseServerClient, getSupabaseServiceClient, getCurrentUser as getSupabaseUser } from "@/driplnk-web-backend/db/client";
 import type { Profile } from "@/lib/types";
 
 export const isClerkConfigured = Boolean(

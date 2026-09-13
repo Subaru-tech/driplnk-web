@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/roles";
-import { becomeSeller } from "@/driplink-web-backend/actions/seller";
+import { becomeSeller } from "@/driplnk-web-backend/actions/seller";
 
 /**
  * Opening a storefront — the thing that used to be a checkbox at signup.

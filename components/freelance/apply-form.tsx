@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { applyFreelancer } from "@/driplink-web-backend/actions/freelance";
+import { applyFreelancer } from "@/driplnk-web-backend/actions/freelance";
 import type { FreelancerProfile, RateType } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -129,7 +129,7 @@ export function ApplyForm({
       setSuccessMessage(
         existingProfile
           ? "Your specialist profile has been updated!"
-          : "Welcome! Your freelancer profile is approved and live on DripLink."
+          : "Welcome! Your freelancer profile is approved and live on DripLnk."
       );
 
       setTimeout(() => {

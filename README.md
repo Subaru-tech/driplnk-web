@@ -1,6 +1,6 @@
-# DripLink Website
+# DripLnk Website
 
-Public marketing site + auth + post-login dashboard, built to the DripLink UI/UX spec.
+Public marketing site + auth + post-login dashboard, built to the DripLnk UI/UX spec.
 
 Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · Supabase.
 
@@ -34,7 +34,7 @@ storefront is simply offered one.
 ## Backend
 
 Schema, RLS, storage buckets and the sign-up role trigger live in a **separate folder**,
-`../driplinkk-backend`. Nothing but the two public keys is kept in this repo — the
+`../driplnkk-backend`. Nothing but the two public keys is kept in this repo — the
 service-role key never appears here. See that folder's `README.md` for deployment and
 `docs/auth-flow.md` for how the two-role login is enforced server-side.
 
@@ -166,7 +166,7 @@ Also add an `avatars` storage bucket for profile pictures.
   as normal text needing 4.5:1. The token is left at its spec value — it's a design
   decision, not a bug to fix unilaterally. `#7A8892` clears AA on every surface if you want
   it fixed.
-- Founder names/bios on About, the `hello@driplink.in` address, and the social URLs are
+- Founder names/bios on About, the `hello@driplnk.in` address, and the social URLs are
   marked placeholders in code.
 - `/login/reset` was added because §4.1 puts a "Forgot password?" link on the login card,
   though the page isn't in the §2 site map.

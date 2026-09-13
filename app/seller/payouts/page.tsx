@@ -31,8 +31,8 @@ export default async function PayoutsPage() {
         <CardTitle>Payout account</CardTitle>
         <CardDescription>
           {seller
-            ? `Status: ${seller.payout_status}. Bank details are held by the payment provider — DripLink never stores them.`
-            : "Bank details are held by the payment provider — DripLink never stores them."}
+            ? `Status: ${seller.payout_status}. Bank details are held by the payment provider — DripLnk never stores them.`
+            : "Bank details are held by the payment provider — DripLnk never stores them."}
         </CardDescription>
       </Card>
 

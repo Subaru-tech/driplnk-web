@@ -1,8 +1,8 @@
 import "server-only";
 
-import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getUnifiedUser, isClerkConfigured, syncClerkProfile } from "@/driplink-web-backend/auth/clerk";
+import { getUnifiedUser, isClerkConfigured, syncClerkProfile } from "@/driplnk-web-backend/auth/clerk";
 import { LISTING_SORTS, type Category, type ListingSort } from "@/lib/marketplace";
 import type {
   AcquiredModel,
@@ -944,7 +944,7 @@ export async function getMarketplaceModels(options: {
         preview_image_paths: (row.preview_image_paths as string[]) ?? [],
         status: (row.status as "draft" | "published") ?? "published",
         created_at: String(row.created_at),
-        seller_name: sellerProfile?.full_name ?? "DripLink Creator",
+        seller_name: sellerProfile?.full_name ?? "DripLnk Creator",
         seller_avatar: sellerProfile?.avatar_url ?? null,
         seller: sellerProfile,
       };
@@ -1039,7 +1039,7 @@ export async function getMarketplaceModelById(
       file_path: data.file_path,
       status: data.status,
       created_at: data.created_at,
-      seller_name: sellerProfile?.full_name ?? "DripLink Creator",
+      seller_name: sellerProfile?.full_name ?? "DripLnk Creator",
       seller_avatar: sellerProfile?.avatar_url ?? null,
       formats: ["STL", "STEP", "3MF"],
       seller: sellerProfile,
@@ -1169,7 +1169,7 @@ export async function getUserAcquiredModels(): Promise<QueryResult<AcquiredModel
       price: Number(item.model.price || 0),
       preview_image_paths: item.model.preview_image_paths ?? [],
       file_path: item.model.file_path,
-      seller_name: item.model.seller?.full_name ?? "DripLink Creator",
+      seller_name: item.model.seller?.full_name ?? "DripLnk Creator",
     }));
 
     return { data: acquired, backendReady: true };

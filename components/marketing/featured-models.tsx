@@ -32,7 +32,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
         {featured.map((item) => {
           const isFree = item.price === 0;
           const preview = item.preview_image_paths?.[0] || null;
-          const author = item.seller_name || item.seller?.full_name || "DripLink Creator";
+          const author = item.seller_name || item.seller?.full_name || "DripLnk Creator";
           const formats = item.formats && item.formats.length > 0 ? item.formats : ["STL", "STEP"];
 
           return (

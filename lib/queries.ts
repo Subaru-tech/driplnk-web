@@ -26,4 +26,4 @@ export {
   getCategoryCounts,
   getLibrary,
   getLibraryEntry,
-} from "@/driplink-web-backend/db/queries";
+} from "@/driplnk-web-backend/db/queries";

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import { updateUserProfile } from "@/driplink-web-backend/actions/account";
+import { updateUserProfile } from "@/driplnk-web-backend/actions/account";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 /* Spec §6.5 — profile card. Save stays disabled until something actually

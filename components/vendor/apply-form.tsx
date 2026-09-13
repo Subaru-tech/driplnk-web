@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { applyVendor } from "@/driplink-web-backend/actions/vendor";
+import { applyVendor } from "@/driplnk-web-backend/actions/vendor";
 import type { ProviderStatus, VendorProfile } from "@/lib/types";
 
 interface VendorApplyFormProps {
@@ -107,7 +107,7 @@ export function VendorApplyForm({
         <div className="flex flex-col gap-2 max-w-md">
           <h2 className="font-display text-2xl font-bold text-fg">You are an Approved Vendor</h2>
           <p className="text-sm text-muted">
-            Your print farm <span className="font-medium text-fg">{existingProfile?.business_name}</span> is active in the DripLink Mart quote network.
+            Your print farm <span className="font-medium text-fg">{existingProfile?.business_name}</span> is active in the DripLnk Mart quote network.
           </p>
         </div>
         <ButtonLink href="/dashboard/vendor" size="lg" className="min-h-[44px] min-w-[44px]">
@@ -133,7 +133,7 @@ export function VendorApplyForm({
             Application Received
           </h2>
           <p className="text-base text-muted leading-relaxed">
-            Thank you for applying to the DripLink Mart network. Unlike open freelance profiles, all print hubs are vetted manually to ensure consistent build volumes, calibrated dimensional accuracy, and reliable regional fulfillment.
+            Thank you for applying to the DripLnk Mart network. Unlike open freelance profiles, all print hubs are vetted manually to ensure consistent build volumes, calibrated dimensional accuracy, and reliable regional fulfillment.
           </p>
           <div className="mt-4 rounded-[var(--radius-control)] border border-line bg-surface-muted/40 p-4 text-left text-sm text-muted">
             <p className="font-medium text-fg mb-1">What happens next:</p>
@@ -147,7 +147,7 @@ export function VendorApplyForm({
 
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <ButtonLink href="/mart" variant="secondary" className="min-h-[44px] min-w-[44px]">
-            Explore DripLink Mart
+            Explore DripLnk Mart
           </ButtonLink>
           <ButtonLink href="/dashboard" variant="ghost" className="min-h-[44px] min-w-[44px]">
             Return to Dashboard

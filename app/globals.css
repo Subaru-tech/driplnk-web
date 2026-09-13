@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   DripLink design tokens — UI/UX spec §1.1
+   DripLnk design tokens — UI/UX spec §1.1
    ----------------------------------------------------------------------------
    Dark is the DEFAULT. Light is an opt-in toggle (`data-theme="light"` on
    <html>), never driven by prefers-color-scheme — per spec, light mode is a

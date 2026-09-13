@@ -19,7 +19,7 @@ import {
 import {
   respondToFreelanceRequest,
   getFreelanceFileDownloadUrl,
-} from "@/driplink-web-backend/actions/freelance";
+} from "@/driplnk-web-backend/actions/freelance";
 import type { FreelanceRequest } from "@/lib/types";
 import { cn } from "@/lib/cn";
 

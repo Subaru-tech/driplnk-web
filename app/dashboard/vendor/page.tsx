@@ -14,8 +14,8 @@ import {
   Sparkles,
   Truck,
 } from "lucide-react";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getMyVendorProvider } from "@/driplink-web-backend/actions/vendor";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getMyVendorProvider } from "@/driplnk-web-backend/actions/vendor";
 import { getVendorOrders } from "@/lib/queries";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +25,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { VendorOrderActions } from "@/components/dashboard/vendor-order-actions";
 
 export const metadata: Metadata = {
-  title: "Vendor Hub — DripLink Mart",
+  title: "Vendor Hub — DripLnk Mart",
 };
 
 export const dynamic = "force-dynamic";
@@ -54,7 +54,7 @@ export default async function VendorDashboardPage() {
           <div className="flex flex-col gap-2 max-w-md">
             <h3 className="font-display text-xl font-bold text-fg">Become a Print Vendor</h3>
             <p className="text-sm text-muted leading-relaxed">
-              Connect your print farm or studio to DripLink Mart. Receive guaranteed-rate printing jobs calculated automatically from uploaded CAD meshes.
+              Connect your print farm or studio to DripLnk Mart. Receive guaranteed-rate printing jobs calculated automatically from uploaded CAD meshes.
             </p>
           </div>
           <ButtonLink href="/vendor/apply" size="lg" className="min-h-[44px] min-w-[44px]">

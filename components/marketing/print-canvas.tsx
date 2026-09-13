@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { INTRO, buildElapsedMs, introSeconds, setLogoAnchor } from "@/lib/intro";
 
 /**
- * The hero visual: the DripLink Core — a bed-slinger 3D printer drawn as a
+ * The hero visual: the DripLnk Core — a bed-slinger 3D printer drawn as a
  * dead-on front elevation, printing a tree that rotates 360° as it builds.
  *
  * Deliberate choices:
@@ -76,7 +76,7 @@ const easeOutSmooth = (p: number) => {
 };
 
 /**
- * The DripLink monogram, as canvas paths.
+ * The DripLnk monogram, as canvas paths.
  *
  * Byte-identical to the `d` attributes in components/marketing/wordmark.tsx —
  * one shape, two renderers. Built lazily because Path2D doesn't exist during

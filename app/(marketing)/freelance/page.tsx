@@ -62,7 +62,7 @@ const steps = [
   },
 ];
 
-import { getFreelanceBrowseProfiles } from "@/driplink-web-backend/db/queries";
+import { getFreelanceBrowseProfiles } from "@/driplnk-web-backend/db/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -109,12 +109,12 @@ export default async function FreelancePage() {
         </div>
       </Section>
 
-      {/* Why Hire on DripLink Section */}
+      {/* Why Hire on DripLnk Section */}
       <Section tone="surface">
         <SectionHeading
-          eyebrow="002 / The DripLink Standard"
+          eyebrow="002 / The DripLnk Standard"
           title="Built for manufacturing, not just rendering."
-          description="Traditional freelance platforms don't understand 3D printing constraints. DripLink ensures every file delivered can actually be printed and assembled."
+          description="Traditional freelance platforms don't understand 3D printing constraints. DripLnk ensures every file delivered can actually be printed and assembled."
         />
         <div className="mt-12">
           <FeatureGrid features={guarantees} />
@@ -157,7 +157,7 @@ export default async function FreelancePage() {
               Are you an experienced 3D designer or CAD engineer?
             </h3>
             <p className="text-sm text-muted">
-              Join DripLink&apos;s vetted specialist network. Get matched with buyers seeking custom
+              Join DripLnk&apos;s vetted specialist network. Get matched with buyers seeking custom
               functional parts, electronics enclosures, and print-ready models.
             </p>
             <ButtonLink href="/freelance/apply" variant="secondary" size="lg" className="mt-2 min-h-[44px]">

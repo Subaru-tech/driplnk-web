@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { formatCurrency } from "@/lib/format";
-import { claimFreeModel, getModelDownloadUrl } from "@/driplink-web-backend/actions/library";
+import { claimFreeModel, getModelDownloadUrl } from "@/driplnk-web-backend/actions/library";
 
 export function ModelAcquirePanel({
   modelId,
@@ -152,7 +152,7 @@ export function ModelAcquirePanel({
                 variant="secondary"
                 size="sm"
                 className="justify-center gap-1.5 text-xs font-medium"
-                title="Send geometry to DripLink Mart for fabrication"
+                title="Send geometry to DripLnk Mart for fabrication"
               >
                 <Printer className="size-3.5 text-accent" aria-hidden="true" />
                 <span>Send to Mart</span>

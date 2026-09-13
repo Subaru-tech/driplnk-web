@@ -9,7 +9,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { MartQuoteCalculator } from "@/components/marketing/mart-quote-calculator";
 
 export const metadata: Metadata = {
-  title: "Get a Print Quote — Instant Multi-Vendor 3D Printing | DripLink Mart",
+  title: "Get a Print Quote — Instant Multi-Vendor 3D Printing | DripLnk Mart",
   description:
     "Instant multi-vendor print price comparison for any 3D model. Upload your STL, STEP, or 3MF file to get guaranteed upfront pricing from vetted print hubs, tracked to your door.",
 };
@@ -47,7 +47,7 @@ const flow = [
   { icon: Truck, title: "Delivered", description: "It's printed, checked and shipped to your address." },
 ];
 
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 
 export default async function MartPage() {
   const user = await getUnifiedUser();
@@ -57,7 +57,7 @@ export default async function MartPage() {
       <Hero
         eyebrow={
           <span className="rounded-full bg-accent-muted px-3 py-1 text-xs font-medium text-accent">
-            DripLink Mart • Multi-Vendor Print Network
+            DripLnk Mart • Multi-Vendor Print Network
           </span>
         }
         headline="Instant multi-vendor print quotes for any 3D model."

@@ -13,7 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { respondToMartOrderAction } from "@/driplink-web-backend/actions/vendor";
+import { respondToMartOrderAction } from "@/driplnk-web-backend/actions/vendor";
 import type { MartOrderStatus } from "@/lib/types";
 
 interface VendorOrderActionsProps {

@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Sparkles, Users } from "lucide-react";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getBuyerFreelanceRequests } from "@/driplink-web-backend/db/queries";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getBuyerFreelanceRequests } from "@/driplnk-web-backend/db/queries";
 import { BuyerRequestsClient } from "@/components/dashboard/buyer-requests-client";
 import { StatCard } from "@/components/dashboard/stat-card";
 
 export const metadata: Metadata = {
-  title: "Hire Requests — DripLink",
+  title: "Hire Requests — DripLnk",
   description: "Track CAD briefs, specialist quotes, and custom 3D model deliverables.",
 };
 

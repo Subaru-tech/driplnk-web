@@ -207,7 +207,7 @@ async function run() {
 
   // TEST 7: Legitimate STEP ISO-10303-21 CAD file
   const legitimateStep = Buffer.from(
-    "ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('DripLink CAD'),'2;1');\nFILE_NAME('aerospace_bracket.stp','2026-09-12',('Engineer'),('DripLink'),'','','');\nENDSEC;\nDATA;\n#1=MANIFOLD_SOLID_BREP('BRACKET',#2);\nENDSEC;\nEND-ISO-10303-21;\n"
+    "ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('DripLnk CAD'),'2;1');\nFILE_NAME('aerospace_bracket.stp','2026-09-12',('Engineer'),('DripLnk'),'','','');\nENDSEC;\nDATA;\n#1=MANIFOLD_SOLID_BREP('BRACKET',#2);\nENDSEC;\nEND-ISO-10303-21;\n"
   );
   const check7 = verifyModelFormatMagic(".step", legitimateStep);
   console.log("\n[TEST 7: Legitimate STEP CAD File -> aerospace_bracket.stp]");

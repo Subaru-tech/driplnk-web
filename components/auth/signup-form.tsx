@@ -152,7 +152,7 @@ function ClerkSignupForm() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Start building with DripLink."
+      subtitle="Start building with DripLnk."
       error={formError}
       footer={{ prompt: "Already have an account?", href: "/login", label: "Log in" }}
     >
@@ -329,7 +329,7 @@ function SupabaseSignupForm() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Start building with DripLink."
+      subtitle="Start building with DripLnk."
       error={formError}
       footer={{ prompt: "Already have an account?", href: "/login", label: "Log in" }}
     >

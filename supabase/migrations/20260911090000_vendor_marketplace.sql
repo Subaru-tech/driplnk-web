@@ -1,5 +1,5 @@
 -- Migration: 20260911090000_vendor_marketplace.sql
--- Purpose: Schema, RLS, and RPCs for DripLink Vendor Marketplace & Mart Quote Engine
+-- Purpose: Schema, RLS, and RPCs for DripLnk Vendor Marketplace & Mart Quote Engine
 
 -- 1. Drop existing legacy constraints and table for mart_orders if present
 DO $$
@@ -514,7 +514,7 @@ BEGIN
       qr.weight_g,
       mo.created_at,
       mo.updated_at,
-      COALESCE(bp.full_name, 'DripLink Buyer') AS counterparty_name,
+      COALESCE(bp.full_name, 'DripLnk Buyer') AS counterparty_name,
       bu.email::text AS counterparty_email,
       NULL::text AS counterparty_location
     FROM public.mart_orders mo

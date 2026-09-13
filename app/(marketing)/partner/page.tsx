@@ -7,7 +7,7 @@ import { CtaBand } from "@/components/marketing/cta-band";
 export const metadata: Metadata = {
   title: "Partner With Us — Print Vendors & Freelance Engineers",
   description:
-    "Partner with DripLink. Apply to join our vetted 3D printing network (manual review) or create your freelance CAD specialist profile (self-serve, auto-live).",
+    "Partner with DripLnk. Apply to join our vetted 3D printing network (manual review) or create your freelance CAD specialist profile (self-serve, auto-live).",
 };
 
 export default function PartnerPage() {
@@ -19,7 +19,7 @@ export default function PartnerPage() {
             Partner Ecosystem
           </span>
         }
-        headline="Build with DripLink. Two ways to partner."
+        headline="Build with DripLnk. Two ways to partner."
         subhead="Join the decentralized manufacturing and engineering network. Whether you have industrial 3D printing capacity or CAD engineering expertise, choose your track below."
       />
 

@@ -602,7 +602,7 @@ BEGIN
     m.price,
     m.preview_image_paths,
     COALESCE(m.file_path, m.storage_path) AS file_path,
-    COALESCE(p.full_name, 'DripLink Creator') AS seller_name,
+    COALESCE(p.full_name, 'DripLnk Creator') AS seller_name,
     COALESCE(
       (
         SELECT array_agg(DISTINCT upper(mf.format))
@@ -668,7 +668,7 @@ BEGIN
       m.preview_image_paths,
       m.status,
       m.created_at,
-      COALESCE(p.full_name, 'DripLink Creator') AS seller_name,
+      COALESCE(p.full_name, 'DripLnk Creator') AS seller_name,
       p.avatar_url AS seller_avatar,
       COALESCE(
         (
@@ -764,7 +764,7 @@ BEGIN
     COALESCE(m.file_path, m.storage_path) AS file_path,
     m.status,
     m.created_at,
-    COALESCE(p.full_name, 'DripLink Creator') AS seller_name,
+    COALESCE(p.full_name, 'DripLnk Creator') AS seller_name,
     p.avatar_url AS seller_avatar,
     COALESCE(
       (

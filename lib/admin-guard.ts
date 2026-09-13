@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 
 /**
  * Server-side admin gate for admin-only server actions.

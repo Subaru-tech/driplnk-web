@@ -7,10 +7,10 @@ import { ProviderReviewActions } from "@/components/admin/provider-actions";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { getAdminPendingListings, getAdminPendingModels, getAdminPendingProviders } from "@/driplink-web-backend";
+import { getAdminPendingListings, getAdminPendingModels, getAdminPendingProviders } from "@/driplnk-web-backend";
 import { formatCurrency, formatDate } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — Pending Reviews | DripLink" };
+export const metadata: Metadata = { title: "Admin — Pending Reviews | DripLnk" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminListingsPage() {
@@ -224,7 +224,7 @@ export default async function AdminListingsPage() {
                       </td>
 
                       <td className="px-4 py-3.5 text-muted font-medium">
-                        {model.seller_name || "DripLink Creator"}
+                        {model.seller_name || "DripLnk Creator"}
                       </td>
 
                       <td className="px-4 py-3.5 text-accent font-medium">

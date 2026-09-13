@@ -5,7 +5,7 @@ import { OrderFulfillmentControl } from "@/components/admin/order-fulfillment-co
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ORDER_STATUSES, OrderStatusPill } from "@/components/ui/status-pill";
-import { getAdminMartOrders } from "@/driplink-web-backend";
+import { getAdminMartOrders } from "@/driplnk-web-backend";
 import { cn } from "@/lib/cn";
 import { formatCurrency, formatDate } from "@/lib/format";
 

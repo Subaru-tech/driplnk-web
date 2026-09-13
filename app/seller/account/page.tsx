@@ -28,7 +28,7 @@ export default async function SellerAccountPage() {
         <CardTitle>Storefront</CardTitle>
         <CardDescription>
           {seller.data
-            ? `${seller.data.studio_name} — driplink.in/mart/${seller.data.slug}`
+            ? `${seller.data.studio_name} — driplnk.in/mart/${seller.data.slug}`
             : "Your storefront details load once the backend is connected."}
         </CardDescription>
       </Card>

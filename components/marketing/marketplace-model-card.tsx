@@ -6,7 +6,7 @@ import { useState } from "react";
 import { formatCurrency } from "@/lib/format";
 import { MODEL_LICENSES, type ModelLicenseType } from "@/lib/marketplace";
 import type { MarketplaceModel } from "@/lib/types";
-import { toggleModelFavoriteAction } from "@/driplink-web-backend/actions/library";
+import { toggleModelFavoriteAction } from "@/driplnk-web-backend/actions/library";
 
 export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
   const [favorited, setFavorited] = useState(false);
@@ -22,7 +22,7 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
       : null;
 
   const isFree = model.price === 0;
-  const sellerName = model.seller_name || model.seller?.full_name || "DripLink Creator";
+  const sellerName = model.seller_name || model.seller?.full_name || "DripLnk Creator";
   const displayFormats =
     model.formats && model.formats.length > 0
       ? model.formats

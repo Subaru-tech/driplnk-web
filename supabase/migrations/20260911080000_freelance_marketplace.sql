@@ -1,5 +1,5 @@
 -- Migration: 20260911080000_freelance_marketplace
--- Purpose: Schema, RLS, Storage, and RPCs for DripLink Freelancer Marketplace
+-- Purpose: Schema, RLS, Storage, and RPCs for DripLnk Freelancer Marketplace
 
 -- 1. Create providers table (shared infrastructure for freelancers and vendors)
 CREATE TABLE IF NOT EXISTS public.providers (

@@ -3,7 +3,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 
 export const metadata: Metadata = {
   title: "Create Account",
-  description: "Create your DripLink account.",
+  description: "Create your DripLnk account.",
 };
 
 export const dynamic = "force-dynamic";

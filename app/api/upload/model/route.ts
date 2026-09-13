@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { uploadModelToB2 } from "@/lib/b2-client";
 
 // Allowlist of safe 3D model formats

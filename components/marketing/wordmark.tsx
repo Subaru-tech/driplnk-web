@@ -1,7 +1,7 @@
 import { cn } from "@/lib/cn";
 
 /**
- * The DripLink identity: a D/L monogram plus the wordmark.
+ * The DripLnk identity: a D/L monogram plus the wordmark.
  *
  * The mark is an interlocking ligature — the L's vertical stem doubles as the
  * D's spine, and the L sits in front where they cross. Rebuilt as vector paths
@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
  * knockout alternative is to point the D at `currentColor` instead.
  */
 
-export function DripLinkMark({ className }: { className?: string }) {
+export function DripLnkMark({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 61 68"
@@ -55,7 +55,7 @@ export function Wordmark({
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <span {...(introTarget ? { "data-logo-target": "" } : {})} className="inline-flex">
-        <DripLinkMark className={markOnly ? "h-7" : "h-6"} />
+        <DripLnkMark className={markOnly ? "h-7" : "h-6"} />
       </span>
       {markOnly ? null : (
         <span
@@ -64,7 +64,7 @@ export function Wordmark({
           style={{ color: "var(--logo-paper)" }}
         >
           Drip
-          <span style={{ color: "var(--logo-ink)" }}>Link</span>
+          <span style={{ color: "var(--logo-ink)" }}>Lnk</span>
         </span>
       )}
     </span>

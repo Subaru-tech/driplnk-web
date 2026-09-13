@@ -2,7 +2,7 @@
 
 import { Heart } from "lucide-react";
 import { useState } from "react";
-import { toggleModelFavoriteAction } from "@/driplink-web-backend/actions/library";
+import { toggleModelFavoriteAction } from "@/driplnk-web-backend/actions/library";
 
 export function ModelFavoriteButton({ modelId }: { modelId: string }) {
   const [favorited, setFavorited] = useState(false);

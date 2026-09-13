@@ -5,4 +5,4 @@ export {
   syncClerkProfile,
   getUnifiedUser,
   type UnifiedUser,
-} from "@/driplink-web-backend/auth/clerk";
+} from "@/driplnk-web-backend/auth/clerk";

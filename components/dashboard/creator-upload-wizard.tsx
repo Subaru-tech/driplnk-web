@@ -21,7 +21,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { CATEGORY_LIST, PRINT_MATERIALS } from "@/lib/marketplace";
-import { publishCreatorModelListing, saveModelDraft } from "@/driplink-web-backend/actions/upload";
+import { publishCreatorModelListing, saveModelDraft } from "@/driplnk-web-backend/actions/upload";
 
 export type UploadStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -263,7 +263,7 @@ export function CreatorUploadWizard() {
             <ArrowLeft className="size-3.5" />
             <span>Back to Creator Studio</span>
           </Link>
-          <span className="text-xs font-mono text-muted">DripLink Creator Engine</span>
+          <span className="text-xs font-mono text-muted">DripLnk Creator Engine</span>
         </div>
 
         <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-fg">
@@ -874,7 +874,7 @@ export function CreatorUploadWizard() {
                   />
                 </div>
                 <p className="text-[11px] text-muted">
-                  DripLink retains 10% platform fee for verified checkout and secure file delivery.
+                  DripLnk retains 10% platform fee for verified checkout and secure file delivery.
                 </p>
               </div>
             )}
@@ -939,7 +939,7 @@ export function CreatorUploadWizard() {
                   className="mt-0.5 size-4 accent-accent cursor-pointer"
                 />
                 <span className="text-xs text-fg leading-relaxed">
-                  I agree to DripLink&apos;s Creator Terms, safety standards, and automatic integration with LeaFF OS and Mart manufacturing.
+                  I agree to DripLnk&apos;s Creator Terms, safety standards, and automatic integration with LeaFF OS and Mart manufacturing.
                 </span>
               </label>
             </div>
@@ -972,11 +972,11 @@ export function CreatorUploadWizard() {
         </div>
       )}
 
-      {/* STEP 5: DRIPLINK TECHNICAL VALIDATION */}
+      {/* STEP 5: DRIPLNK TECHNICAL VALIDATION */}
       {step === 5 && (
         <div className="flex flex-col gap-6 animate-in fade-in duration-200">
           <div className="flex flex-col gap-1">
-            <h2 className="font-display text-lg font-semibold text-fg">Step 5 — DripLink Validation</h2>
+            <h2 className="font-display text-lg font-semibold text-fg">Step 5 — DripLnk Validation</h2>
             <p className="text-xs text-muted">
               Our automated CAD engine verifies file geometry, format compliance, and metadata completeness.
             </p>
@@ -1174,7 +1174,7 @@ export function CreatorUploadWizard() {
                 </>
               ) : (
                 <>
-                  <strong className="text-fg font-semibold">{title}</strong> is now live in the DripLink 3D Model Marketplace and synced with LeaFF OS.
+                  <strong className="text-fg font-semibold">{title}</strong> is now live in the DripLnk 3D Model Marketplace and synced with LeaFF OS.
                 </>
               )}
             </p>

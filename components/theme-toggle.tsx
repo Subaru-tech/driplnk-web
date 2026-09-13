@@ -60,7 +60,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next = root.dataset.theme === "light" ? "dark" : "light";
     root.dataset.theme = next;
     try {
-      localStorage.setItem("driplink-theme", next);
+      localStorage.setItem("driplnk-theme", next);
     } catch {
       /* storage blocked — the theme still applies for this page load */
     }

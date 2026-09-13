@@ -20,7 +20,7 @@ import {
   getUploadSession,
   recordUploadedModel,
   updateModelThumbnail,
-} from "@/driplink-web-backend/actions/upload";
+} from "@/driplnk-web-backend/actions/upload";
 
 /**
  * Upload existing model files from the browser — no desktop app needed.

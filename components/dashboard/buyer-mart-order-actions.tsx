@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { respondToMartOrderAction } from "@/driplink-web-backend/actions/vendor";
+import { respondToMartOrderAction } from "@/driplnk-web-backend/actions/vendor";
 
 export function BuyerCompleteOrderButton({ orderId }: { orderId: string }) {
   const router = useRouter();

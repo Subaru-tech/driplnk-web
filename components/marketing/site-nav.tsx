@@ -88,7 +88,7 @@ export function SiteNav() {
         aria-label="Main"
         className="mx-auto flex h-16 max-w-content items-center justify-between gap-6 px-6 lg:px-12"
       >
-        <Link href="/" className="shrink-0" aria-label="DripLink home">
+        <Link href="/" className="shrink-0" aria-label="DripLnk home">
           <Wordmark introTarget />
         </Link>
 

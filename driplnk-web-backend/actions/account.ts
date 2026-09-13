@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { clerkClient } from "@clerk/nextjs/server";
-import { getUnifiedUser, isClerkConfigured } from "@/driplink-web-backend/auth/clerk";
-import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getUnifiedUser, isClerkConfigured } from "@/driplnk-web-backend/auth/clerk";
+import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 
 export type UpdateProfileResult = {
   success: boolean;

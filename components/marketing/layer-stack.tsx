@@ -21,7 +21,7 @@ export type Layer = {
  * sticky doesn't apply (which is exactly what we want on a narrow screen, so
  * it's switched off below `lg` rather than fought with).
  *
- * Why this and not a flat grid: the parts of DripLink genuinely stack — the
+ * Why this and not a flat grid: the parts of DripLnk genuinely stack — the
  * desktop app, the print network on top of it, the phone app on top of that —
  * and a print is built the same way, one layer bonded to the last. The
  * numbering says LAYER for that reason, not as decoration.

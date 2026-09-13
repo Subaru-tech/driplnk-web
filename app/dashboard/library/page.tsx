@@ -5,10 +5,10 @@ import { AcquiredModelCard } from "@/components/dashboard/acquired-model-card";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
-import { getUserAcquiredModels } from "@/driplink-web-backend";
+import { getUserAcquiredModels } from "@/driplnk-web-backend";
 
 export const metadata: Metadata = {
-  title: "My Library — DripLink",
+  title: "My Library — DripLnk",
   description: "View and download your acquired 3D models.",
 };
 
@@ -60,7 +60,7 @@ export default async function LibraryPage() {
         <div>
           <h1 className="font-display text-2xl font-semibold text-fg">My Library</h1>
           <p className="text-sm text-muted">
-            All models acquired or claimed into your personal DripLink library. Download raw
+            All models acquired or claimed into your personal DripLnk library. Download raw
             geometry files or send them directly to Mart for manufacturing.
           </p>
         </div>

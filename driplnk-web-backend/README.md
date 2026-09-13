@@ -1,6 +1,6 @@
-# DripLink Web Backend Module (`driplink-web-backend/`)
+# DripLnk Web Backend Module (`driplnk-web-backend/`)
 
-This directory houses the entire backend layer for the DripLink web platform. It is isolated from client-side bundles and protected via Next.js `server-only` boundaries.
+This directory houses the entire backend layer for the DripLnk web platform. It is isolated from client-side bundles and protected via Next.js `server-only` boundaries.
 
 ## Security Architecture
 
@@ -16,7 +16,7 @@ This directory houses the entire backend layer for the DripLink web platform. It
 ## Directory Structure
 
 ```
-driplink-web-backend/
+driplnk-web-backend/
 ├── auth/
 │   └── clerk.ts         # Clerk user synchronization, profile RPC, unified user resolution
 ├── db/
@@ -32,8 +32,8 @@ driplink-web-backend/
 
 ## Usage
 
-Import from `@/driplink-web-backend`:
+Import from `@/driplnk-web-backend`:
 
 ```ts
-import { getProfile, getModels, getUnifiedUser } from "@/driplink-web-backend";
+import { getProfile, getModels, getUnifiedUser } from "@/driplnk-web-backend";
 ```

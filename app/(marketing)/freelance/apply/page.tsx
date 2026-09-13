@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Sparkles, ShieldCheck, CheckCircle2 } from "lucide-react";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getMyFreelanceProvider, getFreelancerProfileById } from "@/driplink-web-backend/db/queries";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getMyFreelanceProvider, getFreelancerProfileById } from "@/driplnk-web-backend/db/queries";
 import { ApplyForm } from "@/components/freelance/apply-form";
 import { Section } from "@/components/marketing/section";
-import { isClerkConfigured } from "@/driplink-web-backend/auth/clerk";
+import { isClerkConfigured } from "@/driplnk-web-backend/auth/clerk";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "Apply as a 3D & CAD Specialist — DripLink",
+  title: "Apply as a 3D & CAD Specialist — DripLnk",
   description:
-    "Join DripLink's vetted specialist network. Get hired for precision functional 3D printing, parametric CAD, and electronics enclosures.",
+    "Join DripLnk's vetted specialist network. Get hired for precision functional 3D printing, parametric CAD, and electronics enclosures.",
 };
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export default async function FreelanceApplyPage() {
               Specialist Onboarding
             </span>
             <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">
-              {existingProfile ? "Edit your specialist profile" : "Join the DripLink Specialist Network"}
+              {existingProfile ? "Edit your specialist profile" : "Join the DripLnk Specialist Network"}
             </h1>
             <p className="text-base leading-relaxed text-muted">
               Connect with hardware creators, robotics builders, and product teams. You control your

@@ -4,7 +4,7 @@ import { Check, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { updateListingStatusAdmin } from "@/driplink-web-backend/actions/admin";
+import { updateListingStatusAdmin } from "@/driplnk-web-backend/actions/admin";
 import { cn } from "@/lib/cn";
 
 export function ListingReviewActions({

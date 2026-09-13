@@ -197,7 +197,7 @@ export function PartnerPortal() {
             </div>
 
             <p className="text-sm leading-relaxed text-muted sm:text-base">
-              Apply to become an approved manufacturing vendor in the DripLink Mart decentralized
+              Apply to become an approved manufacturing vendor in the DripLnk Mart decentralized
               fulfillment network. Receive pre-sliced jobs directly from LeaFF OS and creator
               orders, with guaranteed weekly payouts.
             </p>
@@ -224,7 +224,7 @@ export function PartnerPortal() {
             <div className="space-y-2 text-xs text-muted">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-accent-2" />
-                <span>Zero customer service overhead: DripLink manages buyer support & logistics</span>
+                <span>Zero customer service overhead: DripLnk manages buyer support & logistics</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-accent-2" />
@@ -625,7 +625,7 @@ export function PartnerPortal() {
                     />
                     <label htmlFor="toleranceCheck" className="text-xs leading-relaxed text-muted">
                       <strong className="text-fg">
-                        I agree to the DripLink Mart Quality Benchmark (±0.05 mm tolerance)
+                        I agree to the DripLnk Mart Quality Benchmark (±0.05 mm tolerance)
                       </strong>
                       . I understand that my workshop will be placed in a manual review queue, and
                       I will print and measure the standardized test coupon before accepting paid
@@ -661,7 +661,7 @@ export function PartnerPortal() {
             </h3>
             <p className="max-w-2xl text-sm text-muted">
               Fill out your CAD specialties, hourly rates, and software stack. Your profile will be
-              published automatically to the live DripLink Freelance directory without waitlists.
+              published automatically to the live DripLnk Freelance directory without waitlists.
             </p>
           </div>
 
@@ -928,8 +928,8 @@ export function PartnerPortal() {
                 </tr>
                 <tr>
                   <td className="px-5 py-3 font-sans font-medium text-fg">Shipping & Logistics</td>
-                  <td className="px-5 py-3 text-muted">Pre-paid tracked labels provided by DripLink</td>
-                  <td className="px-5 py-3 text-fg">Digital delivery via DripLink Cloud / LeaFF OS</td>
+                  <td className="px-5 py-3 text-muted">Pre-paid tracked labels provided by DripLnk</td>
+                  <td className="px-5 py-3 text-fg">Digital delivery via DripLnk Cloud / LeaFF OS</td>
                 </tr>
               </tbody>
             </table>
@@ -985,7 +985,7 @@ export function PartnerPortal() {
               What are the platform fees for freelancers?
             </h4>
             <p className="text-xs leading-relaxed text-muted">
-              DripLink takes an 8% platform fee on milestone escrow payouts, which covers payment
+              DripLnk takes an 8% platform fee on milestone escrow payouts, which covers payment
               processing, client escrow protection, in-browser 3D model streaming, and cloud storage.
             </p>
           </Card>

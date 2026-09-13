@@ -220,7 +220,7 @@ BEGIN
     m.price,
     m.preview_image_paths,
     COALESCE(m.file_path, m.storage_path) AS file_path,
-    COALESCE(p.full_name, 'DripLink Creator') AS seller_name
+    COALESCE(p.full_name, 'DripLnk Creator') AS seller_name
   FROM public.model_acquisitions ma
   JOIN public.models m ON m.id = ma.model_id
   LEFT JOIN public.profiles p ON p.id = m.seller_user_id

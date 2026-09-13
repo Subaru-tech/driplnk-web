@@ -94,14 +94,14 @@ Deno.serve(async (req: Request) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
     let channelUsed: "whatsapp" | "sms" | "email" | "simulated" = "simulated";
-    let providerName = "DripLink Notification Engine";
+    let providerName = "DripLnk Notification Engine";
     let delivered = false;
     let recipient = vendor_phone || vendor_email || "unspecified";
 
-    const notificationMessage = `DripLink Manufacturing Alert: New 3D Print Order #${order_id.slice(
+    const notificationMessage = `DripLnk Manufacturing Alert: New 3D Print Order #${order_id.slice(
       0,
       8
-    )} received! Material: ${material.toUpperCase()}, Total: ₹${price}. Please accept within 45 minutes to claim this order: https://driplinkk.com/dashboard/mart-orders/${order_id}`;
+    )} received! Material: ${material.toUpperCase()}, Total: ₹${price}. Please accept within 45 minutes to claim this order: https://driplnkk.com/dashboard/mart-orders/${order_id}`;
 
     // Step 2A: Attempt Primary Out-of-band: WhatsApp Business API (Gupshup / Interakt)
     if (vendor_phone && (gupshupApiKey || interaktApiKey)) {
@@ -121,7 +121,7 @@ Deno.serve(async (req: Request) => {
               source: Deno.env.get("GUPSHUP_SOURCE_PHONE") || "917834811114",
               destination: vendor_phone.replace(/\D/g, ""),
               message: JSON.stringify({ type: "text", text: notificationMessage }),
-              "src.name": "DripLinkAlerts",
+              "src.name": "DripLnkAlerts",
             }),
           });
 
@@ -195,9 +195,9 @@ Deno.serve(async (req: Request) => {
             Authorization: `Bearer ${resendApiKey}`,
           },
           body: JSON.stringify({
-            from: "orders@driplinkk.com",
+            from: "orders@driplnkk.com",
             to: vendor_email,
-            subject: `[DripLink] Action Required: New 3D Print Order #${order_id.slice(0, 8)}`,
+            subject: `[DripLnk] Action Required: New 3D Print Order #${order_id.slice(0, 8)}`,
             text: notificationMessage,
           }),
         });
@@ -217,7 +217,7 @@ Deno.serve(async (req: Request) => {
       channelUsed = "simulated";
       providerName = "Local Out-of-Band Notification Dispatcher (Pre-Configured Sandbox)";
       delivered = true; // Simulated delivery logged successfully
-      recipient = vendor_phone || vendor_email || "test-vendor@driplinkk.com";
+      recipient = vendor_phone || vendor_email || "test-vendor@driplnkk.com";
       logs.push(
         `[Out-Of-Band Dispatch] WhatsApp/SMS provider simulated delivery recorded for recipient ${recipient}. Message: "${notificationMessage}"`
       );

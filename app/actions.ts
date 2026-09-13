@@ -16,7 +16,7 @@ export type FormState = { status: "idle" | "success" | "error"; message: string 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const NOT_CONNECTED =
-  "The waitlist isn't connected yet. Email us at hello@driplink.in and we'll add you by hand.";
+  "The waitlist isn't connected yet. Email us at hello@driplnk.in and we'll add you by hand.";
 
 export async function joinWaitlist(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "").trim();
@@ -56,7 +56,7 @@ export async function submitContact(_prev: FormState, formData: FormData): Promi
   if (!supabase) {
     return {
       status: "error",
-      message: "The contact form isn't connected yet. Please email hello@driplink.in directly.",
+      message: "The contact form isn't connected yet. Please email hello@driplnk.in directly.",
     };
   }
 
@@ -65,7 +65,7 @@ export async function submitContact(_prev: FormState, formData: FormData): Promi
   if (error) {
     return {
       status: "error",
-      message: "Something went wrong sending that. Please email hello@driplink.in directly.",
+      message: "Something went wrong sending that. Please email hello@driplnk.in directly.",
     };
   }
 

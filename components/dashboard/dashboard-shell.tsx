@@ -17,7 +17,7 @@ import { cn } from "@/lib/cn";
    - Content max-width 1120px, 32px padding (16px on mobile).
    - Mobile: bottom tab bar, 5 icons. */
 
-export const SIDEBAR_COOKIE = "driplink-sidebar";
+export const SIDEBAR_COOKIE = "driplnk-sidebar";
 
 export function DashboardShell({
   defaultCollapsed,
@@ -68,7 +68,7 @@ export function DashboardShell({
             collapsed && "justify-center px-0",
           )}
         >
-          <Link href="/" aria-label="DripLink home">
+          <Link href="/" aria-label="DripLnk home">
             {collapsed ? (
               <span className="grid size-8 place-items-center">
                 <Wordmark markOnly />

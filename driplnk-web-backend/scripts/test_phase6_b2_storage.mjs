@@ -31,7 +31,7 @@ function computeSha256(buffer) {
 
 function createSampleBinaryStl(tag = "TestModel") {
   const buffer = Buffer.alloc(84 + 50);
-  buffer.write(`DripLink Binary STL ${tag}`.padEnd(80, " "), 0, 80, "ascii");
+  buffer.write(`DripLnk Binary STL ${tag}`.padEnd(80, " "), 0, 80, "ascii");
   buffer.writeUInt32LE(1, 80); // 1 triangle
   // Normal vector (0, 0, 1)
   buffer.writeFloatLE(0, 84);

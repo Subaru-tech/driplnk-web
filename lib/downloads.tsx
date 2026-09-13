@@ -18,7 +18,7 @@ export const DOWNLOAD_MANIFEST: Record<string, string> = {
   "LeaFF-OS-Portable-0.9.4-x64.zip": "86.2 MB",
   "LeaFF-OS-0.9.4.AppImage": "98.3 MB",
   "leaff-os_0.9.4_amd64.deb": "78.9 MB",
-  "DripLink-Companion-1.2.0.apk": "34.2 MB",
+  "DripLnk-Companion-1.2.0.apk": "34.2 MB",
 };
 
 export function isDownloadAvailable(filename: string): boolean {

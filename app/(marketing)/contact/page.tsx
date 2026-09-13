@@ -5,19 +5,19 @@ import { ContactForm } from "@/components/marketing/contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Get in touch with the DripLink team.",
+  description: "Get in touch with the DripLnk team.",
 };
 
 /* PLACEHOLDER: swap these for the real address and handles before launch. */
-const CONTACT_EMAIL = "hello@driplink.in";
+const CONTACT_EMAIL = "hello@driplnk.in";
 
 const channels = [
   { icon: Mail, label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
-  { icon: ExternalLink, label: "github.com/driplink", href: "https://github.com/driplink" },
+  { icon: ExternalLink, label: "github.com/driplnk", href: "https://github.com/driplnk" },
   {
     icon: ExternalLink,
-    label: "DripLink on LinkedIn",
-    href: "https://linkedin.com/company/driplink",
+    label: "DripLnk on LinkedIn",
+    href: "https://linkedin.com/company/driplnk",
   },
 ];
 

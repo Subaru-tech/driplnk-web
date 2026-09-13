@@ -13,7 +13,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { Model } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
-import { deleteUploadedModel } from "@/driplink-web-backend/actions/upload";
+import { deleteUploadedModel } from "@/driplnk-web-backend/actions/upload";
 
 /* Spec §6.2 — thumbnail, name (truncated), created date, credits spent.
    Hover reveals Open in App / Download / Delete. On touch/mobile the same

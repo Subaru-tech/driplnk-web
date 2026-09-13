@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getFreelancerProfileById } from "@/driplink-web-backend/db/queries";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
+import { getFreelancerProfileById } from "@/driplnk-web-backend/db/queries";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { FreelancerProfileView } from "@/components/freelance/freelancer-profile-view";
 import { Section } from "@/components/marketing/section";
 
@@ -19,15 +19,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!profile) {
     return {
-      title: "Specialist Not Found — DripLink",
+      title: "Specialist Not Found — DripLnk",
     };
   }
 
   return {
-    title: `${profile.display_name} — 3D & CAD Specialist on DripLink`,
+    title: `${profile.display_name} — 3D & CAD Specialist on DripLnk`,
     description:
       profile.bio?.slice(0, 160) ||
-      `Hire ${profile.display_name} for custom 3D models, parametric CAD parts, and enclosures on DripLink.`,
+      `Hire ${profile.display_name} for custom 3D models, parametric CAD parts, and enclosures on DripLnk.`,
   };
 }
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { ORDER_STATUSES, type OrderStatus } from "@/components/ui/status-pill";
 import { useToast } from "@/components/ui/toast";
-import { updateMartOrderAdmin } from "@/driplink-web-backend/actions/admin";
+import { updateMartOrderAdmin } from "@/driplnk-web-backend/actions/admin";
 
 export function OrderFulfillmentControl({
   orderId,

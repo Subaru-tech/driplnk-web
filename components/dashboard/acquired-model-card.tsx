@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { formatDate } from "@/lib/format";
 import { MODEL_LICENSES, type ModelLicenseType } from "@/lib/marketplace";
 import type { AcquiredModel } from "@/lib/types";
-import { getModelDownloadUrl } from "@/driplink-web-backend/actions/library";
+import { getModelDownloadUrl } from "@/driplnk-web-backend/actions/library";
 
 export function AcquiredModelCard({ model }: { model: AcquiredModel }) {
   const toast = useToast();
@@ -147,7 +147,7 @@ export function AcquiredModelCard({ model }: { model: AcquiredModel }) {
               variant="secondary"
               size="sm"
               className="justify-center gap-1 text-xs font-medium"
-              title="Order physical parts via DripLink Mart"
+              title="Order physical parts via DripLnk Mart"
             >
               <Printer className="size-3.5 text-accent" aria-hidden="true" />
               <span>Send to Mart</span>

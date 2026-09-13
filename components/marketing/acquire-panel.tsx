@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { formatCurrency } from "@/lib/format";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
-import { claimFreeListing } from "@/driplink-web-backend/actions/library";
+import { claimFreeListing } from "@/driplnk-web-backend/actions/library";
 
 /**
  * The one thing a visitor does on a model page.
@@ -81,7 +81,7 @@ export function AcquirePanel({
               Log in to get this
             </ButtonLink>
             <p className="text-xs text-muted">
-              Models live in your DripLink library, not in a one-time download link.
+              Models live in your DripLnk library, not in a one-time download link.
             </p>
           </>
         ) : free ? (

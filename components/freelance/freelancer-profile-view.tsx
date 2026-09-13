@@ -144,7 +144,7 @@ export function FreelancerProfileView({
                 Guaranteed Print Tolerance & Assembly Fit
               </h3>
               <p className="text-xs leading-relaxed text-muted">
-                All models delivered through DripLink are evaluated for overhangs, wall thickness,
+                All models delivered through DripLnk are evaluated for overhangs, wall thickness,
                 and mechanical tolerances. Files can be directly exported or transferred to Mart
                 for 3D print fulfillment.
               </p>

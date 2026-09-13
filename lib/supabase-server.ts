@@ -1,3 +1,3 @@
 import "server-only";
 
-export { getSupabaseServerClient, getCurrentUser } from "@/driplink-web-backend/db/client";
+export { getSupabaseServerClient, getCurrentUser } from "@/driplnk-web-backend/db/client";

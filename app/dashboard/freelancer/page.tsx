@@ -11,16 +11,16 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import {
   getMyFreelanceProvider,
   getFreelancerIncomingRequests,
-} from "@/driplink-web-backend/db/queries";
+} from "@/driplnk-web-backend/db/queries";
 import { FreelancerJobsClient } from "@/components/dashboard/freelancer-jobs-client";
 import { StatCard } from "@/components/dashboard/stat-card";
 
 export const metadata: Metadata = {
-  title: "Specialist Jobs — DripLink",
+  title: "Specialist Jobs — DripLnk",
   description: "Manage incoming CAD and 3D modeling hire requests, milestones, and deliverables.",
 };
 
@@ -58,7 +58,7 @@ export default async function FreelancerDashboardPage() {
             <p className="text-sm leading-relaxed text-muted">
               {provider?.status === "pending"
                 ? "Our engineering team verifies manufacturing and CAD experience before profiles go live. You'll receive notification once approved."
-                : "Join the DripLink specialist network to receive paid CAD requests, mechanical engineering jobs, and 3D enclosure briefs from hardware builders."}
+                : "Join the DripLnk specialist network to receive paid CAD requests, mechanical engineering jobs, and 3D enclosure briefs from hardware builders."}
             </p>
           </div>
 

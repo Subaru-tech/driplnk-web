@@ -14,7 +14,7 @@ import {
   Paperclip,
   Trash2,
 } from "lucide-react";
-import { submitFreelanceRequest } from "@/driplink-web-backend/actions/freelance";
+import { submitFreelanceRequest } from "@/driplnk-web-backend/actions/freelance";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { FreelancerProfile } from "@/lib/types";
 

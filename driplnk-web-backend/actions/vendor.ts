@@ -2,8 +2,8 @@
 
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { getUnifiedUser } from "@/driplink-web-backend/auth/clerk";
-import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplink-web-backend/db/client";
+import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import type { Provider, VendorProfile } from "@/lib/types";
 
 export type ApplyVendorInput = {

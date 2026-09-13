@@ -19,7 +19,7 @@ import {
 import {
   respondToFreelanceRequest,
   getFreelanceFileDownloadUrl,
-} from "@/driplink-web-backend/actions/freelance";
+} from "@/driplnk-web-backend/actions/freelance";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { FreelanceRequest, FreelanceRequestStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
