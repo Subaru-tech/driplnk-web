@@ -62,7 +62,7 @@ export async function applyVendor(
 
   if (error) {
     console.error("applyVendor error:", error);
-    return { success: false, error: error.message || "Failed to submit vendor application." };
+    return { success: false, error: "Failed to submit vendor application. Please try again." };
   }
 
   revalidatePath("/vendor/apply");
@@ -136,7 +136,7 @@ export async function respondToMartOrderAction(
   });
 
   if (error) {
-    return { success: false, error: error.message || "Failed to update order status." };
+    return { success: false, error: "Failed to update order status. Please try again." };
   }
 
   revalidatePath("/dashboard/vendor");

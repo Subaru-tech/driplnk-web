@@ -85,7 +85,7 @@ export async function uploadFreelanceFile(
 
   if (error) {
     console.error("freelance-deliverables upload error:", error);
-    return { success: false, error: error.message || "Upload failed." };
+    return { success: false, error: "Upload failed. Please try again." };
   }
 
   return { success: true, filePath };

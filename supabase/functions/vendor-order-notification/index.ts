@@ -79,8 +79,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const logs: string[] = [];
-    logs.push(`[${new Date().toISOString()}] Processing order notification for Order ID: ${order_id}`);
-    logs.push(`Vendor: ${vendor_name} (Provider ID: ${provider_id})`);
+    logs.push(`[${new Date().toISOString()}] Processing notification for Order ID: ${order_id}`);
+    // vendor_name is business name, not PII — safe to log
+    logs.push(`Vendor provider: ${provider_id}`);
 
     // 1. Dispatch Supabase Realtime Broadcast Event
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -130,7 +131,8 @@ Deno.serve(async (req: Request) => {
       if (gupshupApiKey) {
         providerName = "Gupshup WhatsApp Business API";
         channelUsed = "whatsapp";
-        logs.push(`[WhatsApp] Attempting primary dispatch via Gupshup to ${vendor_phone}...`);
+        // Log that dispatch is attempted but NOT the phone number
+        logs.push(`[WhatsApp] Attempting primary dispatch via Gupshup...`);
         try {
           const gupshupRes = await fetch("https://api.gupshup.io/sm/api/v1/msg", {
             method: "POST",
@@ -160,7 +162,7 @@ Deno.serve(async (req: Request) => {
       } else if (interaktApiKey) {
         providerName = "Interakt WhatsApp Cloud API";
         channelUsed = "whatsapp";
-        logs.push(`[WhatsApp] Attempting primary dispatch via Interakt to ${vendor_phone}...`);
+        logs.push(`[WhatsApp] Attempting primary dispatch via Interakt...`);
         try {
           const interaktRes = await fetch("https://api.interakt.ai/v1/public/message/", {
             method: "POST",
@@ -194,10 +196,11 @@ Deno.serve(async (req: Request) => {
     if (!delivered && vendor_phone && smsApiKey) {
       providerName = "SMS Gateway Provider";
       channelUsed = "sms";
-      logs.push(`[SMS Fallback] Attempting SMS delivery to ${vendor_phone}...`);
+      // Do NOT log the phone number — it's PII
+      logs.push(`[SMS Fallback] Attempting SMS delivery...`);
       try {
         delivered = true;
-        logs.push(`[SMS Fallback] SMS sent successfully to ${vendor_phone}.`);
+        logs.push(`[SMS Fallback] SMS sent successfully.`);
       } catch (smsErr) {
         logs.push(`[SMS Fallback] SMS dispatch failed: ${String(smsErr)}. Falling back to Email.`);
       }
@@ -208,7 +211,7 @@ Deno.serve(async (req: Request) => {
       providerName = "Resend Transactional Email";
       channelUsed = "email";
       recipient = vendor_email;
-      logs.push(`[Email Fallback] Attempting email dispatch to ${vendor_email}...`);
+      logs.push(`[Email Fallback] Attempting email dispatch...`);
       try {
         const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -225,7 +228,7 @@ Deno.serve(async (req: Request) => {
         });
         if (emailRes.ok) {
           delivered = true;
-          logs.push(`[Email Fallback] Order notification email delivered to ${vendor_email}.`);
+          logs.push(`[Email Fallback] Order notification email delivered.`);
         } else {
           logs.push(`[Email Fallback] Email dispatch returned error.`);
         }
@@ -239,9 +242,9 @@ Deno.serve(async (req: Request) => {
       channelUsed = "simulated";
       providerName = "Local Out-of-Band Notification Dispatcher (Pre-Configured Sandbox)";
       delivered = true; // Simulated delivery logged successfully
-      recipient = vendor_phone || vendor_email || "test-vendor@driplnkk.com";
+      recipient = "[redacted]";
       logs.push(
-        `[Out-Of-Band Dispatch] WhatsApp/SMS provider simulated delivery recorded for recipient ${recipient}. Message: "${notificationMessage}"`
+        `[Out-Of-Band Dispatch] WhatsApp/SMS provider simulated delivery recorded. Message dispatched for Order: ${order_id.slice(0, 8)}`
       );
     }
 
@@ -259,7 +262,14 @@ Deno.serve(async (req: Request) => {
       },
     };
 
-    console.log(JSON.stringify(result, null, 2));
+    // Log only non-PII summary — recipient and full logs array stay off aggregators
+    console.log(JSON.stringify({
+      order_id,
+      realtime_sent: result.realtime.sent,
+      channel_used: result.out_of_band.channel_used,
+      delivered: result.out_of_band.delivered,
+      // recipient deliberately omitted from logs
+    }));
 
     return new Response(JSON.stringify(result), {
       status: 200,

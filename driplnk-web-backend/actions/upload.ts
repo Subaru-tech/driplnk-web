@@ -103,7 +103,7 @@ export async function recordUploadedModel({
 
   if (error) {
     console.error("Failed to record model row:", error);
-    return { error: error.message };
+    return { error: "Failed to record the uploaded model. Please try again." };
   }
 
   return { data };
@@ -474,7 +474,7 @@ export async function updateModelThumbnail({
 
   if (error) {
     console.error("Failed to update thumbnail:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: "Failed to update the thumbnail. Please try again." };
   }
 
   return { success: true };
@@ -534,7 +534,7 @@ export async function recordUploadedListing({
 
   if (error) {
     console.error("Failed to record listing row:", error);
-    return { error: error.message };
+    return { error: "Failed to create the listing. Please try again." };
   }
 
   return { data };
@@ -581,7 +581,7 @@ export async function deleteUploadedModel(id: string): Promise<{ success: boolea
 
   if (error) {
     console.error("Failed to delete model row:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: "Failed to delete the model. Please try again." };
   }
 
   return { success: true };

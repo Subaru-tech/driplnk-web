@@ -1,6 +1,6 @@
 /**
  * RLS regression probes — the exploit proofs from the 2026-09-13 security audit,
- * kept as executable tests so a future migration can't silently re-open them.
+ * plus Phase 7 additions covering the full PII table sweep.
  *
  * Usage:
  *   SUPABASE_ACCESS_TOKEN=sbp_... REF=<project-ref> node supabase/tests/rls_regression.mjs
@@ -80,6 +80,11 @@ async function main() {
   if (!userRow) throw new Error("No non-admin profile found to use as test subject");
   const USER = userRow.id;
 
+  const [victimRow] = await sql(
+    "select id from public.profiles where id <> '" + USER + "' and role <> 'admin' order by created_at limit 1"
+  );
+  const VICTIM = victimRow?.id;
+
   const [modelRow] = await sql(
     "select id from public.models where status='published' and price > 0 order by created_at desc limit 1"
   );
@@ -91,8 +96,15 @@ async function main() {
 
   const claims = JSON.stringify({ sub: USER, role: "authenticated" });
   const anonClaims = "{}";
+  const victimClaims = VICTIM ? JSON.stringify({ sub: VICTIM, role: "authenticated" }) : null;
 
-  console.log(`Probing as user ${USER}\n`);
+  console.log(`Probing as user ${USER}`);
+  if (VICTIM) console.log(`Victim user  ${VICTIM}`);
+  console.log("");
+
+  // =========================================================================
+  // PHASE 1: CRITICAL exploits from 2026-09-13 audit
+  // =========================================================================
 
   // ---- CRITICAL 1: vendor self-approval -----------------------------------
   await probe("C1: user cannot self-insert an APPROVED provider row", {
@@ -206,6 +218,166 @@ async function main() {
     statements: `select count(*) from public.models where status='published';`,
     expect: "success",
   });
+
+  // =========================================================================
+  // PHASE 7: Additional PII table coverage probes
+  // =========================================================================
+
+  // ---- P7-A: Cross-user isolation on mart_orders ----------------------------
+  if (VICTIM) {
+    const crossUserOrders = await sql(
+      `begin; set local role authenticated; set local request.jwt.claims = '${claims}'; ` +
+      `select (select count(*) from public.mart_orders where buyer_user_id = '${VICTIM}') as n;`
+    );
+    if (Number(crossUserOrders[0]?.n) === 0) {
+      passed++;
+      console.log("ok    P7-A: authenticated user sees 0 of another user's mart_orders");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-A: attacker sees ${crossUserOrders[0]?.n} of victim's mart_orders`);
+    }
+
+    // ---- P7-B: Cross-user isolation on model_acquisitions --------------------
+    const crossUserAcq = await sql(
+      `begin; set local role authenticated; set local request.jwt.claims = '${claims}'; ` +
+      `select (select count(*) from public.model_acquisitions where user_id = '${VICTIM}') as n;`
+    );
+    if (Number(crossUserAcq[0]?.n) === 0) {
+      passed++;
+      console.log("ok    P7-B: authenticated user sees 0 of another user's model_acquisitions");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-B: attacker sees ${crossUserAcq[0]?.n} of victim's model_acquisitions`);
+    }
+
+    // ---- P7-C: Cross-user isolation on freelance_requests -------------------
+    const crossUserFr = await sql(
+      `begin; set local role authenticated; set local request.jwt.claims = '${claims}'; ` +
+      `select (select count(*) from public.freelance_requests where buyer_user_id = '${VICTIM}') as n;`
+    );
+    if (Number(crossUserFr[0]?.n) === 0) {
+      passed++;
+      console.log("ok    P7-C: authenticated user sees 0 of another user's freelance_requests");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-C: attacker sees ${crossUserFr[0]?.n} of victim's freelance_requests`);
+    }
+
+    // ---- P7-D: Cross-user isolation on quote_requests -----------------------
+    const crossUserQr = await sql(
+      `begin; set local role authenticated; set local request.jwt.claims = '${claims}'; ` +
+      `select (select count(*) from public.quote_requests where user_id = '${VICTIM}') as n;`
+    );
+    if (Number(crossUserQr[0]?.n) === 0) {
+      passed++;
+      console.log("ok    P7-D: authenticated user sees 0 of another user's quote_requests");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-D: attacker sees ${crossUserQr[0]?.n} of victim's quote_requests`);
+    }
+  } else {
+    console.log("skip  P7-A/B/C/D — only one non-admin user in DB; cross-user probes skipped");
+  }
+
+  // ---- P7-E: Anon cannot read waitlist, contact_messages, mart_orders -------
+  const anonSweep = await sql(
+    `begin; set local role anon; set local request.jwt.claims = '{}';\n` +
+    `select\n` +
+    `  (select count(*) from public.waitlist) as wl,\n` +
+    `  (select count(*) from public.contact_messages) as cm,\n` +
+    `  (select count(*) from public.mart_orders) as mo,\n` +
+    `  (select count(*) from public.quote_requests) as qr,\n` +
+    `  (select count(*) from public.model_acquisitions) as ma,\n` +
+    `  (select count(*) from public.freelance_requests) as fr;`
+  );
+  const sweep = anonSweep[0] || {};
+  const sweepFail = ["wl","cm","mo","qr","ma","fr"].filter(k => Number(sweep[k]) > 0);
+  if (sweepFail.length === 0) {
+    passed++;
+    console.log("ok    P7-E: anon sees 0 rows across waitlist/contact_messages/mart_orders/quote_requests/model_acquisitions/freelance_requests");
+  } else {
+    failed++;
+    console.log(`FAIL  P7-E: anon can read PII tables: ${sweepFail.map(k => k + "=" + sweep[k]).join(", ")}`);
+  }
+
+  // ---- P7-F: Waitlist rate limit fires on repeat email ---------------------
+  try {
+    const rl = await sql(`
+      begin;
+        insert into public.waitlist (email) values ('rls.regression.rl.probe@devtest.invalid');
+        insert into public.waitlist (email) values ('rls.regression.rl.probe@devtest.invalid');
+      rollback;
+    `);
+    // If we get here without error, rate limit didn't fire
+    failed++;
+    console.log("FAIL  P7-F: waitlist rate limit did NOT fire on repeat email insert");
+  } catch (err) {
+    if (err.isSqlError && String(err.message).includes("submitted recently")) {
+      passed++;
+      console.log("ok    P7-F: waitlist rate limit fired on 2nd insert of same email");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-F: unexpected error: ${String(err.message).slice(0, 100)}`);
+    }
+  }
+
+  // ---- P7-G: Quote rate limit fires at 20 inserts/hour ---------------------
+  try {
+    await sql(`
+      begin;
+        do $$
+        declare i integer;
+        begin
+          for i in 1..20 loop
+            insert into public.quote_requests (user_id, file_path, material, weight_g)
+            values ('${USER}', 'mart-quotes/${USER}/rl-test-' || i || '.stl', 'pla', i * 5.0);
+          end loop;
+        end $$;
+        insert into public.quote_requests (user_id, file_path, material, weight_g)
+        values ('${USER}', 'mart-quotes/${USER}/rl-test-21.stl', 'pla', 100.0);
+      rollback;
+    `);
+    failed++;
+    console.log("FAIL  P7-G: quote rate limit did NOT fire at 21 requests");
+  } catch (err) {
+    if (err.isSqlError && String(err.message).includes("rate limit exceeded")) {
+      passed++;
+      console.log("ok    P7-G: quote rate limit fired at 21st request in 1-hour window");
+    } else {
+      failed++;
+      console.log(`FAIL  P7-G: unexpected error: ${String(err.message).slice(0, 100)}`);
+    }
+  }
+
+  // ---- P7-H: order_payments mutation locked (no client INSERT/UPDATE) -------
+  await probe("P7-H: order_payments locked — authenticated user cannot INSERT payment row", {
+    role: "authenticated",
+    claims,
+    statements: `insert into public.order_payments (id, mart_order_id, buyer_id, vendor_id, amount, currency, status) values (gen_random_uuid(), gen_random_uuid(), '${USER}', gen_random_uuid(), 500, 'INR', 'pending');`,
+    expect: "error",
+  });
+
+  // ---- P7-I: vendor/freelancer_profiles cross-user isolation ----------------
+  if (vendorRow) {
+    const crossVP = await sql(
+      `begin; set local role authenticated; set local request.jwt.claims = '${claims}'; ` +
+      `select (select count(*) from public.vendor_profiles where provider_id = '${vendorRow.id}') as n;`
+    );
+    // A non-owner cannot see vendor_profiles whose provider_id they don't own
+    if (vendorRow.user_id !== USER) {
+      if (Number(crossVP[0]?.n) === 0) {
+        passed++;
+        console.log("ok    P7-I: user cannot read another user's vendor_profile");
+      } else {
+        failed++;
+        console.log(`FAIL  P7-I: user can read ${crossVP[0]?.n} rows from another user's vendor_profiles`);
+      }
+    } else {
+      console.log("skip  P7-I — vendor row belongs to test user; can't test isolation");
+    }
+  } else {
+    console.log("skip  P7-I — no approved vendor found");
+  }
 
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
