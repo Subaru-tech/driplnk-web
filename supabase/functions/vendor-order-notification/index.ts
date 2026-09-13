@@ -42,6 +42,19 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // This function spends money (WhatsApp/SMS/email per call) and broadcasts
+  // to vendor channels. Only the database trigger (service role) may call it —
+  // an unauthenticated endpoint here is a free SMS-sending API for anyone on
+  // the internet, with this project's keys paying the bill.
+  const authorization = req.headers.get("Authorization") ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!serviceRoleKey || authorization !== `Bearer ${serviceRoleKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const payload: OrderNotificationPayload = await req.json();
     const {
@@ -55,6 +68,15 @@ Deno.serve(async (req: Request) => {
       vendor_email,
       created_at,
     } = payload;
+
+    // Basic payload sanity — the trigger is the only legitimate caller, and it
+    // always sends these. Garbage in means don't spend money on it.
+    if (!order_id || !provider_id) {
+      return new Response(JSON.stringify({ error: "order_id and provider_id are required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     const logs: string[] = [];
     logs.push(`[${new Date().toISOString()}] Processing order notification for Order ID: ${order_id}`);

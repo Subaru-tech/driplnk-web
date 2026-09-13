@@ -257,7 +257,8 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
                 Upload your STL 3D model
               </label>
               <p className="text-xs text-muted">
-                Drag and drop binary or ASCII STL (Up to 150 MB)
+                Drag and drop binary or ASCII STL (Up to 50 MB). Signing in is
+                required to quote.
               </p>
             </div>
 

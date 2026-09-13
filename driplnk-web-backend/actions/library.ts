@@ -57,8 +57,11 @@ export async function claimFreeModel(modelId: string): Promise<ClaimResult> {
       };
     }
 
-    // 2. Direct fallback
-    const { data: model, error: modelErr } = await supabase
+    // 2. Direct fallback — same service client. Using the anon client here
+    // meant the INSERT hit RLS with no usable policy and every RPC hiccup
+    // turned into a confusing "new row violates row-level security policy"
+    // even though the model was genuinely free and published.
+    const { data: model, error: modelErr } = await serviceSupabase
       .from("models")
       .select("id, price, license_type, status")
       .eq("id", modelId)
@@ -81,7 +84,7 @@ export async function claimFreeModel(modelId: string): Promise<ClaimResult> {
     }
 
     // Check if already acquired
-    const { data: existingAcq } = await supabase
+    const { data: existingAcq } = await serviceSupabase
       .from("model_acquisitions")
       .select("id")
       .eq("user_id", user.id)
@@ -96,8 +99,10 @@ export async function claimFreeModel(modelId: string): Promise<ClaimResult> {
       };
     }
 
-    // Insert new acquisition
-    const { error: insertErr } = await supabase.from("model_acquisitions").insert({
+    // Insert new acquisition — free models only, per the explicit price
+    // check above. (RLS no longer allows client-side acquisition inserts:
+    // paid-model entitlements must never be creatable from a user session.)
+    const { error: insertErr } = await serviceSupabase.from("model_acquisitions").insert({
       user_id: user.id,
       model_id: modelId,
       license_type: model.license_type || "standard",
@@ -186,9 +191,12 @@ export async function getModelDownloadUrl(
         .eq("model_id", modelId)
         .maybeSingle();
 
-      if (specificFile?.storage_path) {
-        targetPath = specificFile.storage_path;
+      // A requested file that doesn't belong to this model is an error, not a
+      // reason to silently hand back a different file than was asked for.
+      if (!specificFile?.storage_path) {
+        return { success: false, error: "Requested file was not found for this model." };
       }
+      targetPath = specificFile.storage_path;
     } else {
       // Check if primary file in model_files exists
       const { data: primaryFile } = await serviceSupabase
@@ -281,14 +289,19 @@ export async function claimFreeListing(listingId: string): Promise<ClaimResult> 
     return { success: false, error: "Please sign in to add this model to your library." };
   }
 
+  const serviceSupabase = getSupabaseServiceClient();
   const supabase = await getSupabaseServerClient();
-  if (!supabase) {
+  // The write must go through the service client: Clerk-authenticated users
+  // hold no Supabase JWT, so the anon client's RLS rejected every insert with
+  // a confusing policy error instead of recording the claim.
+  const client = serviceSupabase ?? supabase;
+  if (!client) {
     return { success: false, error: "Database backend is not connected." };
   }
 
-  const { data: listing, error: listingErr } = await supabase
+  const { data: listing, error: listingErr } = await client
     .from("listings")
-    .select("id, price_inr")
+    .select("id, price_inr, status")
     .eq("id", listingId)
     .maybeSingle();
 
@@ -296,11 +309,15 @@ export async function claimFreeListing(listingId: string): Promise<ClaimResult> 
     return { success: false, error: "Model not found." };
   }
 
+  if (listing.status !== "published") {
+    return { success: false, error: "This model is not available." };
+  }
+
   if (listing.price_inr > 0) {
     return { success: false, error: "This model requires purchase." };
   }
 
-  const { error: insertErr } = await supabase.from("library_items").insert({
+  const { error: insertErr } = await client.from("library_items").insert({
     user_id: user.id,
     listing_id: listingId,
     source: "free",

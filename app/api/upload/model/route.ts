@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
-import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { uploadModelToB2 } from "@/lib/b2-client";
 
 // Allowlist of safe 3D model formats
@@ -230,7 +229,7 @@ export async function POST(req: Request) {
       filename,
       format: ext.replace(".", ""),
       fileSize: file.size,
-      moderationStatus: "in_review",
+      moderationStatus: "pending_review",
       storageProvider: "backblaze-b2",
     });
   } catch (err) {

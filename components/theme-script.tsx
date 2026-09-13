@@ -7,7 +7,7 @@
  * starting state. If scripting is unavailable this attribute never lands, and
  * every revealed element renders visible instead of stranded at opacity 0.
  */
-const script = `(function(){var r=document.documentElement;r.dataset.js="1";try{var t=(localStorage.getItem("driplnk-theme") || localStorage.getItem("driplnk-theme"));r.dataset.theme=t==="light"?"light":"dark"}catch(e){}})()`;
+const script = `(function(){var r=document.documentElement;r.dataset.js="1";try{var t=localStorage.getItem("driplnk-theme");r.dataset.theme=t==="light"?"light":"dark"}catch(e){}})()`;
 
 export function ThemeScript() {
   /*

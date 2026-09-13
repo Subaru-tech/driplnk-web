@@ -19,14 +19,13 @@ import {
 import {
   respondToFreelanceRequest,
   getFreelanceFileDownloadUrl,
+  uploadFreelanceFile,
 } from "@/driplnk-web-backend/actions/freelance";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { FreelanceRequest, FreelanceRequestStatus } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 export function FreelancerJobsClient({
   initialRequests,
-  currentUserId,
 }: {
   initialRequests: FreelanceRequest[];
   currentUserId: string;
@@ -130,28 +129,19 @@ export function FreelancerJobsClient({
     setErrorMessage(null);
 
     try {
-      const supabase = getSupabaseBrowserClient();
-      if (!supabase) {
-        setErrorMessage("Storage client not available.");
+      // Server-side upload: session-verified, size/type capped, path pinned
+      // to the freelancer's own folder by the action itself.
+      const formData = new FormData();
+      formData.append("file", deliverFile);
+      formData.append("kind", "deliverable");
+      const up = await uploadFreelanceFile(formData);
+
+      if (!up.success || !up.filePath) {
+        setErrorMessage(up.error || "Upload failed.");
         setIsUploadingDeliverable(false);
         return;
       }
-
-      const cleanFileName = deliverFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath = `${currentUserId}/deliverables/${Date.now()}_${cleanFileName}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from("freelance-deliverables")
-        .upload(storagePath, deliverFile, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadErr) {
-        setErrorMessage(`Upload error: ${uploadErr.message}`);
-        setIsUploadingDeliverable(false);
-        return;
-      }
+      const storagePath = up.filePath;
 
       const res = await respondToFreelanceRequest({
         requestId,

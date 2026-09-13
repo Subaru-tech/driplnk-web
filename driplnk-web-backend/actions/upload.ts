@@ -2,18 +2,30 @@
 
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
-import { SUPABASE_ANON_KEY } from "@/lib/supabase";
 import { deleteB2Object } from "@/lib/b2-client";
 
 export type UploadSession = {
   userId: string;
+  /** Empty when mode is "server" — the browser holds no credential then. */
   accessToken: string;
+  mode: UploadSessionMode;
 };
 
 /**
  * Returns upload credentials for the currently signed-in user
  * (whether authenticated via Clerk or Supabase Auth).
+ *
+ * `mode: "jwt"` — the browser uploads straight to Storage with a real
+ * Supabase JWT; RLS enforces the per-user folder. `mode: "server"` — no JWT
+ * exists (Clerk session), so the browser must POST the file to
+ * /api/upload/model, which verifies the Clerk session server-side. The anon
+ * key is deliberately never returned as an "access token": it is a public
+ * routing constant, not a credential, and handing it out as one let uploads
+ * masquerade as authorized when the only thing gating them was a storage
+ * policy helper with no caller-identity check.
  */
+export type UploadSessionMode = "jwt" | "server";
+
 export async function getUploadSession(): Promise<UploadSession | null> {
   const user = await getUnifiedUser();
   if (!user) return null;
@@ -26,6 +38,7 @@ export async function getUploadSession(): Promise<UploadSession | null> {
         return {
           userId: user.id,
           accessToken: authData.session.access_token,
+          mode: "jwt",
         };
       }
     } catch {
@@ -33,11 +46,10 @@ export async function getUploadSession(): Promise<UploadSession | null> {
     }
   }
 
-  // For Clerk users, user.id is their internal profiles.id UUID.
-  // We use SUPABASE_ANON_KEY for storage upload, authorized via public.can_upload_to_storage_folder policy.
   return {
     userId: user.id,
-    accessToken: SUPABASE_ANON_KEY,
+    accessToken: "",
+    mode: "server",
   };
 }
 
@@ -67,11 +79,19 @@ export async function recordUploadedModel({
     return { error: "Backend database is not connected." };
   }
 
+  // The storage path must stay inside the caller's own folder — storage RLS
+  // is keyed on the first path segment being the uploader's user id.
+  if (!storagePath.startsWith(`${user.id}/`) || storagePath.includes("..")) {
+    return { error: "Invalid storage path." };
+  }
+
+  const cleanName = (name ?? "").trim().slice(0, 200) || "Untitled Model";
+
   const { data, error } = await supabase
     .from("models")
     .insert({
       owner_id: user.id,
-      name,
+      name: cleanName,
       storage_path: storagePath,
       file_path: storagePath,
       storage_provider: "backblaze-b2",
@@ -145,14 +165,38 @@ export async function publishCreatorModelListing(
     return { success: false, error: "Backend database is not connected." };
   }
 
+  // Input validation — these land in public pages and URLs.
+  const cleanTitle = (input.title ?? "").trim().slice(0, 120);
+  if (!cleanTitle) {
+    return { success: false, error: "A model title is required." };
+  }
+  const cleanDescription = (input.description ?? "").trim().slice(0, 5000);
+  const cleanCategory = (input.category ?? "").trim().slice(0, 80);
+  const cleanPrice = Number.isFinite(Number(input.price)) ? Math.max(0, Math.min(Number(input.price), 10_000_000)) : 0;
+  const cleanPreviewPaths = Array.isArray(input.previewImagePaths)
+    ? input.previewImagePaths.filter((p): p is string => typeof p === "string" && p.length > 0 && p.length <= 500).slice(0, 12)
+    : [];
+  const cleanFiles = Array.isArray(input.files)
+    ? input.files
+        .filter((f) => f && typeof f.filename === "string" && typeof f.storagePath === "string")
+        .map((f) => ({
+          ...f,
+          filename: f.filename.slice(0, 255),
+          storagePath: f.storagePath.slice(0, 500),
+          format: String(f.format ?? "stl").slice(0, 10),
+          fileSize: Number.isFinite(Number(f.fileSize)) ? Number(f.fileSize) : 0,
+        }))
+        .slice(0, 25)
+    : [];
+
   // 1. Resolve category_id if possible
   let categoryId: string | null = null;
-  if (input.category) {
-    const catSlug = slugify(input.category);
+  if (cleanCategory) {
+    const catSlug = slugify(cleanCategory);
     const { data: catData } = await supabase
       .from("categories")
       .select("id")
-      .or(`slug.eq.${catSlug},name.ilike.%${input.category}%`)
+      .or(`slug.eq.${catSlug},name.ilike.%${cleanCategory}%`)
       .limit(1)
       .maybeSingle();
     if (catData?.id) {
@@ -177,10 +221,14 @@ export async function publishCreatorModelListing(
 
   const baseSlug = slugify(input.title || "untitled-model");
   const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
-  // Mandatory moderation gate: submissions from creators must go through review (status 'in_review')
-  // Creators are never permitted to publish directly without admin approval.
-  const finalStatus = input.status === "draft" ? "draft" : "in_review";
-  const primaryFilePath = input.filePath || input.files?.[0]?.storagePath || "models/placeholder.stl";
+  // Mandatory moderation gate: submissions from creators must go through
+  // review. 'in_review' was written here historically, but the models status
+  // CHECK constraint (migration 20260912000000) only accepts 'draft',
+  // 'pending_review', 'published', 'rejected', 'archived' — so every
+  // non-draft submission was failing with a constraint violation. Use
+  // 'pending_review'; creators can never publish directly.
+  const finalStatus = input.status === "draft" ? "draft" : "pending_review";
+  const primaryFilePath = input.filePath || cleanFiles[0]?.storagePath || "models/placeholder.stl";
 
   // Check if updating existing draft
   if (input.id) {
@@ -194,16 +242,16 @@ export async function publishCreatorModelListing(
       const { error: updateErr } = await supabase
         .from("models")
         .update({
-          name: input.title,
-          title: input.title,
-          description: input.description,
-          category: input.category,
+          name: cleanTitle,
+          title: cleanTitle,
+          description: cleanDescription,
+          category: cleanCategory,
           category_id: categoryId,
           license_type: input.licenseType || "standard",
           license_id: licenseId,
-          price: Number(input.price || 0),
-          preview_image_paths: input.previewImagePaths ?? [],
-          thumbnail_url: input.thumbnailUrl || (input.previewImagePaths?.[0] ?? null),
+          price: cleanPrice,
+          preview_image_paths: cleanPreviewPaths,
+          thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
           storage_path: primaryFilePath,
           file_path: primaryFilePath,
           storage_provider: "backblaze-b2",
@@ -211,7 +259,8 @@ export async function publishCreatorModelListing(
           published_at: null,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", input.id);
+        .eq("id", input.id)
+        .eq("owner_id", user.id);
 
 
       if (updateErr) {
@@ -219,7 +268,7 @@ export async function publishCreatorModelListing(
         return { success: false, error: updateErr.message };
       }
 
-      await syncModelChildren(supabase, input.id, user.id, input);
+      await syncModelChildren(supabase, input.id, user.id, { ...input, title: cleanTitle, description: cleanDescription, category: cleanCategory, price: cleanPrice, files: cleanFiles, previewImagePaths: cleanPreviewPaths });
       return { success: true, data: { id: input.id } };
     }
   }
@@ -230,18 +279,18 @@ export async function publishCreatorModelListing(
     .insert({
       owner_id: user.id,
       seller_user_id: user.id,
-      name: input.title,
-      title: input.title,
+      name: cleanTitle,
+      title: cleanTitle,
       slug: uniqueSlug,
-      description: input.description,
-      category: input.category,
+      description: cleanDescription,
+      category: cleanCategory,
       category_id: categoryId,
       license_type: input.licenseType || "standard",
       license_id: licenseId,
-      price: Number(input.price || 0),
+      price: cleanPrice,
       currency: "INR",
-      preview_image_paths: input.previewImagePaths ?? [],
-      thumbnail_url: input.thumbnailUrl || (input.previewImagePaths?.[0] ?? null),
+      preview_image_paths: cleanPreviewPaths,
+      thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
       storage_path: primaryFilePath,
       file_path: primaryFilePath,
       storage_provider: "backblaze-b2",
@@ -257,7 +306,7 @@ export async function publishCreatorModelListing(
     return { success: false, error: error?.message || "Failed to create model record" };
   }
 
-  await syncModelChildren(supabase, data.id, user.id, input);
+  await syncModelChildren(supabase, data.id, user.id, { ...input, title: cleanTitle, description: cleanDescription, category: cleanCategory, price: cleanPrice, files: cleanFiles, previewImagePaths: cleanPreviewPaths });
   return { success: true, data: { id: data.id } };
 }
 
@@ -406,6 +455,15 @@ export async function updateModelThumbnail({
   const supabase = getSupabaseServiceClient();
   if (!supabase) {
     return { success: false, error: "Backend database not connected." };
+  }
+
+  // thumbnail_url is rendered as <img src> on public pages. Constrain it to
+  // https URLs and same-origin data: PNGs (the wizard uploads base64 data
+  // URLs) so stored-XSS via javascript:/data:text/html is impossible.
+  const isHttpsUrl = /^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i.test(thumbnailUrl);
+  const isDataPng = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(thumbnailUrl) && thumbnailUrl.length <= 500_000;
+  if (!isHttpsUrl && !isDataPng) {
+    return { success: false, error: "Thumbnail must be an https URL or an image data URL." };
   }
 
   const { error } = await supabase

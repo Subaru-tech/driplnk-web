@@ -130,6 +130,19 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // This function runs CPU-heavy inspection over whatever bytes it is handed.
+  // verify_jwt is off for it (the web server calls it with the service key,
+  // which is not a JWT), so this in-code check is the only thing standing
+  // between the internet and a free CPU-exhaustion endpoint.
+  const authorization = req.headers.get("Authorization") ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!serviceRoleKey || authorization !== `Bearer ${serviceRoleKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const body: ScanRequest = await req.json();
     if (!body.filename || !body.fileBase64) {

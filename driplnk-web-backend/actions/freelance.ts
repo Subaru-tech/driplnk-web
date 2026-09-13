@@ -3,7 +3,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
-import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
+import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import type { RateType } from "@/lib/types";
 
 export type ApplyFreelancerInput = {
@@ -20,6 +20,76 @@ export type FreelanceActionResult<T = unknown> = {
   error?: string;
   data?: T;
 };
+
+/** 25 MB — reference/deliverable files land in storage; an unbounded size is
+ * a storage-cost lever. Extension allowlist matches what buyers/freelancers
+ * actually exchange (briefs, renders, meshes). */
+const MAX_FREELANCE_FILE_BYTES = 25 * 1024 * 1024;
+const ALLOWED_FREELANCE_EXTENSIONS = new Set([
+  ".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".txt", ".md", ".csv",
+  ".stl", ".step", ".stp", ".3mf", ".obj", ".ply", ".zip", ".gcode",
+]);
+
+/**
+ * Uploads a reference or deliverable file to the freelance-deliverables
+ * bucket — server-side, under the verified caller's own folder.
+ *
+ * This used to be a browser-direct upload with the anon key: the only thing
+ * gating it was a storage policy whose helper had no caller-identity check,
+ * so anyone with the public anon key could write into any user's folder.
+ * Uploading through the server (after getUnifiedUser()) removes that
+ * dependency entirely, and works for Clerk sessions that hold no Supabase
+ * JWT at all.
+ */
+export async function uploadFreelanceFile(
+  formData: FormData
+): Promise<{ success: boolean; error?: string; filePath?: string }> {
+  const user = await getUnifiedUser();
+  if (!user) {
+    return { success: false, error: "Authentication required." };
+  }
+
+  const kindRaw = formData.get("kind");
+  const kind = kindRaw === "deliverable" ? "deliverable" : "reference";
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { success: false, error: "Please choose a file to upload." };
+  }
+  if (file.size > MAX_FREELANCE_FILE_BYTES) {
+    return { success: false, error: "File exceeds the 25 MB limit." };
+  }
+  if (file.name.length > 200) {
+    return { success: false, error: "File name is too long." };
+  }
+
+  const dot = file.name.lastIndexOf(".");
+  const ext = dot === -1 ? "" : file.name.slice(dot).toLowerCase();
+  if (!ALLOWED_FREELANCE_EXTENSIONS.has(ext)) {
+    return { success: false, error: "That file type isn't supported here." };
+  }
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    return { success: false, error: "Database backend is not connected." };
+  }
+
+  const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+  const folder = kind === "deliverable" ? "deliverables" : "references";
+  const filePath = `${user.id}/${folder}/${Date.now()}_${cleanName}`;
+
+  const { error } = await supabase.storage.from("freelance-deliverables").upload(filePath, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+  });
+
+  if (error) {
+    console.error("freelance-deliverables upload error:", error);
+    return { success: false, error: error.message || "Upload failed." };
+  }
+
+  return { success: true, filePath };
+}
 
 /**
  * Self-registers the currently logged-in user as a freelancer.
@@ -40,24 +110,36 @@ export async function applyFreelancer(
   }
 
   const cleanName = input.displayName?.trim();
-  if (!cleanName || cleanName.length < 2) {
-    return { success: false, error: "Please enter a valid display name (at least 2 characters)." };
+  if (!cleanName || cleanName.length < 2 || cleanName.length > 80) {
+    return { success: false, error: "Please enter a valid display name (2-80 characters)." };
+  }
+
+  if (input.bio && input.bio.length > 2000) {
+    return { success: false, error: "Bio must be 2000 characters or fewer." };
   }
 
   if (input.rateType !== "hourly" && input.rateType !== "fixed") {
     return { success: false, error: "Rate type must be 'hourly' or 'fixed'." };
   }
 
-  if (typeof input.baseRate !== "number" || isNaN(input.baseRate) || input.baseRate < 0) {
+  if (typeof input.baseRate !== "number" || !Number.isFinite(input.baseRate) || input.baseRate < 0 || input.baseRate > 10_000_000) {
     return { success: false, error: "Please provide a valid non-negative base rate." };
   }
 
   const cleanSkills = Array.isArray(input.skills)
-    ? input.skills.map((s) => s.trim()).filter(Boolean)
+    ? input.skills.map((s) => String(s).trim().slice(0, 40)).filter(Boolean).slice(0, 20)
     : [];
 
   const cleanPortfolio = Array.isArray(input.portfolioUrls)
-    ? input.portfolioUrls.map((u) => u.trim()).filter(Boolean)
+    ? input.portfolioUrls
+        .map((u) => String(u).trim())
+        .filter((u) => {
+          if (u.length === 0 || u.length > 300) return false;
+          // Only http(s) URLs. javascript:, data:, and other schemes stored
+          // here are rendered as portfolio links on a public profile.
+          return /^https?:\/\//i.test(u);
+        })
+        .slice(0, 10)
     : [];
 
   try {
@@ -128,13 +210,26 @@ export async function submitFreelanceRequest({
       error: "Please provide a detailed project brief (at least 10 characters).",
     };
   }
+  if (cleanBrief.length > 5000) {
+    return { success: false, error: "Project brief must be 5000 characters or fewer." };
+  }
+  if (referenceFilePaths.length > 10) {
+    return { success: false, error: "At most 10 reference files can be attached." };
+  }
+  // Paths are minted by the browser as `${userId}/references/...` in the
+  // freelance-deliverables bucket. A client could submit a path belonging to
+  // someone else's project (or an arbitrary key) — pin every path to the
+  // caller's own folder before it is persisted to the request.
+  const cleanReferencePaths = referenceFilePaths
+    .filter((p): p is string => typeof p === "string" && p.startsWith(`${user.id}/`))
+    .slice(0, 10);
 
   try {
     const { data: rpcRes, error: rpcErr } = await serviceSupabase.rpc("create_freelance_request", {
       p_buyer_user_id: user.id,
       p_freelancer_provider_id: freelancerProviderId,
       p_brief: cleanBrief,
-      p_reference_file_paths: referenceFilePaths,
+      p_reference_file_paths: cleanReferencePaths,
     });
 
     if (rpcErr) {
@@ -188,12 +283,12 @@ export async function respondToFreelanceRequest({
     return { success: false, error: "Database backend is not connected." };
   }
 
-  if (action === "accept" && (!agreedPrice || agreedPrice <= 0)) {
-    return { success: false, error: "A positive agreed price is required to accept this request." };
+  if (action === "deliver" && (!finalFilePath?.trim() || !finalFilePath.trim().startsWith(`${user.id}/`))) {
+    return { success: false, error: "A deliverable file uploaded by you is required to mark delivered." };
   }
 
-  if (action === "deliver" && !finalFilePath?.trim()) {
-    return { success: false, error: "A deliverable file is required to mark delivered." };
+  if (action === "accept" && (typeof agreedPrice !== "number" || !Number.isFinite(agreedPrice) || agreedPrice <= 0 || agreedPrice > 100_000_000)) {
+    return { success: false, error: "A positive agreed price is required to accept this request." };
   }
 
   try {
@@ -235,6 +330,11 @@ export async function respondToFreelanceRequest({
  * Generates a signed, temporary download URL for a file in `freelance-deliverables`
  * (either a reference attachment or a final deliverable).
  * Validates that caller is either the buyer or the assigned freelancer.
+ *
+ * Uses the service-role client to read the row and sign the URL: Clerk users
+ * hold no Supabase JWT, so the anon client would fail RLS on both the SELECT
+ * and the signing call even though ownership was just verified explicitly
+ * below. The explicit buyer/freelancer/path checks above are the gate.
  */
 export async function getFreelanceFileDownloadUrl({
   requestId,
@@ -248,7 +348,7 @@ export async function getFreelanceFileDownloadUrl({
     return { success: false, error: "Authentication required." };
   }
 
-  const supabase = await getSupabaseServerClient();
+  const supabase = getSupabaseServiceClient();
   if (!supabase) {
     return { success: false, error: "Database backend is not connected." };
   }
@@ -257,7 +357,7 @@ export async function getFreelanceFileDownloadUrl({
     // 1. Check access: user is buyer or assigned freelancer
     const { data: req, error: reqErr } = await supabase
       .from("freelance_requests")
-      .select("id, buyer_user_id, freelancer_provider_id")
+      .select("id, buyer_user_id, freelancer_provider_id, final_file_path, reference_file_paths")
       .eq("id", requestId)
       .maybeSingle();
 
@@ -280,6 +380,19 @@ export async function getFreelanceFileDownloadUrl({
 
     if (!isAuthorized) {
       return { success: false, error: "Unauthorized access to file." };
+    }
+
+    // 2. The path must belong to THIS request — being buyer or freelancer
+    // authorizes you for this project's files, not for every object in the
+    // bucket. Without this check a party to any request could mint signed
+    // URLs for arbitrary other users' files.
+    const referencePaths = (req.reference_file_paths ?? []) as string[];
+    const belongsToRequest =
+      (req.final_file_path !== null && req.final_file_path === filePath) ||
+      referencePaths.includes(filePath);
+
+    if (!belongsToRequest) {
+      return { success: false, error: "File is not part of this request." };
     }
 
     // 2. Generate signed URL (valid for 1 hour)

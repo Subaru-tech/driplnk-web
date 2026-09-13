@@ -21,6 +21,22 @@ export type CalculateQuotesResult = {
   };
 };
 
+/** Quoting accepts these materials only — anything else falls through to a
+ * default density downstream, which would misquote the print. */
+const QUOTE_MATERIALS = new Set(["pla", "petg", "abs", "resin", "nylon-cf"]);
+
+/** 50 MB — matches MAX_MODEL_FILE_BYTES on the upload route. A quote upload
+ * has to be parsed into memory for volume math, so an unbounded size is a
+ * memory-exhaustion lever, not just a storage cost. */
+const MAX_QUOTE_FILE_BYTES = 50 * 1024 * 1024;
+
+/** Quote upload paths are always of this shape (see the storagePath below).
+ * Validating the shape stops a crafted order from pointing a quote request at
+ * arbitrary storage keys outside the mart-quotes namespace. */
+function isSafeQuotePath(path: string): boolean {
+  return /^mart-quotes\/[A-Za-z0-9_-]+\/\d+-[A-Za-z0-9._-]+$/.test(path);
+}
+
 /**
  * Server action that takes an uploaded STL/mesh file and desired material:
  * 1. Computes exact volume and physical weight server-side.
@@ -38,7 +54,26 @@ export async function calculateMeshQuotes(
     return { success: false, error: "Please provide a valid 3D model file." };
   }
 
+  if (file.size > MAX_QUOTE_FILE_BYTES) {
+    return { success: false, error: "File exceeds the 50 MB quote upload limit." };
+  }
+
+  if (!QUOTE_MATERIALS.has(material)) {
+    return { success: false, error: "Unsupported material. Choose PLA, PETG, ABS, Resin or Nylon-CF." };
+  }
+
+  if (file.name.length > 200) {
+    return { success: false, error: "File name is too long." };
+  }
+
+  // Volume math parses the entire upload into memory, and each accepted file
+  // is persisted to storage. Requiring sign-in keeps this expensive endpoint
+  // from being an anonymous CPU/storage drain.
   const user = await getUnifiedUser();
+  if (!user) {
+    return { success: false, error: "Please sign in to get a print quote." };
+  }
+
   const supabase = await getSupabaseServerClient();
   const serviceSupabase = getSupabaseServiceClient() ?? supabase;
 
@@ -64,10 +99,10 @@ export async function calculateMeshQuotes(
     };
   }
 
-  // 2. Upload model file to model-files bucket
-  const userFolder = user ? user.id : "guest";
+  // 2. Upload model file to model-files bucket — always inside the caller's
+  // own folder now that sign-in is mandatory.
   const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const storagePath = `mart-quotes/${userFolder}/${Date.now()}-${cleanName}`;
+  const storagePath = `mart-quotes/${user.id}/${Date.now()}-${cleanName}`;
 
   try {
     const { error: uploadErr } = await serviceSupabase.storage
@@ -81,9 +116,9 @@ export async function calculateMeshQuotes(
     // Non-blocking for quoting
   }
 
-  // 3. Record quote_requests row if authenticated (service-role client)
+  // 3. Record quote_requests row (service-role client; caller is authenticated)
   let quoteRequestId: string | null = null;
-  if (user) {
+  {
     const { data: qrId, error: qrErr } = await serviceSupabase.rpc("create_quote_request", {
       p_user_id: user.id,
       p_file_path: storagePath,
@@ -154,6 +189,18 @@ export async function createMartOrderAction(
     return { success: false, error: "Database backend is not connected." };
   }
 
+  if (!isSafeQuotePath(input.filePath)) {
+    return { success: false, error: "Invalid file reference." };
+  }
+
+  if (!Number.isFinite(input.weightG) || input.weightG < 0 || input.weightG > 1_000_000) {
+    return { success: false, error: "Invalid part weight." };
+  }
+
+  if (!QUOTE_MATERIALS.has(input.material.toLowerCase())) {
+    return { success: false, error: "Unsupported material." };
+  }
+
   let finalQuoteRequestId = input.quoteRequestId;
 
   // If quoteRequestId was not created (e.g. quoted while logged out), create it now
@@ -161,7 +208,7 @@ export async function createMartOrderAction(
     const { data: qrId, error: qrErr } = await serviceSupabase.rpc("create_quote_request", {
       p_user_id: user.id,
       p_file_path: input.filePath,
-      p_material: input.material,
+      p_material: input.material.toLowerCase(),
       p_weight_g: input.weightG,
     });
 
@@ -170,15 +217,19 @@ export async function createMartOrderAction(
       return { success: false, error: qrErr?.message || "Failed to initialize quote request." };
     }
     finalQuoteRequestId = qrId as string;
+  } else if (typeof finalQuoteRequestId !== "string" || !/^[0-9a-f-]{36}$/i.test(finalQuoteRequestId)) {
+    return { success: false, error: "Invalid quote reference." };
   }
 
-  // Atomic order creation via privileged RPC
+  // Atomic order creation via privileged RPC. The price the client sent is
+  // deliberately NOT forwarded: create_mart_order recomputes what the chosen
+  // vendor's published pricing rules actually charge, so a tampered client
+  // cannot buy a ₹5,000 print for ₹50.
   const { data: orderId, error: orderErr } = await serviceSupabase.rpc("create_mart_order", {
     p_buyer_user_id: user.id,
     p_quote_request_id: finalQuoteRequestId,
     p_provider_id: input.providerId,
-    p_material: input.material,
-    p_price: input.price,
+    p_material: input.material.toLowerCase(),
   });
 
   if (orderErr) {

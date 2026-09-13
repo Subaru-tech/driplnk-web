@@ -92,17 +92,35 @@ export function UploadListingButton() {
     setUploadError(null);
     setPercent(0);
 
-    const path = storagePathFor(session.userId, file.name);
+    let path = storagePathFor(session.userId, file.name);
 
     try {
-      await uploadToStorage({
-        bucket: "model-files",
-        path,
-        file,
-        accessToken: session.accessToken,
-        signal: controller.signal,
-        onProgress: setPercent,
-      });
+      if (session.mode === "server") {
+        // Clerk session — upload through the authenticated API route instead
+        // of a browser-direct write that held no caller identity. The route
+        // owns the object key, so the DB row uses the path it returns.
+        const body = new FormData();
+        body.append("file", file);
+        const res = await fetch("/api/upload/model", {
+          method: "POST",
+          body,
+          signal: controller.signal,
+        });
+        const result = (await res.json().catch(() => null)) as { success?: boolean; error?: string; storagePath?: string } | null;
+        if (!res.ok || !result?.success || !result.storagePath) {
+          throw new Error(result?.error || `Upload failed (${res.status}).`);
+        }
+        path = result.storagePath;
+      } else {
+        await uploadToStorage({
+          bucket: "model-files",
+          path,
+          file,
+          accessToken: session.accessToken,
+          signal: controller.signal,
+          onProgress: setPercent,
+        });
+      }
 
       const { data: row, error } = await recordUploadedListing({
         title: title.trim(),
@@ -114,15 +132,19 @@ export function UploadListingButton() {
       });
 
       if (error || !row) {
-        const supabase = getSupabaseBrowserClient();
-        if (supabase) {
-          await supabase.storage.from("model-files").remove([path]);
+        if (session.mode === "jwt") {
+          // Only the JWT path can clean up from the browser — the anon
+          // client holds no identity, so its remove() would be rejected.
+          const supabase = getSupabaseBrowserClient();
+          if (supabase) {
+            await supabase.storage.from("model-files").remove([path]);
+          }
         }
         throw new Error(error || "Failed to create listing.");
       }
 
       if (row.id) {
-        void attachThumbnail(session.accessToken, {
+        void attachThumbnail(session.mode === "jwt" ? session.accessToken : "", {
           file,
           userId: session.userId,
           table: "listings",

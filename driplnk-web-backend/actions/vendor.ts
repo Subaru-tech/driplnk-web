@@ -38,14 +38,14 @@ export async function applyVendor(
   }
 
   const cleanName = input.businessName?.trim();
-  if (!cleanName || cleanName.length < 2) {
-    return { success: false, error: "Please enter a valid business or hub name (at least 2 characters)." };
+  if (!cleanName || cleanName.length < 2 || cleanName.length > 120) {
+    return { success: false, error: "Please enter a valid business or hub name (2-120 characters)." };
   }
 
-  const cleanLocation = input.location?.trim() || null;
-  const cleanCapacity = input.capacityNotes?.trim() || null;
+  const cleanLocation = input.location?.trim().slice(0, 200) || null;
+  const cleanCapacity = input.capacityNotes?.trim().slice(0, 2000) || null;
   const cleanMaterials = Array.isArray(input.materialsSupported)
-    ? input.materialsSupported.map((m) => m.trim().toLowerCase()).filter(Boolean)
+    ? input.materialsSupported.map((m) => String(m).trim().toLowerCase().slice(0, 40)).filter(Boolean).slice(0, 20)
     : [];
 
   if (cleanMaterials.length === 0) {

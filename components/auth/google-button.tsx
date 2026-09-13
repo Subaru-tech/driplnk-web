@@ -130,11 +130,21 @@ function SupabaseGoogleButton({
       return;
     }
 
+    // Carry the ?redirect= param through the OAuth round-trip so the callback
+    // can land the user where they were headed (the callback validates it is
+    // a same-origin path before honoring it).
+    const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const redirectParam = searchParams?.get("redirect");
+    const safeRedirect = redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : null;
+    const callbackUrl = safeRedirect
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`
+      : `${window.location.origin}/auth/callback`;
+
     setPending(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
         queryParams: {
           access_type: "offline",
           prompt: "consent",

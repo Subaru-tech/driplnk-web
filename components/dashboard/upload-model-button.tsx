@@ -54,17 +54,32 @@ export async function attachThumbnail(
     const blob = await renderThumbnail(file);
     if (!blob) return false;
 
-    const path = `${userId}/${table}-${id}.png`;
-    const thumbFile = new File([blob], `${table}-${id}.png`, { type: "image/png" });
-    await uploadToStorage({
-      bucket: "model-art",
-      path,
-      file: thumbFile,
-      accessToken,
-    });
+    if (accessToken) {
+      const path = `${userId}/${table}-${id}.png`;
+      const thumbFile = new File([blob], `${table}-${id}.png`, { type: "image/png" });
+      await uploadToStorage({
+        bucket: "model-art",
+        path,
+        file: thumbFile,
+        accessToken,
+      });
 
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/model-art/${path}`;
-    const res = await updateModelThumbnail({ id, thumbnailUrl: publicUrl });
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/model-art/${path}`;
+      const res = await updateModelThumbnail({ id, thumbnailUrl: publicUrl });
+      return res.success;
+    }
+
+    // No Supabase JWT (Clerk session): a browser-direct art upload would be
+    // rejected, so save the rendered PNG as a data URL instead —
+    // updateModelThumbnail accepts image data URLs and is owner-checked.
+    const dataUrl = await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+    if (!dataUrl || dataUrl.length <= 200) return false;
+    const res = await updateModelThumbnail({ id, thumbnailUrl: dataUrl });
     return res.success;
   } catch (err) {
     console.warn("attachThumbnail failed:", err);
@@ -119,18 +134,37 @@ export function UploadModelButton({ variant = "primary" }: { variant?: "primary"
        other's bandwidth and makes every progress bar crawl at the same time,
        which reads as a stall. */
     for (const picked of files) {
-      const path = storagePathFor(session.userId, picked.file.name);
+      let path = storagePathFor(session.userId, picked.file.name);
 
       try {
-        await uploadToStorage({
-          bucket: "model-files",
-          path,
-          file: picked.file,
-          accessToken: session.accessToken,
-          signal: controller.signal,
-          onProgress: (percent) =>
-            setProgress((current) => ({ ...current, [picked.id]: { percent, error: null } })),
-        });
+        if (session.mode === "server") {
+          // Clerk session — no Supabase JWT exists. POST the file to the
+          // authenticated API route, which verifies the session server-side
+          // and stores it under the caller's own folder. The route owns the
+          // object key, so the DB row uses the path it returns.
+          const body = new FormData();
+          body.append("file", picked.file);
+          const res = await fetch("/api/upload/model", {
+            method: "POST",
+            body,
+            signal: controller.signal,
+          });
+          const result = (await res.json().catch(() => null)) as { success?: boolean; error?: string; storagePath?: string } | null;
+          if (!res.ok || !result?.success || !result.storagePath) {
+            throw new Error(result?.error || `Upload failed (${res.status}).`);
+          }
+          path = result.storagePath;
+        } else {
+          await uploadToStorage({
+            bucket: "model-files",
+            path,
+            file: picked.file,
+            accessToken: session.accessToken,
+            signal: controller.signal,
+            onProgress: (percent) =>
+              setProgress((current) => ({ ...current, [picked.id]: { percent, error: null } })),
+          });
+        }
 
         const { data: row, error } = await recordUploadedModel({
           name: nameFromFilename(picked.file.name),
@@ -138,14 +172,21 @@ export function UploadModelButton({ variant = "primary" }: { variant?: "primary"
         });
 
         if (error || !row) {
-          const supabase = getSupabaseBrowserClient();
-          if (supabase) {
-            await supabase.storage.from("model-files").remove([path]);
+          if (session.mode === "jwt") {
+            // Only the JWT path can clean up from the browser — the anon
+            // client holds no identity, so its remove() would be rejected.
+            const supabase = getSupabaseBrowserClient();
+            if (supabase) {
+              await supabase.storage.from("model-files").remove([path]);
+            }
           }
           throw new Error(error || "Failed to save model to your library.");
         }
 
-        // Asynchronously render and save thumbnail in the background
+        // Asynchronously render and save thumbnail in the background.
+        // In "server" mode there is no JWT for the browser-direct art upload,
+        // so attachThumbnail would fail — pass an empty token; it is only
+        // used for the optional (cosmetic) art-bucket write.
         void (async () => {
           try {
             const blob = await renderThumbnail(picked.file);

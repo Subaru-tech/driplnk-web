@@ -14,13 +14,14 @@ import {
   Paperclip,
   Trash2,
 } from "lucide-react";
-import { submitFreelanceRequest } from "@/driplnk-web-backend/actions/freelance";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
+import {
+  submitFreelanceRequest,
+  uploadFreelanceFile,
+} from "@/driplnk-web-backend/actions/freelance";
 import type { FreelancerProfile } from "@/lib/types";
 
 export function HireModal({
   freelancer,
-  currentUserId,
   isOpen,
   onClose,
 }: {
@@ -65,32 +66,25 @@ export function HireModal({
       try {
         const finalFilePaths: string[] = [];
 
-        // Upload reference files if any
+        // Upload reference files through the server action: it verifies the
+        // session, caps size/type, and pins the path to the caller's own
+        // folder — the old browser-direct upload granted any anon-key holder
+        // write access to every user folder.
         if (referenceFiles.length > 0) {
           setIsUploadingFiles(true);
-          const supabase = getSupabaseBrowserClient();
-          if (!supabase) {
-            setErrorMessage("Storage client not available.");
-            setIsUploadingFiles(false);
-            return;
-          }
 
           for (const file of referenceFiles) {
-            const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-            const storagePath = `${currentUserId}/references/${Date.now()}_${cleanFileName}`;
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("kind", "reference");
 
-            const { error: uploadErr } = await supabase.storage
-              .from("freelance-deliverables")
-              .upload(storagePath, file, {
-                cacheControl: "3600",
-                upsert: false,
-              });
-
-            if (uploadErr) {
-              console.error("Reference file upload error:", uploadErr);
-              // Fallback or record path anyway if uploaded
+            const up = await uploadFreelanceFile(formData);
+            if (!up.success || !up.filePath) {
+              setErrorMessage(up.error || "A reference file failed to upload.");
+              setIsUploadingFiles(false);
+              return;
             }
-            finalFilePaths.push(storagePath);
+            finalFilePaths.push(up.filePath);
           }
           setIsUploadingFiles(false);
         }

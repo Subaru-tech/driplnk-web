@@ -600,14 +600,34 @@ export async function getLibraryEntry(listingId: string): Promise<string | null>
 
 /* -------------------------------------------------------------- Admin side */
 
+/**
+ * Role check for admin-only data reads. The /admin layout also gates these
+ * pages, but a query returning every user's pending data on the strength of
+ * one layout check is one refactor away from leaking — verify here too.
+ * Returns the service client only when the caller is an admin.
+ */
+async function getAdminQueryClient(): Promise<SupabaseClient | null> {
+  const user = await getUnifiedUser();
+  if (!user) return null;
+
+  const serviceSupabase = getSupabaseServiceClient();
+  if (!serviceSupabase) return null;
+
+  const { data: profile } = await serviceSupabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return profile?.role === "admin" ? serviceSupabase : null;
+}
+
 export type AdminListing = Listing & {
   seller: { studio_name: string; slug: string } | null;
 };
 
 export async function getAdminPendingListings(): Promise<QueryResult<AdminListing[]>> {
-  const serviceSupabase = getSupabaseServiceClient();
-  const supabase = await getSupabaseServerClient();
-  const client = serviceSupabase ?? supabase;
+  const client = await getAdminQueryClient();
   if (!client) return empty([]);
 
   const { data: rpcData, error: rpcError } = await client.rpc("admin_get_pending_listings");
@@ -643,9 +663,7 @@ export type AdminPendingModel = {
 };
 
 export async function getAdminPendingModels(): Promise<QueryResult<AdminPendingModel[]>> {
-  const serviceSupabase = getSupabaseServiceClient();
-  const supabase = await getSupabaseServerClient();
-  const client = serviceSupabase ?? supabase;
+  const client = await getAdminQueryClient();
   if (!client) return empty([]);
 
   const { data: rpcData, error: rpcError } = await client.rpc("admin_get_pending_models");
@@ -721,9 +739,7 @@ export type AdminPendingProvider = {
 };
 
 export async function getAdminPendingProviders(typeFilter?: string): Promise<QueryResult<AdminPendingProvider[]>> {
-  const serviceSupabase = getSupabaseServiceClient();
-  const supabase = await getSupabaseServerClient();
-  const client = serviceSupabase ?? supabase;
+  const client = await getAdminQueryClient();
   if (!client) return empty([]);
 
   const { data, error } = await client.rpc("admin_get_pending_providers", {
@@ -757,9 +773,7 @@ export type AdminMartOrder = MartOrder & {
 };
 
 export async function getAdminMartOrders(statusFilter?: string): Promise<QueryResult<AdminMartOrder[]>> {
-  const serviceSupabase = getSupabaseServiceClient();
-  const supabase = await getSupabaseServerClient();
-  const client = serviceSupabase ?? supabase;
+  const client = await getAdminQueryClient();
   if (!client) return empty([]);
 
   const { data: rpcData, error: rpcError } = await client.rpc("admin_get_mart_orders", {

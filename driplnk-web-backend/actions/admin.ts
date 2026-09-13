@@ -81,10 +81,14 @@ export async function updateModelStatusAdmin({
     return { success: false, error: guard.error };
   }
 
+  // review_notes lands on the model's admin panel; cap it so a single call
+  // cannot stuff megabytes into the row.
+  const cleanNotes = reviewNotes?.slice(0, 2000) || null;
+
   const { error: rpcErr } = await guard.client.rpc("admin_review_model", {
     p_model_id: modelId,
     p_status: status,
-    p_notes: reviewNotes || null,
+    p_notes: cleanNotes,
   });
 
   if (rpcErr) {
@@ -154,7 +158,25 @@ export async function updateMartOrderAdmin({
   }
   if (status !== undefined) {
     // The database stores lowercase statuses; the UI sends Title Case.
-    updates.status = status.toLowerCase();
+    // Validate against the mart_orders status constraint — an unchecked
+    // .toLowerCase() would still 500 on garbage, and 'expired_no_vendor_response'
+    // etc. must be assignable only through this allowlist.
+    const allowedStatuses = new Set([
+      "pending_vendor_response",
+      "placed",
+      "accepted",
+      "printing",
+      "shipped",
+      "delivered",
+      "completed",
+      "cancelled",
+      "expired_no_vendor_response",
+    ]);
+    const normalized = status.toLowerCase().trim().replace(/\s+/g, "_");
+    if (!allowedStatuses.has(normalized)) {
+      return { success: false, error: `Invalid order status: ${status}` };
+    }
+    updates.status = normalized;
   }
 
   const { error } = await guard.client

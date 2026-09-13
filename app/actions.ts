@@ -46,10 +46,13 @@ export async function submitContact(_prev: FormState, formData: FormData): Promi
   const email = String(formData.get("email") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
 
-  if (!name) return { status: "error", message: "Please tell us your name." };
-  if (!EMAIL_RE.test(email)) return { status: "error", message: "Enter a valid email address." };
+  if (!name || name.length > 100) return { status: "error", message: "Please tell us your name." };
+  if (!EMAIL_RE.test(email) || email.length > 254) return { status: "error", message: "Enter a valid email address." };
   if (message.length < 10) {
     return { status: "error", message: "Please add a little more detail to your message." };
+  }
+  if (message.length > 5000) {
+    return { status: "error", message: "Message is too long (5000 characters max)." };
   }
 
   const supabase = await getSupabaseServerClient();

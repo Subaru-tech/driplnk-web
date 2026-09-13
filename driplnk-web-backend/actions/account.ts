@@ -33,18 +33,34 @@ export async function updateUserProfile({
   }
 
   const trimmedName = fullName.trim();
+  if (trimmedName.length < 1 || trimmedName.length > 120) {
+    return { success: false, error: "Name must be between 1 and 120 characters." };
+  }
+
+  // avatar_url is rendered as <img src> across the app — constrain it to
+  // https so a javascript:/data: URL can't turn the profile into an XSS
+  // vector. Null is allowed (clears the avatar).
+  const cleanAvatar = avatarUrl === undefined ? undefined : avatarUrl;
+  if (typeof cleanAvatar === "string" && cleanAvatar.length > 0 && !/^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i.test(cleanAvatar)) {
+    return { success: false, error: "Avatar must be an https URL." };
+  }
 
   if (user.source === "clerk") {
-    // 1. Update Supabase profile via the Security Definer RPC with service client
-    const { error: rpcErr } = await client.rpc("sync_clerk_user_profile", {
-      p_clerk_id: user.authId,
-      p_full_name: trimmedName,
-      p_avatar_url: avatarUrl ?? user.avatarUrl ?? null,
-    });
+    // 1. Update the profile row directly (server-verified ownership, service
+    // client, safe columns only). sync_clerk_user_profile is create-or-nothing:
+    // it never updates full_name for an existing row, so routing the rename
+    // through it silently dropped every name change.
+    const { error: profErr } = await client
+      .from("profiles")
+      .update({
+        full_name: trimmedName,
+        ...(cleanAvatar !== undefined ? { avatar_url: cleanAvatar || null } : {}),
+      })
+      .eq("id", user.id);
 
-    if (rpcErr) {
-      console.error("Failed to sync updated Clerk profile to Supabase:", rpcErr);
-      return { success: false, error: rpcErr.message || "Failed to update profile." };
+    if (profErr) {
+      console.error("Failed to update Clerk user's profile row:", profErr);
+      return { success: false, error: profErr.message || "Failed to update profile." };
     }
 
     // 2. Best-effort update to Clerk user record
@@ -68,7 +84,7 @@ export async function updateUserProfile({
       .from("profiles")
       .update({
         full_name: trimmedName,
-        avatar_url: avatarUrl ?? user.avatarUrl ?? null,
+        ...(cleanAvatar !== undefined ? { avatar_url: cleanAvatar || null } : {}),
       })
       .eq("id", user.id);
 

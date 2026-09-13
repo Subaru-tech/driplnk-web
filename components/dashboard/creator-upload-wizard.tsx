@@ -1142,7 +1142,7 @@ export function CreatorUploadWizard() {
                 size="lg"
                 loading={publishing}
                 disabled={publishing}
-                onClick={() => handleSubmit("in_review" as any)}
+                onClick={() => handleSubmit("pending_review")}
                 className="gap-2 bg-accent text-accent-contrast font-bold hover:bg-accent-hover"
               >
                 <CheckCircle2 className="size-4 text-accent-contrast" />
