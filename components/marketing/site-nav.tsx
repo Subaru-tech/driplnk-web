@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
 import { ButtonLink } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Wordmark } from "@/components/marketing/wordmark";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { cn } from "@/lib/cn";
@@ -112,7 +111,6 @@ export function SiteNav() {
         </ul>
 
         <div className="hidden items-center gap-2.5 md:flex">
-          <ThemeToggle />
           <ButtonLink href="/partner" variant="ghost" size="sm" className="text-xs">
             Partner with DripLink
           </ButtonLink>
@@ -150,7 +148,6 @@ export function SiteNav() {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
           {isClerkEnabled ? (
             <Show when="signed-in">
               <ButtonLink href="/dashboard" variant="secondary" size="sm" className="h-8 px-2.5 text-xs">

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { ThemeScript } from "@/components/theme-script";
 import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -105,7 +104,10 @@ const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: "#527953",
+    colorPrimary: "#EDA335",
+    colorBackground: "#2A5945",
+    colorText: "#F8EFE4",
+    colorTextSecondary: "#C7E0D3",
     borderRadius: "0.5rem",
     fontFamily: "var(--font-inter)",
     fontFamilyButtons: "var(--font-space-grotesk)",
@@ -136,7 +138,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <head>
-        <ThemeScript />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: 'document.documentElement.dataset.js="1";',
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col bg-canvas text-fg">
         {clerkPublishableKey ? (

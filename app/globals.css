@@ -15,126 +15,78 @@
 :root,
 [data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     FOREST + CREAM.
-     Roles, consistent everywhere:
-       ACCENT   (cream)   is the signal — CTAs, focus, the hot nozzle.
-       ACCENT-2 (foliage) is life — eyebrows, links, the tree's canopy.
-       MACHINE / BARK are canvas-only tones for the printer and trunk.
-     Every pair is verified WCAG AA on every surface it actually lands on,
-     and secondary/tertiary text are kept 1.37x apart so the type hierarchy
-     survives — a solver that only chases AA collapses them into one grey.
+     LUXURY COLOR PALETTE:
+       - Dun:             #E8D1BA (warm ivory / linen / sand)
+       - Gamboge:         #EDA335 (warm golden saffron / amber)
+       - Brunswick Green: #2A5945 (deep noble emerald / pine green)
+       - Celadon:         #9DD0B6 (soothing sage / mint green)
      ---------------------------------------------------------------------- */
-  --bg-void: #262b21;
+  --bg-void: #183629;
   /* deepest — hero backdrop, full-bleed floors */
-  --bg-primary: #31372b;
-  /* forest — page */
-  --bg-secondary: #3a4133;
-  /* cards, panels */
-  --bg-tertiary: #3f4737;
+  --bg-primary: #214938;
+  /* rich dark Brunswick Green canvas */
+  --bg-secondary: #2A5945;
+  /* Brunswick Green cards, panels, surfaces */
+  --bg-tertiary: #346C55;
   /* hover states, nested panels */
-  --border: #4b5442;
-  /* decorative dividers — no contrast requirement */
-  --border-strong: #626d56;
-  /* Interactive control boundaries (secondary buttons, inputs, checkboxes).
-     WCAG 1.4.11 wants 3:1 for these and BOTH border tokens above fail it on
-     every surface — 2.65:1 at best. This one clears 3:1 on all four. */
-  --border-control: #869575;
+  --border: #3E7D63;
+  /* decorative dividers */
+  --border-strong: #50997B;
+  /* card boundaries, prominent lines */
+  --border-control: #72B797;
+  /* interactive controls (inputs, buttons) - 3:1+ WCAG contrast */
 
-  --text-primary: #faf7ee;
-  --text-secondary: #c7cbb9;
-  --text-tertiary: #a9af97;
+  /* Dun + Celadon typography */
+  --text-primary: #F8EFE4;
+  /* warm Dun ivory — crisp and radiant */
+  --text-secondary: #C7E0D3;
+  /* soft Celadon mist */
+  --text-tertiary: #8EAEA0;
+  /* faint Celadon sage */
 
-  --accent: #faf7ee;
-  /* cream — CTA / focus / signal */
-  --accent-hover: #ece8db;
-  --accent-muted: #3f4737;
-  --accent-contrast: #31372b;
-  /* dark text ON accent: 11.45:1 */
+  /* Dun (#E8D1BA) primary accent */
+  --accent: #E8D1BA;
+  /* Dun — primary CTA, focus, signal */
+  --accent-hover: #F3E1CF;
+  --accent-muted: #386F57;
+  --accent-contrast: #183629;
+  /* deep Brunswick green text ON accent */
 
-  --accent-2: #a9d26b;
-  /* foliage — growth / links / canopy */
-  --accent-2-muted: #2f3a22;
+  /* Celadon (#9DD0B6) secondary accent */
+  --accent-2: #9DD0B6;
+  /* Celadon — foliage, links, active indicators */
+  --accent-2-muted: #1F4534;
 
-  /* Canvas-only material tones for the hero scene. */
-  --machine: #97a189;
-  /* printer frame — sage, quieter than the tree */
-  --bark: #c08b52;
+  /* Explicit palette tokens */
+  --dun: #E8D1BA;
+  --gamboge: #EDA335;
+  --brunswick: #2A5945;
+  --celadon: #9DD0B6;
+
+  /* Canvas-only material tones for 3D hero scene */
+  --machine: #9DD0B6;
+  /* printer frame — Celadon */
+  --bark: #C4842E;
   /* trunk + branches */
-  --brass: #d9b45c;
-  /* lead screw, pulleys — the machine's warm metal */
+  --brass: #EDA335;
+  /* Gamboge gold metal */
 
-  /* ------------------------------------------------------------------------
-     Brand logo.
-     The artwork is white-on-black, which only reads against the mid-grey it
-     was rendered on: on this site's dark surfaces the black half measures
-     1.27:1, and on the cream surfaces the white half measures 1.00:1 — one
-     half always disappears.
-     So each theme keeps the tone that WORKS at its literal artwork value and
-     shifts only the other, far enough to clear 3:1. The rule that carries the
-     identity — the L is always lighter than the D — holds in both.
-     DARK: L literal white, D lifted to a sage mid tone.
-     ---------------------------------------------------------------------- */
-  --logo-paper: #f7f7f5;
-  /* L + "Drip" — literal artwork white */
-  --logo-ink: #829073;
-  /* D + "Link" — lifted; #141414 is invisible here */
+  /* Brand logo */
+  --logo-paper: #E8D1BA;
+  /* Dun — "Drip" */
+  --logo-ink: #EDA335;
+  /* Gamboge — "Lnk" */
 
-  --danger: #ffafa8;
-  --danger-muted: #43302c;
-  --warning: #ffcf6b;
-  --warning-muted: #40381f;
-  --info: #a8cdf2;
-  --info-muted: #2b3540;
+  --danger: #FF8C82;
+  --danger-muted: #452422;
+  --warning: #EDA335;
+  /* Gamboge */
+  --warning-muted: #43321A;
+  --info: #9DD0B6;
+  /* Celadon */
+  --info-muted: #1D4032;
 
   color-scheme: dark;
-}
-
-/* Light mode: bg/text roles invert, accent + status hues are unchanged.
-   Per spec — do not reinvent a second palette. */
-[data-theme="light"] {
-  --bg-void: #e8e5d9;
-  --bg-primary: #faf7ee;
-  /* cream — page */
-  --bg-secondary: #f2eee1;
-  --bg-tertiary: #e6e3d8;
-  --border: #d8d4c5;
-  --border-strong: #b5b0a0;
-  --border-control: #8b8778;
-  /* 3:1 on cream — see the dark-mode note */
-
-  --text-primary: #262b21;
-  --text-secondary: #4d543f;
-  --text-tertiary: #616a50;
-
-  /* Cream can't be its own accent on a cream page, so light mode promotes the
-     forest green to the signal colour — 9.55:1 as text, 12.27:1 under white
-     as a button fill. Foliage darkens to stay legible on light surfaces. */
-  --accent: #31372b;
-  --accent-hover: #262b21;
-  --accent-muted: #e4e8da;
-  --accent-contrast: #faf7ee;
-
-  --accent-2: #576c37;
-  --accent-2-muted: #e6eed7;
-
-  --machine: #6c7460;
-  --bark: #8a5f2e;
-  --brass: #8a6d1f;
-  /* LIGHT: D keeps the literal artwork black; the L shifts down, because
-     white-on-cream is 1.00:1 — the exact bug this fixes. */
-  --logo-paper: #848073;
-  /* L + "Drip" — darkened to clear the cream */
-  --logo-ink: #141414;
-  /* D + "Link" — literal artwork black */
-
-  --danger: #c02428;
-  --danger-muted: #fbe0e1;
-  --warning: #8a5f06;
-  --warning-muted: #fbefd6;
-  --info: #1568a8;
-  --info-muted: #ddedfa;
-
-  color-scheme: light;
 }
 
 /* ============================================================================
@@ -176,6 +128,13 @@
   --color-accent-contrast: var(--accent-contrast);
   --color-accent-2: var(--accent-2);
   --color-accent-2-muted: var(--accent-2-muted);
+
+  /* Luxury Palette Tokens */
+  --color-dun: var(--dun);
+  --color-gamboge: var(--gamboge);
+  --color-brunswick: var(--brunswick);
+  --color-celadon: var(--celadon);
+  --color-gold: var(--gamboge);
 
   /* Status — reserved for status pills, errors and alerts ONLY.
      Never use these decoratively (spec §1.1 rationale). */
@@ -448,8 +407,9 @@
   /* Molten gradient text for the one word that carries the headline. */
   .text-accent-gradient {
     background: linear-gradient(100deg,
-        var(--accent) 0%,
-        color-mix(in oklab, var(--accent) 55%, var(--accent-2)) 100%);
+        var(--dun) 0%,
+        var(--gamboge) 50%,
+        var(--celadon) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -486,47 +446,12 @@
     }
   }
 
-  /* Hero background mesh — spec §3.1.2, sits at low opacity behind text. */
+  /* Hero background mesh — sits at low opacity behind text with luxury hues. */
   .hero-mesh {
     background-image:
-      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--accent) 55%, transparent), transparent 70%),
-      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--info) 40%, transparent), transparent 70%),
-      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--accent) 30%, transparent), transparent 70%);
-  }
-
-  /* Theme toggle — knob position, icon swap and glow all derive from the
-     data-theme attribute, so the button needs no client state.
-     Lit cube (rays) = light side, plain cube = dark side. */
-  [data-theme="dark"] .theme-icon-light,
-  [data-theme="light"] .theme-icon-dark {
-    display: none;
-  }
-
-  .theme-knob {
-    /* Travel = track 64px − 2px border − 8px padding − 24px knob = 30px.
-       Not 32px: the 1px borders are easy to forget and the knob then sits
-       2px tighter on the right than the left, which reads as sloppy. */
-    transition:
-      transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 280ms ease,
-      color 280ms ease;
-    color: var(--accent-2);
-  }
-
-  [data-theme="dark"] .theme-knob {
-    transform: translateX(30px);
-    box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--accent-2) 70%, transparent),
-      0 0 14px -2px color-mix(in oklab, var(--accent-2) 85%, transparent),
-      0 1px 2px rgb(0 0 0 / 0.4);
-  }
-
-  [data-theme="light"] .theme-knob {
-    transform: translateX(0);
-    box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--accent-2) 60%, transparent),
-      0 0 12px -3px color-mix(in oklab, var(--accent-2) 70%, transparent),
-      0 1px 2px rgb(0 0 0 / 0.15);
+      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--dun) 45%, transparent), transparent 70%),
+      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--gamboge) 35%, transparent), transparent 70%),
+      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--celadon) 30%, transparent), transparent 70%);
   }
 
   /* ==========================================================================

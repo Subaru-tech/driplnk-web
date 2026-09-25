@@ -7,7 +7,6 @@ import { useState, type ReactNode } from "react";
 import { ADMIN_NAV_ITEMS, NAV_ITEMS, SELLER_NAV_ITEMS, titleForPath } from "@/components/dashboard/nav-items";
 import { SignOutButton } from "@/components/dashboard/sign-out-button";
 import { Wordmark } from "@/components/marketing/wordmark";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/cn";
 
 /* Spec §5 — persistent shell for every /dashboard/* route.
@@ -137,7 +136,6 @@ export function DashboardShell({
           </h1>
           <div className="flex shrink-0 items-center gap-2">
             {creditChip}
-            <ThemeToggle />
             {accountMenu}
           </div>
         </header>

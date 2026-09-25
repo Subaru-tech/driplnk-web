@@ -28,7 +28,7 @@ const sections: LegalSection[] = [
       [
         "Essential / strictly necessary — always on, no consent needed:",
         "Authentication session cookies set by Clerk (and, in cookieless fallback mode, Supabase Auth) to keep you signed in securely.",
-        "Theme preference and basic security tokens. These do not require consent because the site cannot function without them (eIT Rules / EU ePrivacy \"strictly necessary\" basis).",
+        "Basic security tokens and essential interface state. These do not require consent because the site cannot function without them (eIT Rules / EU ePrivacy \"strictly necessary\" basis).",
       ],
       [
         "Analytics (consent required):",
