@@ -16,7 +16,7 @@ import { PrintCanvas } from "@/components/marketing/print-canvas";
  */
 export function CinematicHero() {
   return (
-    <section className="relative flex min-h-svh flex-col justify-start pt-16 sm:pt-20 lg:justify-center lg:pt-0 overflow-hidden bg-void">
+    <section className="relative flex min-h-svh flex-col justify-start pt-20 sm:pt-24 lg:pt-20 pb-12 lg:pb-16 overflow-hidden bg-void">
       {/* Key + fill lights, drifting slowly so a still frame never feels dead */}
       <div
         aria-hidden="true"
@@ -33,10 +33,10 @@ export function CinematicHero() {
       {/* Seat it into the page */}
       <div aria-hidden="true" className="vignette absolute inset-0" />
 
-      {/* Hero copy block: sits in upper viewport on mobile, centered on desktop */}
-      <div className="relative mx-auto flex w-full max-w-content flex-col items-center px-6 pt-6 pb-12 sm:pt-10 sm:pb-20 text-center lg:items-start lg:px-12 lg:py-24 lg:text-left">
+      {/* Hero copy block: balanced naturally below navbar with zero dead space */}
+      <div className="relative mx-auto flex w-full max-w-content flex-col items-center px-6 pt-2 pb-10 sm:pt-4 sm:pb-14 text-center lg:items-start lg:px-12 lg:pt-4 lg:pb-12 lg:text-left">
         <div className="flex flex-col items-center lg:max-w-[36rem] xl:max-w-[42rem] lg:items-start">
-          <p className="hero-pull tech-label mb-3 sm:mb-8 text-accent-2">
+          <p className="hero-pull tech-label mb-3 sm:mb-6 text-accent-2">
             Idea &nbsp;→&nbsp; Geometry &nbsp;→&nbsp; Part
           </p>
 

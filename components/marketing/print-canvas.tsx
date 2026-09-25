@@ -697,16 +697,17 @@ export function PrintCanvas({ className }: { className?: string }) {
       const bboxCx = (bbox.left + bbox.right) / 2;
 
       if (wide) {
-        const topSafe = 76; // keep comfortably below 64px navbar
-        const bottomSafe = 28;
-        const rightSafe = 28;
+        const topSafe = 68; // comfortably below 64px navbar
+        const bottomSafe = 20;
+        const rightSafe = 24;
         const availH = Math.max(160, height - topSafe - bottomSafe);
 
         // Safe left boundary to prevent overlapping the hero copy block
-        const textRightBound = Math.min(width * 0.48, 620);
+        const textRightBound = Math.min(width * 0.46, 600);
         const availW = Math.max(160, width - textRightBound - rightSafe);
 
-        unit = Math.min(availH / modelH, availW / modelW, 2.3);
+        // Scale up printer to fill available viewport height naturally
+        unit = Math.min((availH * 0.96) / modelH, availW / modelW, 2.75);
 
         const machineW = modelW * unit;
         const machineH = modelH * unit;
@@ -716,8 +717,8 @@ export function PrintCanvas({ className }: { className?: string }) {
         const machineLeft = Math.max(textRightBound, rightEdge - machineW);
         originX = machineLeft - bbox.left * unit;
 
-        // Position vertically: centered in available vertical space below navbar
-        const topEdge = topSafe + (availH - machineH) / 2;
+        // Position vertically: align gracefully near top to fill upper viewport
+        const topEdge = topSafe + Math.min(16, Math.max(4, (availH - machineH) * 0.25));
         originY = topEdge + bbox.top * unit;
       } else {
         const heightFrac = medium ? 0.38 : 0.28;
