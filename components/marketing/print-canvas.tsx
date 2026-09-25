@@ -697,8 +697,8 @@ export function PrintCanvas({ className }: { className?: string }) {
       const bboxCx = (bbox.left + bbox.right) / 2;
 
       if (wide) {
-        const topSafe = 68; // comfortably below 64px navbar
-        const bottomSafe = 100; // room for the Get a Print Quote button directly below the printer
+        const topSafe = 70; // comfortably below 64px navbar
+        const bottomSafe = 180; // generous clearance for Get a Print Quote button + caption directly below
         const rightSafe = 24;
         const availH = Math.max(160, height - topSafe - bottomSafe);
 
@@ -707,15 +707,22 @@ export function PrintCanvas({ className }: { className?: string }) {
         const availW = Math.max(160, width - textRightBound - rightSafe);
 
         // Scale printer to fit inside available height with bottomSafe clearance
-        unit = Math.min(availH / modelH, availW / modelW, 2.35);
+        unit = Math.min(availH / modelH, availW / modelW, 2.05);
 
         const machineW = modelW * unit;
-        const machineH = modelH * unit;
 
-        // Position horizontally: right-aligned inside safe area without overlapping copy
-        const rightEdge = width - rightSafe;
-        const machineLeft = Math.max(textRightBound, rightEdge - machineW);
-        originX = machineLeft - bbox.left * unit;
+        // Center the printer over the right column (col-span-5 of 12) of the hero grid
+        const maxContent = 1280;
+        const containerW = Math.min(width, maxContent);
+        const containerLeft = (width - containerW) / 2;
+        const pad = 48; // px-12
+        const innerW = containerW - pad * 2;
+        const gap = 32; // gap-8
+        const colW = (innerW - 11 * gap) / 12;
+        const targetColCenter = containerLeft + pad + 7 * colW + 7 * gap + (5 * colW + 4 * gap) / 2;
+
+        // Position horizontally: align originX directly to the right column center
+        originX = Math.max(textRightBound + machineW * 0.35, Math.min(width - rightSafe - machineW * 0.35, targetColCenter));
 
         // Position vertically: align near topSafe so machine ends cleanly above bottomSafe
         const topEdge = topSafe + 8;

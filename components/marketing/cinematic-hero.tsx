@@ -33,52 +33,73 @@ export function CinematicHero() {
       {/* Seat it into the page */}
       <div aria-hidden="true" className="vignette absolute inset-0 pointer-events-none" />
 
-      {/* Main hero content: headline top-left, Get a Print Quote below printer on the right */}
-      <div className="relative z-10 mx-auto flex w-full max-w-content flex-1 flex-col justify-between px-6 lg:px-12">
-        {/* Upper content: Headline and primary actions */}
-        <div className="flex flex-col items-center lg:items-start lg:max-w-[36rem] xl:max-w-[42rem] text-center lg:text-left pt-2 lg:pt-4">
-          <p className="hero-pull tech-label mb-3 sm:mb-6 text-accent-2">
-            Idea &nbsp;→&nbsp; Geometry &nbsp;→&nbsp; Part
-          </p>
+      {/* Main hero content: headline on the left, 3D printer CTA on the right */}
+      <div className="relative z-10 mx-auto flex w-full max-w-content flex-1 flex-col justify-center px-6 lg:px-12 py-8 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center flex-1">
+          {/* Left Column: Headline, subtext, actions, and trust metrics */}
+          <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left py-4 sm:py-6">
+            <div className="hero-pull inline-flex items-center gap-2 rounded-full border border-line-control bg-surface/60 px-3.5 py-1 text-xs font-mono text-accent-2 mb-4 sm:mb-6 backdrop-blur-sm">
+              <span className="size-1.5 rounded-full bg-accent-2 animate-pulse" />
+              <span>Idea &nbsp;→&nbsp; Geometry &nbsp;→&nbsp; Part</span>
+            </div>
 
-          <h1 className="hero-pull display-xl font-display text-balance text-fg lg:text-pretty">
-            One-stop platform
-            <br className="hidden lg:inline" />
-            {" "}for turning ideas
-            <br className="hidden lg:inline" />
-            {" "}<span className="text-accent-gradient">into products.</span>
-          </h1>
+            <h1 className="hero-pull display-xl font-display text-balance text-fg lg:text-pretty">
+              One-stop platform
+              <br className="hidden lg:inline" />
+              {" "}for turning ideas
+              <br className="hidden lg:inline" />
+              {" "}<span className="text-accent-gradient">into products.</span>
+            </h1>
 
-          <p className="hero-pull mt-4 sm:mt-8 max-w-md text-base sm:text-lg text-pretty text-muted">
-            Design, build, source, and manufacture — without the friction.
-          </p>
+            <p className="hero-pull mt-4 sm:mt-6 max-w-lg text-base sm:text-lg text-pretty text-muted">
+              Design, build, source, and manufacture — without the friction.
+            </p>
 
-          <div className="hero-pull mt-6 sm:mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <ButtonLink href="/sign-up" size="lg">
-              Sign Up
-            </ButtonLink>
-            <ButtonLink href="#how-driplink-works" variant="ghost" size="lg">
-              See how it works
-            </ButtonLink>
+            <div className="hero-pull mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <ButtonLink href="/sign-up" size="lg">
+                Sign Up
+              </ButtonLink>
+              <ButtonLink href="#how-driplink-works" variant="ghost" size="lg">
+                See how it works
+              </ButtonLink>
+            </div>
+
+            {/* Value props & trust metrics */}
+            <div className="hero-pull mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-line-control/60 grid grid-cols-3 gap-4 sm:gap-6 w-full max-w-lg">
+              <div>
+                <div className="font-mono text-lg sm:text-xl font-bold text-fg">±0.05<span className="text-accent">mm</span></div>
+                <div className="text-xs text-muted mt-1">Tolerance fit</div>
+              </div>
+              <div>
+                <div className="font-mono text-lg sm:text-xl font-bold text-fg">500<span className="text-accent">+</span></div>
+                <div className="text-xs text-muted mt-1">Vetted print farms</div>
+              </div>
+              <div>
+                <div className="font-mono text-lg sm:text-xl font-bold text-fg">&lt; 24<span className="text-accent">h</span></div>
+                <div className="text-xs text-muted mt-1">Average dispatch</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Bottom bar: Get a Print Quote placed directly below the 3D printer */}
-        <div className="w-full flex justify-center lg:justify-end pt-8 pb-3 sm:pb-6">
-          <div className="hero-pull w-full max-w-xs sm:w-auto lg:w-[44%] flex justify-center">
-            <ButtonLink
-              href="/mart"
-              variant="secondary"
-              size="lg"
-              className="shadow-2xl backdrop-blur-md bg-surface/90 hover:bg-surface border-line-control hover:border-accent transition-all px-8 py-3 text-base"
-            >
-              <Printer className="size-4" aria-hidden="true" />
-              Get a Print Quote
-            </ButtonLink>
+          {/* Right Column: CTA centered directly beneath the 3D printer */}
+          <div className="lg:col-span-5 self-stretch flex flex-col items-center justify-end pt-4 lg:pt-0">
+            <div className="hero-pull flex flex-col items-center gap-2 mt-auto pb-4 lg:pb-6">
+              <ButtonLink
+                href="/mart"
+                size="lg"
+                className="group relative flex items-center gap-2.5 px-8 py-3.5 text-base font-semibold shadow-2xl backdrop-blur-md bg-surface/90 hover:bg-surface border border-line-control hover:border-accent text-fg transition-all rounded-xl hover:scale-[1.02]"
+              >
+                <Printer className="size-4 text-accent transition-transform group-hover:scale-110" aria-hidden="true" />
+                <span>Get a Print Quote</span>
+                <span className="text-accent text-xs font-mono px-2 py-0.5 rounded bg-accent/15 border border-accent/25 ml-1">Instant</span>
+              </ButtonLink>
+              <span className="text-[11px] font-mono text-muted/70 tracking-wide">
+                Upload STL, STEP, or 3MF • Live vendor pricing
+              </span>
+            </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 }
