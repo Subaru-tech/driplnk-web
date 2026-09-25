@@ -17,5 +17,7 @@ export * from "./actions/freelance";
 export * from "./actions/vendor";
 export * from "./actions/mart";
 export * from "./actions/seller";
+// Notifications & Transactional Email
+export * from "@/lib/email";
 
 

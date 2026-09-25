@@ -313,9 +313,12 @@ export async function frameObject(object: Object3D, fovDegrees: number, padding 
 }
 
 /**
- * Renders one frame off-screen and returns a PNG blob for model card thumbnails.
+ * Renders one frame off-screen and returns a PNG blob with perceptual hash.
  */
-export async function renderThumbnail(file: File, size = 512): Promise<Blob | null> {
+export async function renderThumbnailWithPhash(
+  file: File,
+  size = 512
+): Promise<{ blob: Blob | null; phash: number[] | null }> {
   try {
     const THREE = await import("three");
     const buffer = await file.arrayBuffer();
@@ -403,6 +406,8 @@ export async function renderThumbnail(file: File, size = 512): Promise<Blob | nu
 
     renderer.render(scene, camera);
 
+    const phash = computePerceptualHashFromCanvas(canvas);
+
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/png"),
     );
@@ -415,11 +420,87 @@ export async function renderThumbnail(file: File, size = 512): Promise<Blob | nu
     renderer.forceContextLoss();
     void disposeObject(object);
 
-    return blob;
+    return { blob, phash };
   } catch (err) {
-    console.error("renderThumbnail failed:", err);
-    return null;
+    console.error("renderThumbnailWithPhash failed:", err);
+    return { blob: null, phash: null };
   }
+}
+
+/**
+ * Computes a 64-dimensional DCT-based perceptual hash vector from a canvas.
+ * Scales to 32x32 grayscale, computes top-left 8x8 DCT frequencies,
+ * and normalizes to a 64-value float vector suitable for cosine similarity.
+ */
+export function computePerceptualHashFromCanvas(
+  sourceCanvas: HTMLCanvasElement
+): number[] {
+  try {
+    const size = 32;
+    const targetDim = 8;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return new Array(64).fill(0);
+
+    ctx.drawImage(sourceCanvas, 0, 0, size, size);
+    const imgData = ctx.getImageData(0, 0, size, size);
+    const pixels = imgData.data;
+
+    // Convert to grayscale 32x32 matrix
+    const gray: number[][] = [];
+    for (let y = 0; y < size; y++) {
+      const row: number[] = [];
+      for (let x = 0; x < size; x++) {
+        const idx = (y * size + x) * 4;
+        const r = pixels[idx];
+        const g = pixels[idx + 1];
+        const b = pixels[idx + 2];
+        row.push(0.299 * r + 0.587 * g + 0.114 * b);
+      }
+      gray.push(row);
+    }
+
+    // 2D DCT for 8x8 lowest frequencies
+    const dct: number[] = [];
+    const pi = Math.PI;
+
+    for (let u = 0; u < targetDim; u++) {
+      for (let v = 0; v < targetDim; v++) {
+        let sum = 0;
+        for (let x = 0; x < size; x++) {
+          for (let y = 0; y < size; y++) {
+            sum +=
+              gray[y][x] *
+              Math.cos(((2 * x + 1) * u * pi) / (2 * size)) *
+              Math.cos(((2 * y + 1) * v * pi) / (2 * size));
+          }
+        }
+        const alphaU = u === 0 ? 1 / Math.sqrt(size) : Math.sqrt(2 / size);
+        const alphaV = v === 0 ? 1 / Math.sqrt(size) : Math.sqrt(2 / size);
+        dct.push(alphaU * alphaV * sum);
+      }
+    }
+
+    // Compute median of frequencies
+    const sorted = [...dct].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+
+    // Produce binary vector (1.0 or 0.0)
+    return dct.map((val) => (val > median ? 1.0 : 0.0));
+  } catch (err) {
+    console.warn("Failed to compute perceptual hash:", err);
+    return new Array(64).fill(0);
+  }
+}
+
+/**
+ * Backward-compatible wrapper returning only the PNG blob.
+ */
+export async function renderThumbnail(file: File, size = 512): Promise<Blob | null> {
+  const result = await renderThumbnailWithPhash(file, size);
+  return result.blob;
 }
 
 /** Frees GPU memory for an object tree. */

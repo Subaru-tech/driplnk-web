@@ -5,7 +5,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill, type StatusTone } from "@/components/ui/status-pill";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { getPayouts, getSellerProfile } from "@/lib/queries";
+import { getPayouts, getSellerProfile } from "@/driplnk-web-backend/db/queries";
 import type { PayoutState } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Payouts" };

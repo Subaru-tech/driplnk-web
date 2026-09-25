@@ -12,7 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 export const metadata: Metadata = { title: "Admin — Mart Orders" };
 export const dynamic = "force-dynamic";
 
-const STATUS_FILTERS = ["All", ...ORDER_STATUSES] as const;
+const STATUS_FILTERS = ["All", "Pending Moderation", ...ORDER_STATUSES] as const;
 
 export default async function AdminMartOrdersPage({
   searchParams,

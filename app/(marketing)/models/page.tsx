@@ -23,6 +23,7 @@ const GRID = "grid gap-4 sm:grid-cols-2 xl:grid-cols-3";
 
 async function Results({
   category,
+  subcategory,
   license,
   search,
   sort,
@@ -32,6 +33,7 @@ async function Results({
   counts,
 }: {
   category?: string;
+  subcategory?: string;
   license?: string;
   search?: string;
   sort?: "newest" | "price_low" | "price_high";
@@ -40,8 +42,11 @@ async function Results({
   format?: string;
   counts: Record<string, number>;
 }) {
+  // Map "Decorative" to "Art & Decor" so database models match
+  const effectiveCategory = category?.toLowerCase() === "decorative" ? "Art & Decor" : category;
+
   const { data } = await getMarketplaceModels({
-    category,
+    category: effectiveCategory,
     licenseType: license,
     search,
     sort,
@@ -50,6 +55,17 @@ async function Results({
   });
 
   let models = data.models;
+
+  // Optional subcategory filter
+  if (subcategory) {
+    const subClean = subcategory.toLowerCase();
+    models = models.filter(
+      (m) =>
+        m.title.toLowerCase().includes(subClean) ||
+        m.description?.toLowerCase().includes(subClean) ||
+        m.category?.toLowerCase().includes(subClean)
+    );
+  }
 
   // Optional price filter
   if (price === "free") {
@@ -66,11 +82,11 @@ async function Results({
     );
   }
 
-  const total = data.total;
-  const totalPages = data.totalPages;
+  const total = models.length !== data.models.length ? models.length : data.total;
+  const totalPages = Math.max(1, Math.ceil(total / 12));
 
   if (models.length === 0) {
-    const hasFilters = Boolean(search || category || license || price || format);
+    const hasFilters = Boolean(search || category || subcategory || license || price || format);
     return (
       <ModelsCatalogLayout total={0} counts={counts}>
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface/40 px-6 py-16 text-center">
@@ -79,23 +95,8 @@ async function Results({
           </div>
           <h3 className="font-display text-lg font-semibold text-fg">No models found</h3>
           <p className="mt-1 max-w-md text-xs text-muted">
-            {hasFilters
-              ? "We couldn't find any engineering models matching your exact criteria."
-              : "No models have been published to the marketplace yet."}
+            Try another keyword or remove a filter.
           </p>
-
-          {hasFilters && (
-            <div className="mt-5 rounded-xl border border-line/60 bg-raised/50 p-4 text-left text-xs max-w-sm w-full">
-              <span className="font-semibold text-fg text-[11px] uppercase tracking-wider block mb-2">
-                Try:
-              </span>
-              <ul className="space-y-1.5 text-muted list-disc list-inside">
-                <li>another keyword or broader search terms</li>
-                <li>another category or &quot;All Categories&quot;</li>
-                <li>removing a filter (price, format, or license)</li>
-              </ul>
-            </div>
-          )}
 
           <div className="mt-6 flex items-center gap-3">
             {hasFilters && (
@@ -133,6 +134,7 @@ async function Results({
           totalItems={total}
           searchParams={{
             category,
+            subcategory,
             license,
             q: search,
             sort,
@@ -164,6 +166,7 @@ export default async function ModelsPage({
 }) {
   const params = await searchParams;
   const category = typeof params.category === "string" ? params.category : undefined;
+  const subcategory = typeof params.subcategory === "string" ? params.subcategory : undefined;
   const license = typeof params.license === "string" ? params.license : undefined;
   const search = typeof params.q === "string" ? params.q : undefined;
   const sortParam = typeof params.sort === "string" ? params.sort : undefined;
@@ -183,7 +186,7 @@ export default async function ModelsPage({
     getMarketplaceModels({ page: 1, pageSize: 4, sort: "newest" }),
   ]);
 
-  const showFeatured = page === 1 && !search && !category && !license && !price && !format;
+  const showFeatured = page === 1 && !search && !category && !subcategory && !license && !price && !format;
 
   return (
     <Section>
@@ -193,18 +196,23 @@ export default async function ModelsPage({
           <ModelsHeader counts={counts} />
         </Suspense>
 
-        {/* Featured / Trending Spotlight */}
+        {/* Featured / Trending Spotlight with Marketplace Dividers */}
         {showFeatured && (
-          <FeaturedModels models={initialData.models} />
+          <div className="flex flex-col gap-10">
+            <div className="border-t border-line/80" />
+            <FeaturedModels models={initialData.models} />
+            <div className="border-t border-line/80" />
+          </div>
         )}
 
         {/* Catalog Results with Two-Column Filter Layout */}
         <Suspense
-          key={`${category ?? ""}-${license ?? ""}-${search ?? ""}-${sort}-${page}-${price ?? ""}-${format ?? ""}`}
+          key={`${category ?? ""}-${subcategory ?? ""}-${license ?? ""}-${search ?? ""}-${sort}-${page}-${price ?? ""}-${format ?? ""}`}
           fallback={<ResultsSkeleton counts={counts} />}
         >
           <Results
             category={category}
+            subcategory={subcategory}
             license={license}
             search={search}
             sort={sort}

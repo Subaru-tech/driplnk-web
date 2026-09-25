@@ -11,6 +11,7 @@ import type { OrderStatus } from "@/components/ui/status-pill";
 export type Profile = {
   id: string;
   full_name: string | null;
+  email?: string | null;
   avatar_url: string | null;
   credits_balance: number;
   role?: "creator" | "seller" | "admin";
@@ -236,13 +237,14 @@ export type AcquiredModel = {
 /* ----------------------------------------------------------- Freelance side */
 
 export type ProviderType = "vendor" | "seller" | "freelancer";
-export type ProviderStatus = "pending" | "approved" | "rejected";
+export type ProviderStatus = "pending" | "approved" | "rejected" | "changes_requested";
 
 export type Provider = {
   id: string;
   user_id: string;
   type: ProviderType;
   status: ProviderStatus;
+  admin_notes?: string | null;
   created_at: string;
 };
 
@@ -258,6 +260,8 @@ export type FreelancerProfile = {
   rate_type: RateType;
   base_rate: number;
   avatar_url?: string | null;
+  status?: ProviderStatus;
+  admin_notes?: string | null;
   updated_at?: string;
 };
 
@@ -297,6 +301,8 @@ export type VendorProfile = {
   location: string | null;
   materials_supported: string[];
   capacity_notes: string | null;
+  status?: ProviderStatus;
+  admin_notes?: string | null;
   updated_at?: string;
 };
 

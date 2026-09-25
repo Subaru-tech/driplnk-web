@@ -10,6 +10,7 @@ import {
   FileCode,
   Image as ImageIcon,
   Plus,
+  ShieldAlert,
   Sparkles,
   Tag,
   UploadCloud,
@@ -17,11 +18,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { CATEGORY_LIST, PRINT_MATERIALS } from "@/lib/marketplace";
-import { publishCreatorModelListing, saveModelDraft } from "@/driplnk-web-backend/actions/upload";
+import {
+  publishCreatorModelListing,
+  saveModelDraft,
+  checkFileDuplicateByHash,
+  checkModelMetadataSafetyAction,
+} from "@/driplnk-web-backend/actions/upload";
 
 export type UploadStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -42,6 +48,8 @@ export function CreatorUploadWizard() {
   const [savingDraft, setSavingDraft] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<"draft" | "pending_review" | "published">("pending_review");
   const [createdModelId, setCreatedModelId] = useState<string | null>(null);
+  const [fileSha256, setFileSha256] = useState<string | null>(null);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
   // Step 1: Upload Files
   const [files, setFiles] = useState<PickedModelFile[]>([
@@ -89,9 +97,35 @@ export function CreatorUploadWizard() {
   const [simulateGeometryError, setSimulateGeometryError] = useState(false);
   const [validationRunning, setValidationRunning] = useState(false);
 
+  // Content safety moderation (evaluates server-side to protect blocklist secrecy)
+  const [isSafetyFlagged, setIsSafetyFlagged] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(async () => {
+      if (!title.trim() && !description.trim() && tags.length === 0) {
+        if (active) setIsSafetyFlagged(false);
+        return;
+      }
+      try {
+        const res = await checkModelMetadataSafetyAction(title, description, tags);
+        if (active) {
+          setIsSafetyFlagged(res.flagged);
+        }
+      } catch {
+        // Non-blocking for UI
+      }
+    }, 350);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [title, description, tags]);
+
   // Step navigation validations
   function canAdvance(currentStep: UploadStep): boolean {
-    if (currentStep === 1) return files.length > 0;
+    if (currentStep === 1) return files.length > 0 && !duplicateError;
     if (currentStep === 2) return Boolean(title.trim() && description.trim() && category);
     if (currentStep === 3) return selectedMaterials.length > 0;
     if (currentStep === 4) return rightsConfirmed && termsConfirmed;
@@ -118,29 +152,53 @@ export function CreatorUploadWizard() {
     }
   }
 
+  async function processIncomingFiles(incomingFiles: FileList | File[]) {
+    const fileArray = Array.from(incomingFiles);
+    if (fileArray.length === 0) return;
+
+    setDuplicateError(null);
+
+    // Compute hash of primary file
+    const primary = fileArray[0];
+    try {
+      const buffer = await primary.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+      const sha256 = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
+      const dupResult = await checkFileDuplicateByHash(sha256);
+      if (dupResult.duplicate) {
+        setDuplicateError("This file is already published on Driplnk by another creator.");
+        toast("error", "Duplicate file: This file already exists on Driplnk.");
+        return;
+      }
+
+      setFileSha256(sha256);
+    } catch (e) {
+      console.warn("Could not compute file hash:", e);
+    }
+
+    const newPicked: PickedModelFile[] = fileArray.map((f) => {
+      const ext = f.name.split(".").pop()?.toUpperCase() || "CAD";
+      const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
+      return { name: f.name, size: `${sizeMb} MB`, extension: ext };
+    });
+    setFiles([...files, ...newPicked]);
+    toast("success", `Added ${newPicked.length} file${newPicked.length === 1 ? "" : "s"}.`);
+  }
+
   function handleDropFile(e: React.DragEvent) {
     e.preventDefault();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newPicked: PickedModelFile[] = Array.from(e.dataTransfer.files).map((f) => {
-        const ext = f.name.split(".").pop()?.toUpperCase() || "CAD";
-        const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
-        return { name: f.name, size: `${sizeMb} MB`, extension: ext };
-      });
-      setFiles([...files, ...newPicked]);
-      toast("success", `Added ${newPicked.length} file${newPicked.length === 1 ? "" : "s"}.`);
+      void processIncomingFiles(e.dataTransfer.files);
     }
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length > 0) {
-      const newPicked: PickedModelFile[] = Array.from(e.target.files).map((f) => {
-        const ext = f.name.split(".").pop()?.toUpperCase() || "CAD";
-        const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
-        return { name: f.name, size: `${sizeMb} MB`, extension: ext };
-      });
-      setFiles([...files, ...newPicked]);
-      toast("success", `Added ${newPicked.length} file${newPicked.length === 1 ? "" : "s"}.`);
+      void processIncomingFiles(e.target.files);
     }
   }
 
@@ -229,6 +287,7 @@ export function CreatorUploadWizard() {
         previewImagePaths: previewImages,
         thumbnailUrl: previewImages[0] || null,
         status,
+        fileSha256: fileSha256 || undefined,
       });
 
       setPublishing(false);
@@ -400,6 +459,19 @@ export function CreatorUploadWizard() {
             </div>
           </div>
 
+          {/* Duplicate Error Banner */}
+          {duplicateError && (
+            <div className="flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-destructive">
+              <AlertTriangle className="size-5 shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1 text-xs">
+                <span className="font-semibold text-sm">Duplicate File Detected</span>
+                <p className="text-muted leading-relaxed">
+                  {duplicateError} If you are the original designer or have intellectual property inquiries, please contact grievance@driplnk.in.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-4 border-t border-line">
             <Button
               variant="secondary"
@@ -431,6 +503,19 @@ export function CreatorUploadWizard() {
               Provide clear information and high-resolution visuals so makers understand what your model accomplishes.
             </p>
           </div>
+
+          {/* Weapon Safety Review Banner */}
+          {isSafetyFlagged && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-500">
+              <ShieldAlert className="size-5 shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1 text-xs">
+                <span className="font-semibold text-sm">Firearm & Safety Content Review Required</span>
+                <p className="text-muted leading-relaxed">
+                  Your model details match criteria subject to mandatory administrative review under platform safety terms. Your listing will be submitted to the moderation queue for compliance verification before public catalog display.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-4">
             {/* Title */}

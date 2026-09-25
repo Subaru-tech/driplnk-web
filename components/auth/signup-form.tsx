@@ -1,18 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useSignUp } from "@clerk/nextjs";
 import { AuthCard } from "@/components/auth/auth-card";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
+import { ConsentCheckbox } from "@/components/marketing/consent-checkbox";
 import {
   PasswordRequirements,
   passwordIsValid,
 } from "@/components/auth/password-requirements";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, PasswordInput } from "@/components/ui/input";
+import { Field, Input, PasswordInput } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { logSignupConsent } from "@/app/consent-actions";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isClerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
@@ -62,6 +63,14 @@ function ClerkSignupForm() {
         return;
       }
 
+      // Consent evidence — the checkbox gate above is enforced by canSubmit;
+      // this records WHAT was accepted and WHEN (best-effort).
+      try {
+        await logSignupConsent(email);
+      } catch {
+        /* logging must never block signup */
+      }
+
       if (signUp.status === "missing_requirements") {
         await signUp.verifications.sendEmailCode();
         setVerifying(true);
@@ -100,6 +109,12 @@ function ClerkSignupForm() {
         setPending(false);
         setFormError(error.message || "Invalid verification code.");
         return;
+      }
+
+      try {
+        await logSignupConsent(email);
+      } catch {
+        /* logging must never block signup */
       }
 
       await signUp.finalize({
@@ -228,23 +243,7 @@ function ClerkSignupForm() {
             <PasswordRequirements value={password} />
           </div>
 
-          <Checkbox
-            checked={acceptedTerms}
-            onChange={(e) => setAcceptedTerms(e.target.checked)}
-            label={
-              <>
-                I agree to the{" "}
-                <Link href="/terms" className="text-accent hover:text-accent-hover">
-                  Terms
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="text-accent hover:text-accent-hover">
-                  Privacy Policy
-                </Link>
-                .
-              </>
-            }
-          />
+          <ConsentCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
 
           <Button type="submit" size="lg" loading={isSubmitting} disabled={!canSubmit} className="w-full">
             Create account
@@ -304,8 +303,19 @@ function SupabaseSignupForm() {
     }
 
     if (!data.session) {
+      try {
+        await logSignupConsent(email);
+      } catch {
+        /* logging must never block signup */
+      }
       setConfirmSent(true);
       return;
+    }
+
+    try {
+      await logSignupConsent(email);
+    } catch {
+      /* logging must never block signup */
     }
 
     router.push("/dashboard");
@@ -405,23 +415,7 @@ function SupabaseSignupForm() {
             <PasswordRequirements value={password} />
           </div>
 
-          <Checkbox
-            checked={acceptedTerms}
-            onChange={(e) => setAcceptedTerms(e.target.checked)}
-            label={
-              <>
-                I agree to the{" "}
-                <Link href="/terms" className="text-accent hover:text-accent-hover">
-                  Terms
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="text-accent hover:text-accent-hover">
-                  Privacy Policy
-                </Link>
-                .
-              </>
-            }
-          />
+          <ConsentCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
 
           <Button type="submit" size="lg" loading={pending} disabled={!canSubmit} className="w-full">
             Create account

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { FreelancerProfile, RateType } from "@/lib/types";
 import { cn } from "@/lib/cn";
+import { TrustBadge } from "@/components/trust/trust-badge";
 
 export type FreelanceBrowserProps = {
   initialProfiles: FreelancerProfile[];
@@ -251,7 +252,7 @@ export function FreelanceBrowser({
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={freelancer.avatar_url}
-                            alt=""
+                            alt={`${freelancer.display_name} profile photo`}
                             className="size-full object-cover"
                           />
                         ) : (
@@ -272,9 +273,7 @@ export function FreelanceBrowser({
                       </div>
                     </div>
 
-                    <span className="rounded-full bg-accent-muted px-2.5 py-0.5 font-mono text-[0.6875rem] font-medium text-accent">
-                      Approved
-                    </span>
+                    <TrustBadge type="verified" />
                   </div>
 
                   {/* Bio */}

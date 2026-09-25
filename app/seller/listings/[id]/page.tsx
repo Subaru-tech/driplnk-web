@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { BackendNotice } from "@/components/dashboard/backend-notice";
 import { ListingEditor } from "@/components/seller/listing-editor";
-import { getSellerListing } from "@/lib/queries";
+import { getSellerListing } from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "Listing" };
 

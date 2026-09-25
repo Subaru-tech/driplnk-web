@@ -3,6 +3,25 @@
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { deleteB2Object } from "@/lib/b2-client";
+import { checkWeaponTerms } from "@/lib/weapon-blocklist";
+
+/**
+ * Server action to check model title/description/tags against safety policy.
+ * Executes strictly server-side so blocklist words are never shipped to the client bundle.
+ */
+export async function checkModelMetadataSafetyAction(
+  title: string,
+  description: string = "",
+  tags: string[] = []
+): Promise<{ flagged: boolean; message?: string }> {
+  const result = checkWeaponTerms(title, description, tags);
+  return {
+    flagged: result.flagged,
+    message: result.flagged
+      ? "Your model details match criteria subject to mandatory administrative review under platform terms."
+      : undefined,
+  };
+}
 
 export type UploadSession = {
   userId: string;
@@ -140,6 +159,8 @@ export type CreatorModelInput = {
   previewImagePaths?: string[];
   thumbnailUrl?: string | null;
   status?: "published" | "under_review" | "pending_review" | "draft" | "rejected";
+  fileSha256?: string;
+  previewPhash?: number[];
 };
 
 function slugify(text: string): string {
@@ -230,6 +251,11 @@ export async function publishCreatorModelListing(
   const finalStatus = input.status === "draft" ? "draft" : "pending_review";
   const primaryFilePath = input.filePath || cleanFiles[0]?.storagePath || "models/placeholder.stl";
 
+  // Weapon and firearm terms check
+  const weaponCheck = checkWeaponTerms(cleanTitle, cleanDescription, input.tags || []);
+  const isWeaponFlagged = weaponCheck.flagged;
+  const fileSha256 = input.fileSha256 ? input.fileSha256.toLowerCase().trim() : null;
+
   // Check if updating existing draft
   if (input.id) {
     const { data: existing } = await supabase
@@ -239,29 +265,42 @@ export async function publishCreatorModelListing(
       .maybeSingle();
 
     if (existing && existing.owner_id === user.id) {
+      const updatePayload: Record<string, unknown> = {
+        name: cleanTitle,
+        title: cleanTitle,
+        description: cleanDescription,
+        category: cleanCategory,
+        category_id: categoryId,
+        license_type: input.licenseType || "standard",
+        license_id: licenseId,
+        price: cleanPrice,
+        preview_image_paths: cleanPreviewPaths,
+        thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
+        storage_path: primaryFilePath,
+        file_path: primaryFilePath,
+        storage_provider: "backblaze-b2",
+        status: finalStatus,
+        published_at: null,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (fileSha256) {
+        updatePayload.file_sha256 = fileSha256;
+      }
+      if (isWeaponFlagged) {
+        updatePayload.moderation_status = "weapon_review";
+        updatePayload.moderation_flags = {
+          weapon_match: true,
+          matched_terms: weaponCheck.matches,
+          flagged_at: new Date().toISOString(),
+        };
+      }
+
       const { error: updateErr } = await supabase
         .from("models")
-        .update({
-          name: cleanTitle,
-          title: cleanTitle,
-          description: cleanDescription,
-          category: cleanCategory,
-          category_id: categoryId,
-          license_type: input.licenseType || "standard",
-          license_id: licenseId,
-          price: cleanPrice,
-          preview_image_paths: cleanPreviewPaths,
-          thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
-          storage_path: primaryFilePath,
-          file_path: primaryFilePath,
-          storage_provider: "backblaze-b2",
-          status: finalStatus,
-          published_at: null,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq("id", input.id)
         .eq("owner_id", user.id);
-
 
       if (updateErr) {
         console.error("Failed to update model:", updateErr);
@@ -274,30 +313,74 @@ export async function publishCreatorModelListing(
   }
 
   // Insert new model
+  const insertPayload: Record<string, unknown> = {
+    owner_id: user.id,
+    seller_user_id: user.id,
+    name: cleanTitle,
+    title: cleanTitle,
+    slug: uniqueSlug,
+    description: cleanDescription,
+    category: cleanCategory,
+    category_id: categoryId,
+    license_type: input.licenseType || "standard",
+    license_id: licenseId,
+    price: cleanPrice,
+    currency: "INR",
+    preview_image_paths: cleanPreviewPaths,
+    thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
+    storage_path: primaryFilePath,
+    file_path: primaryFilePath,
+    storage_provider: "backblaze-b2",
+    status: finalStatus,
+    published_at: null,
+    credits_spent: 0,
+  };
+
+  if (fileSha256) {
+    insertPayload.file_sha256 = fileSha256;
+  }
+  if (isWeaponFlagged) {
+    insertPayload.moderation_status = "weapon_review";
+    insertPayload.moderation_flags = {
+      weapon_match: true,
+      matched_terms: weaponCheck.matches,
+      flagged_at: new Date().toISOString(),
+    };
+  }
+
+  // 4. Perceptual image hash duplicate detection (visual similarity >= 85%)
+  if (Array.isArray(input.previewPhash) && input.previewPhash.length === 64) {
+    insertPayload.preview_phash = input.previewPhash;
+    try {
+      const { data: matches, error: matchErr } = await supabase.rpc("match_model_phash", {
+        query_phash: input.previewPhash,
+        match_threshold: 0.85,
+        match_count: 5,
+      });
+
+      if (!matchErr && Array.isArray(matches) && matches.length > 0) {
+        // Exclude the model itself if updating an existing record
+        const duplicateMatch = matches.find((m: { id: string; similarity: number }) => m.id !== (input.id ?? ""));
+        if (duplicateMatch) {
+          insertPayload.moderation_status = "duplicate_review";
+          insertPayload.status = "pending_review";
+          insertPayload.moderation_flags = {
+            ...(insertPayload.moderation_flags || {}),
+            duplicate_detected: true,
+            matched_model_id: duplicateMatch.id,
+            similarity: duplicateMatch.similarity,
+            flagged_at: new Date().toISOString(),
+          };
+        }
+      }
+    } catch (phashErr) {
+      console.error("Perceptual hash match check error:", phashErr);
+    }
+  }
+
   const { data, error } = await supabase
     .from("models")
-    .insert({
-      owner_id: user.id,
-      seller_user_id: user.id,
-      name: cleanTitle,
-      title: cleanTitle,
-      slug: uniqueSlug,
-      description: cleanDescription,
-      category: cleanCategory,
-      category_id: categoryId,
-      license_type: input.licenseType || "standard",
-      license_id: licenseId,
-      price: cleanPrice,
-      currency: "INR",
-      preview_image_paths: cleanPreviewPaths,
-      thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
-      storage_path: primaryFilePath,
-      file_path: primaryFilePath,
-      storage_provider: "backblaze-b2",
-      status: finalStatus,
-      published_at: null,
-      credits_spent: 0,
-    })
+    .insert(insertPayload)
     .select("id")
     .single();
 
@@ -586,3 +669,126 @@ export async function deleteUploadedModel(id: string): Promise<{ success: boolea
 
   return { success: true };
 }
+
+/**
+ * Checks if a file with the identical SHA-256 hash has already been registered on Driplnk.
+ */
+export async function checkFileDuplicateByHash(
+  sha256: string
+): Promise<{ duplicate: boolean; existingModelId?: string; message?: string; isOwnReuse?: boolean }> {
+  if (!sha256 || typeof sha256 !== "string") {
+    return { duplicate: false };
+  }
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    return { duplicate: false };
+  }
+
+  const user = await getUnifiedUser();
+
+  const normalizedHash = sha256.toLowerCase().trim();
+  const { data, error } = await supabase
+    .from("models")
+    .select("id, title, owner_id")
+    .eq("file_sha256", normalizedHash)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("checkFileDuplicateByHash error:", error);
+    return { duplicate: false };
+  }
+
+  // If the same creator is reusing their own file in another listing or kit, permit it!
+  if (data) {
+    if (user && data.owner_id === user.id) {
+      return { duplicate: false, existingModelId: data.id, isOwnReuse: true };
+    }
+    return {
+      duplicate: true,
+      existingModelId: data.id,
+      message: "This file is already published on Driplnk by another creator.",
+    };
+  }
+
+  return { duplicate: false };
+}
+
+/**
+ * Records the primary CAD file SHA-256 hash on a model record.
+ */
+export async function recordModelHash(
+  modelId: string,
+  sha256: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getUnifiedUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    return { success: false, error: "Database client unavailable" };
+  }
+
+  const normalizedHash = sha256.toLowerCase().trim();
+  const { error } = await supabase
+    .from("models")
+    .update({
+      file_sha256: normalizedHash,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", modelId)
+    .eq("owner_id", user.id);
+
+  if (error) {
+    console.error("recordModelHash error:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Stores a 64-dimensional perceptual hash vector for the rendered model thumbnail,
+ * enabling visual similarity searches.
+ */
+export async function recordModelPhash(
+  modelId: string,
+  phash: number[]
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getUnifiedUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  if (!Array.isArray(phash) || phash.length !== 64) {
+    return { success: false, error: "Invalid perceptual hash: expected 64 values." };
+  }
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    return { success: false, error: "Database client unavailable" };
+  }
+
+  // Format vector literal for PostgreSQL pgvector: "[v1,v2,...,v64]"
+  const vectorStr = `[${phash.map((v) => Number(v.toFixed(6))).join(",")}]`;
+
+  const { error } = await supabase
+    .from("models")
+    .update({
+      preview_phash: vectorStr,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", modelId)
+    .eq("owner_id", user.id);
+
+  if (error) {
+    console.error("recordModelPhash error:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+

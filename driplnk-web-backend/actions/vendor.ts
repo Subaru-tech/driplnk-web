@@ -43,7 +43,7 @@ export async function applyVendor(
   }
 
   const cleanLocation = input.location?.trim().slice(0, 200) || null;
-  const cleanCapacity = input.capacityNotes?.trim().slice(0, 2000) || null;
+  const cleanCapacity = input.capacityNotes?.trim().slice(0, 10000) || null;
   const cleanMaterials = Array.isArray(input.materialsSupported)
     ? input.materialsSupported.map((m) => String(m).trim().toLowerCase().slice(0, 40)).filter(Boolean).slice(0, 20)
     : [];
@@ -86,7 +86,7 @@ export async function getMyVendorProvider(): Promise<{
 
   const { data: provider, error: providerErr } = await supabase
     .from("providers")
-    .select("id, user_id, type, status, created_at")
+    .select("id, user_id, type, status, admin_notes, created_at")
     .eq("user_id", user.id)
     .eq("type", "vendor")
     .maybeSingle();

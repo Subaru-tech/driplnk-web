@@ -12,6 +12,7 @@ import {
   ArrowRight,
   UserCheck,
 } from "lucide-react";
+import { TrustBadge } from "@/components/trust/trust-badge";
 import { HireModal } from "@/components/freelance/hire-modal";
 import type { FreelancerProfile } from "@/lib/types";
 
@@ -58,7 +59,7 @@ export function FreelancerProfileView({
                 <h1 className="font-display text-2xl font-bold text-fg sm:text-3xl">
                   {profile.display_name}
                 </h1>
-                <CheckCircle2 className="size-5 text-accent" aria-label="Approved Specialist" />
+                <TrustBadge type="verified" size="sm" />
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-mono text-xs text-muted">Vetted CAD Engineer</span>

@@ -5,7 +5,7 @@ import { ListingRow } from "@/components/seller/listing-row";
 import { UploadListingButton } from "@/components/seller/upload-listing-button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getListings } from "@/lib/queries";
+import { getListings } from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "My Listings" };
 

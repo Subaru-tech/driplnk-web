@@ -4,7 +4,7 @@ import { BackendNotice } from "@/components/dashboard/backend-notice";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { getSales } from "@/lib/queries";
+import { getSales } from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "Sales" };
 

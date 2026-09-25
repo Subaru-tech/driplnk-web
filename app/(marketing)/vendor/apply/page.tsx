@@ -25,17 +25,19 @@ export default async function VendorApplyPage() {
           <div className="flex flex-col gap-4 max-w-2xl">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-accent-muted px-3 py-1 font-mono text-xs font-medium text-accent">
               <Printer className="size-3.5" />
-              Regional Print Network
+              Manufacturing Network
             </span>
             <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">
               {provider?.status === "pending"
                 ? "Vendor Application Status"
                 : provider?.status === "approved"
                 ? "Vendor Farm Profile"
-                : "Partner Your 3D Print Farm with Mart"}
+                : "Become a Manufacturing Partner"}
             </h1>
             <p className="text-base leading-relaxed text-muted">
-              DripLnk Mart matches hardware engineers and product teams with vetted regional print farms. We generate automatic quotes based on true CAD geometry and route production-ready orders straight to your printers.
+              {provider?.status === "pending" || provider?.status === "approved"
+                ? "Manage your DripLnk Mart manufacturing hub credentials and verified machine capabilities."
+                : "Receive qualified manufacturing orders matched to your equipment, materials, and capacity."}
             </p>
           </div>
         </div>
@@ -46,8 +48,11 @@ export default async function VendorApplyPage() {
         <div className="mx-auto max-w-3xl">
           <VendorApplyForm
             existingStatus={provider?.status ?? null}
+            adminNotes={provider?.admin_notes ?? null}
             existingProfile={profile}
             isSignedIn={Boolean(user)}
+            initialEmail={user?.email ?? undefined}
+            initialName={user?.name ?? undefined}
           />
         </div>
       </Section>

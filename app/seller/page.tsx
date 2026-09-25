@@ -14,7 +14,7 @@ import {
   getSales,
   getSellerEarnings,
   getSellerProfile,
-} from "@/lib/queries";
+} from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "Seller Overview" };
 

@@ -16,13 +16,14 @@ import {
 } from "lucide-react";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { getMyVendorProvider } from "@/driplnk-web-backend/actions/vendor";
-import { getVendorOrders } from "@/lib/queries";
+import { getVendorOrders } from "@/driplnk-web-backend/db/queries";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { OrderStatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { VendorOrderActions } from "@/components/dashboard/vendor-order-actions";
+import { ProfileCompleteness } from "@/components/trust/profile-completeness";
 
 export const metadata: Metadata = {
   title: "Vendor Hub — DripLnk Mart",
@@ -65,10 +66,71 @@ export default async function VendorDashboardPage() {
     );
   }
 
-  // 2. Pending approval
+  const vendorCompletenessItems = [
+    { label: "Basic information", completed: Boolean(profile?.business_name || user.name) },
+    { label: "Location & contact", completed: Boolean(profile?.location) },
+    { label: "Manufacturing capabilities", completed: Boolean(profile?.materials_supported && profile.materials_supported.length > 0) },
+    { label: "Machine specifications", completed: Boolean(profile?.capacity_notes) },
+    { label: "Verification document", completed: false, hint: "Reviewed by DripLnk" },
+  ];
+
+  // 2. Changes requested
+  if (provider.status === "changes_requested") {
+    return (
+      <div className="flex flex-col gap-6 py-6 max-w-3xl mx-auto w-full">
+        <div>
+          <h2 className="font-display text-2xl font-bold text-fg">Vendor Hub</h2>
+          <p className="text-sm text-muted">Your application to join the print farm network.</p>
+        </div>
+
+        <Card className="flex flex-col items-center gap-6 p-8 text-center sm:p-12 border-amber-500/30">
+          <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-400">
+            <ShieldAlert className="size-7" />
+          </div>
+          <div className="flex flex-col gap-2 max-w-md">
+            <span className="inline-flex self-center items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-mono text-xs font-medium text-amber-400">
+              Action Required: Changes Requested
+            </span>
+            <h3 className="font-display text-xl font-bold text-fg">
+              {profile?.business_name || "Print Hub Application"}
+            </h3>
+            <p className="text-sm text-muted leading-relaxed">
+              Our moderation team reviewed your print farm submission and requested adjustments. Please address the feedback below and update your details.
+            </p>
+          </div>
+
+          {/* Admin Notes */}
+          {provider.admin_notes && (
+            <div className="w-full max-w-lg text-left rounded-[var(--radius-control)] border border-amber-500/30 bg-amber-500/10 p-4">
+              <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1.5">
+                <AlertCircle className="size-4 shrink-0" />
+                <span>Reviewer Note:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-fg leading-relaxed whitespace-pre-line pl-6">
+                {provider.admin_notes}
+              </p>
+            </div>
+          )}
+
+          <div className="w-full max-w-lg text-left">
+            <ProfileCompleteness
+              items={vendorCompletenessItems}
+              verificationStatus={provider.status}
+            />
+          </div>
+
+          <ButtonLink href="/vendor/apply" className="min-h-[44px] min-w-[44px]">
+            Edit & Resubmit Application
+          </ButtonLink>
+        </Card>
+      </div>
+    );
+  }
+
+  // 3. Pending approval
   if (provider.status === "pending") {
     return (
-      <div className="flex flex-col gap-6 py-6">
+      <div className="flex flex-col gap-6 py-6 max-w-3xl mx-auto w-full">
         <div>
           <h2 className="font-display text-2xl font-bold text-fg">Vendor Hub</h2>
           <p className="text-sm text-muted">Your application to join the print farm network.</p>
@@ -89,6 +151,14 @@ export default async function VendorDashboardPage() {
               Your application is under manual founder review. Our team will verify your printer fleet specifications, setup custom pricing rules, and enable your incoming order queue.
             </p>
           </div>
+
+          <div className="w-full max-w-lg text-left">
+            <ProfileCompleteness
+              items={vendorCompletenessItems}
+              verificationStatus={provider.status}
+            />
+          </div>
+
           <ButtonLink href="/vendor/apply" variant="secondary" className="min-h-[44px] min-w-[44px]">
             View Application Details
           </ButtonLink>

@@ -4,8 +4,8 @@ import { DangerZone } from "@/components/dashboard/danger-zone";
 import { PasswordSection } from "@/components/dashboard/password-section";
 import { ProfileSection } from "@/components/dashboard/profile-section";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { getProfile, getSellerProfile } from "@/lib/queries";
-import { getCurrentUser } from "@/lib/supabase-server";
+import { getProfile, getSellerProfile } from "@/driplnk-web-backend/db/queries";
+import { getCurrentUser } from "@/driplnk-web-backend/db/client";
 
 export const metadata: Metadata = { title: "Account" };
 

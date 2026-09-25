@@ -34,6 +34,7 @@ import {
 } from "@/driplnk-web-backend";
 
 import { ModelFavoriteButton } from "@/components/marketing/model-favorite-button";
+import { ReportModelButton } from "@/components/marketing/report-model-button";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,12 @@ export async function generateMetadata({
       description:
         model.description?.slice(0, 160) ??
         `3D Model by ${model.seller_name || "DripLnk Creator"} on DripLnk. Discover, acquire, and open directly in LeaFF OS.`,
+      alternates: { canonical: `/models/${id}` },
+      openGraph: {
+        title: `${model.title} — 3D Model | DripLnk`,
+        description: model.description?.slice(0, 160) ?? undefined,
+        type: "website",
+      },
     };
   }
 
@@ -59,6 +66,7 @@ export async function generateMetadata({
     return {
       title: `${listing.title} — 3D Model | DripLnk`,
       description: listing.description?.slice(0, 160) ?? "3D Model on DripLnk.",
+      alternates: { canonical: `/models/${id}` },
     };
   }
 
@@ -74,7 +82,6 @@ export default async function ModelDetailPage({
 
   // 1. Fetch model from models table
   const { data: model } = await getMarketplaceModelById(id);
-
   // 2. Fallback for legacy listings if accessed by slug/id
   if (!model) {
     const { data: listing } = await getPublicListing(id);
@@ -104,8 +111,33 @@ export default async function ModelDetailPage({
   // Filter out current model from related items
   const relatedModels = relatedResult.data.models.filter((m) => m.id !== model.id).slice(0, 3);
 
+  // Phase 9: Product schema for the model listing (price, availability,
+  // seller). Rendered as JSON-LD in the page head.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://driplnk.in";
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: model.title,
+    description: model.description ?? undefined,
+    category: model.category ?? undefined,
+    image: previewImages.length > 0 ? previewImages.map((p) => `${siteUrl}/${p}`) : undefined,
+    brand: { "@type": "Brand", name: "DripLnk" },
+    seller: { "@type": "Organization", name: sellerName },
+    offers: {
+      "@type": "Offer",
+      price: model.price,
+      priceCurrency: "INR",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/models/${model.id}`,
+    },
+  };
+
   return (
     <Section>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <div className="flex flex-col gap-10">
         {/* Navigation Breadcrumb & Favorite Button */}
         <div className="flex items-center justify-between gap-4">
@@ -344,6 +376,60 @@ export default async function ModelDetailPage({
               </ul>
             </Card>
 
+            {/* License Terms Card */}
+            <Card className="flex flex-col gap-4">
+              <CardTitle>License Terms</CardTitle>
+              <div className="flex items-start gap-3 rounded-lg border border-line bg-raised/30 p-3.5">
+                <ShieldCheck className="size-5 text-accent shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-1 text-xs">
+                  <span className="font-semibold text-fg">{license.label}</span>
+                  <p className="text-muted leading-relaxed">{license.summary}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                <div className="flex items-center gap-1.5 rounded bg-surface p-2 border border-line">
+                  <span className="text-accent font-bold">✓</span>
+                  <span className="text-fg">Personal 3D Printing</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded bg-surface p-2 border border-line">
+                  <span className={model.license_type === "commercial" ? "text-accent font-bold" : "text-muted"}>
+                    {model.license_type === "commercial" ? "✓" : "✗"}
+                  </span>
+                  <span className="text-fg">Commercial Sales</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded bg-surface p-2 border border-line">
+                  <span className="text-accent font-bold">✓</span>
+                  <span className="text-fg">Parametric Modification</span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded bg-surface p-2 border border-line">
+                  <span className="text-muted font-bold">✗</span>
+                  <span className="text-fg">File Redistribution</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Creator Information Card */}
+            <Card className="flex flex-col gap-4">
+              <CardTitle>Creator</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="size-11 rounded-full border border-line bg-raised grid place-items-center text-accent font-semibold overflow-hidden shrink-0">
+                  {model.seller?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={model.seller.avatar_url} alt={sellerName} className="size-full object-cover" />
+                  ) : (
+                    <User className="size-5 text-muted" />
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-display font-semibold text-fg truncate">{sellerName}</span>
+                  <span className="text-[11px] text-muted">Verified DripLnk CAD Specialist</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                Designer of precision CAD assemblies and functional manufacturing models on DripLnk.
+              </p>
+            </Card>
+
             {/* Mart Manufacturing Quote Bridge */}
             <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-5">
               <div className="flex items-center gap-2 text-fg font-semibold text-sm">
@@ -351,7 +437,7 @@ export default async function ModelDetailPage({
                 <span>Want this model manufactured for you?</span>
               </div>
               <p className="text-xs text-muted leading-relaxed">
-                Send this CAD model directly to DripLnk Mart for instant vendor quoting across SLA, FDM, SLS, or CNC machining with doorstep shipping across India.
+                Send this CAD model directly to DripLnk Mart for vendor quoting across supported FDM and resin (SLA/MSLA) materials, with doorstep shipping.
               </p>
               <Link
                 href={`/mart?modelId=${model.id}`}
@@ -360,6 +446,14 @@ export default async function ModelDetailPage({
                 Configure Print in Mart →
               </Link>
             </div>
+
+            {/* Report Model Button */}
+            <ReportModelButton
+              modelId={model.id}
+              modelTitle={model.title}
+              userSignedIn={Boolean(user)}
+              userEmail={user?.email}
+            />
           </div>
         </div>
 

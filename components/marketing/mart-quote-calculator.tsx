@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Boxes,
   CheckCircle2,
@@ -93,6 +94,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
   const [fileName, setFileName] = useState<string>("cube_sample_20mm.stl");
   const [filePath, setFilePath] = useState<string | null>(null);
   const [quoteRequestId, setQuoteRequestId] = useState<string | null>(null);
+  const [isWeaponFlagged, setIsWeaponFlagged] = useState<boolean>(false);
 
   // Mesh computation results
   const [volumeCm3, setVolumeCm3] = useState<number>(8.0);
@@ -128,6 +130,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
         setFilePath(res.data.filePath);
         setQuoteRequestId(res.data.quoteRequestId);
         setVendorQuotes(res.data.quotes);
+        setIsWeaponFlagged(Boolean(res.data.isWeaponFlagged));
         setHasCalculated(true);
       }
     } catch (err: unknown) {
@@ -179,6 +182,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
       const res = await createMartOrderAction({
         quoteRequestId,
         filePath: filePath || `mart-quotes/sample-${fileName}`,
+        fileName,
         providerId: quote.provider_id,
         material: quote.material,
         price: quote.price,
@@ -209,8 +213,8 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
           Multi-Vendor Print Price Comparison
         </h2>
         <p className="max-w-2xl text-sm text-muted sm:text-base leading-relaxed">
-          Upload any 3D model (.STL) to calculate exact volume, part mass, and guaranteed upfront
-          pricing from vetted regional print hubs. No hidden fees, verified tolerances, and tracked fulfillment.
+          Upload any 3D model (.STL) to calculate exact volume, part mass, and upfront
+          pricing from vetted regional print hubs. No hidden fees, material-specific tolerances, and tracked fulfillment.
         </p>
       </div>
 
@@ -272,6 +276,18 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
                 </span>
               )}
             </div>
+
+            {isWeaponFlagged && (
+              <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs text-warning text-left">
+                <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-semibold">Safety Moderation Notice</span>
+                  <span className="text-[11px] leading-relaxed opacity-90">
+                    This file matches safety review criteria under our platform manufacturing policy. If ordered, this job will be held for compliance clearance before print hub dispatch.
+                  </span>
+                </div>
+              </div>
+            )}
 
             {isWeighing && (
               <div className="mt-4 flex items-center gap-2 rounded-full bg-accent-muted px-4 py-1.5 font-mono text-xs text-accent">
@@ -363,7 +379,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted mb-1">
               <span>Available Hubs</span>
-              <span>Guaranteed Price</span>
+              <span>Quoted Price</span>
             </div>
 
             {isWeighing ? (
@@ -402,7 +418,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
                         </span>
                         {idx === 0 && (
                           <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-accent-contrast">
-                            Best Value
+                            Lowest quote
                           </span>
                         )}
                       </div>
@@ -445,7 +461,7 @@ export function MartQuoteCalculator({ isSignedIn = false }: MartQuoteCalculatorP
           <div className="mt-8 border-t border-line pt-4 space-y-2 text-[11px] text-muted">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="size-3.5 text-accent" />
-              <span>Reprint Guarantee: If tolerances exceed ±0.08 mm, reprinted free.</span>
+              <span>Reprint remedy: if a print misses the tolerance stated for its material, it is reprinted free — see the Refund Policy.</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Truck className="size-3.5 text-accent" />

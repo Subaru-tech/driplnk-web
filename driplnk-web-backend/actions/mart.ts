@@ -2,9 +2,11 @@
 
 import "server-only";
 import { revalidatePath } from "next/cache";
+import { ensureAdmin } from "@/lib/admin-guard";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { calculateStlVolume, calculatePartWeight } from "@/driplnk-web-backend/utils/mesh-calc";
+import { checkWeaponTerms } from "@/lib/weapon-blocklist";
 import type { VendorQuoteItem } from "@/lib/types";
 
 export type CalculateQuotesResult = {
@@ -18,6 +20,8 @@ export type CalculateQuotesResult = {
     weightG: number;
     material: string;
     quotes: VendorQuoteItem[];
+    isWeaponFlagged?: boolean;
+    weaponMatches?: string[];
   };
 };
 
@@ -150,6 +154,10 @@ export async function calculateMeshQuotes(
     material: String(q.material),
   }));
 
+  // Direct-print weapon check on uploaded CAD filename
+  const sanitizedFileName = file.name.replace(/[/._-]/g, " ");
+  const weaponCheck = checkWeaponTerms(sanitizedFileName);
+
   return {
     success: true,
     data: {
@@ -160,6 +168,8 @@ export async function calculateMeshQuotes(
       weightG,
       material,
       quotes: cleanQuotes,
+      isWeaponFlagged: weaponCheck.flagged,
+      weaponMatches: weaponCheck.matches,
     },
   };
 }
@@ -167,6 +177,9 @@ export async function calculateMeshQuotes(
 export type CreateOrderInput = {
   quoteRequestId?: string | null;
   filePath: string;
+  fileName?: string;
+  description?: string;
+  notes?: string;
   providerId: string;
   material: string;
   price: number;
@@ -178,7 +191,7 @@ export type CreateOrderInput = {
  */
 export async function createMartOrderAction(
   input: CreateOrderInput
-): Promise<{ success: boolean; error?: string; orderId?: string }> {
+): Promise<{ success: boolean; error?: string; orderId?: string; heldForReview?: boolean }> {
   const user = await getUnifiedUser();
   if (!user) {
     return { success: false, error: "You must be signed in to place an order." };
@@ -221,6 +234,23 @@ export async function createMartOrderAction(
     return { success: false, error: "Invalid quote reference." };
   }
 
+  // 1. Direct-print safety moderation gate:
+  // Scans file name extracted from storage path, explicit fileName, and any order notes.
+  const rawFileName = input.fileName || input.filePath.split("/").pop()?.replace(/^\d+-/, "") || "";
+  const textToScan = `${rawFileName} ${input.description || ""} ${input.notes || ""}`.replace(/[/._-]/g, " ");
+  const weaponCheck = checkWeaponTerms(textToScan);
+
+  const moderationStatus = weaponCheck.flagged ? "weapon_review" : null;
+  const moderationFlags = weaponCheck.flagged
+    ? {
+        weapon_match: true,
+        matched_terms: weaponCheck.matches,
+        scanned_text: textToScan.trim(),
+        flagged_at: new Date().toISOString(),
+        details: `Direct-print order held for safety compliance review due to prohibited weapon terms: ${weaponCheck.matches.join(", ")}`,
+      }
+    : {};
+
   // Atomic order creation via privileged RPC. The price the client sent is
   // deliberately NOT forwarded: create_mart_order recomputes what the chosen
   // vendor's published pricing rules actually charge, so a tampered client
@@ -230,6 +260,8 @@ export async function createMartOrderAction(
     p_quote_request_id: finalQuoteRequestId,
     p_provider_id: input.providerId,
     p_material: input.material.toLowerCase(),
+    p_moderation_status: moderationStatus,
+    p_moderation_flags: moderationFlags,
   });
 
   if (orderErr) {
@@ -239,6 +271,48 @@ export async function createMartOrderAction(
 
   revalidatePath("/dashboard/mart-orders");
   revalidatePath("/dashboard/vendor");
+  revalidatePath("/admin/mart-orders");
 
-  return { success: true, orderId: orderId as string };
+  return {
+    success: true,
+    orderId: orderId as string,
+    heldForReview: weaponCheck.flagged,
+  };
 }
+
+/**
+ * Server action for administrative clearance or rejection of held Mart direct-print orders.
+ */
+export async function adminModerateMartOrderAction(
+  orderId: string,
+  action: "clear" | "reject",
+  notes?: string
+): Promise<{ success: boolean; error?: string; status?: string }> {
+  const guard = await ensureAdmin();
+  if (!guard.ok) {
+    return { success: false, error: guard.error };
+  }
+
+  const serviceSupabase = getSupabaseServiceClient();
+  if (!serviceSupabase) {
+    return { success: false, error: "Database backend is not connected." };
+  }
+
+  const { data, error } = await serviceSupabase.rpc("admin_moderate_mart_order", {
+    p_order_id: orderId,
+    p_action: action,
+    p_notes: notes || null,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/admin/mart-orders");
+  revalidatePath("/admin/listings");
+  revalidatePath("/dashboard/mart-orders");
+  revalidatePath("/dashboard/vendor");
+
+  return { success: true, status: (data as { status?: string })?.status };
+}
+

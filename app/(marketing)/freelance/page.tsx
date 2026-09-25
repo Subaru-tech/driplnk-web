@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 const guarantees = [
   {
     icon: ShieldCheck,
-    title: "Print-ready tolerance guarantee",
+    title: "Manufacturing-focused vetting",
     description:
-      "Every freelancer is evaluated for real manufacturing skills — wall thickness, draft angles, shrinkage compensation, and overhang orientation.",
+      "Freelancers are evaluated for real manufacturing skills during approval — wall thickness, draft angles, shrinkage compensation, and overhang orientation.",
   },
   {
     icon: Layers,
@@ -31,7 +31,7 @@ const guarantees = [
     icon: FileCheck,
     title: "Milestone-protected escrow",
     description:
-      "Funds stay in secure escrow and are only released once you inspect the CAD files and slice tests to confirm they fit your specifications.",
+      "Funds are held in escrow and released once you inspect the delivered CAD files and slice tests against your specifications.",
   },
   {
     icon: UserCheck,
@@ -74,29 +74,72 @@ export default async function FreelancePage() {
       <Hero
         eyebrow={
           <span className="rounded-full bg-accent-muted px-3 py-1 font-mono text-xs font-medium text-accent">
-            Freelance Network
+            {browseResult.total} Founding Specialists • Curated Cohort
           </span>
         }
         headline="Hire vetted 3D & CAD specialists."
-        subhead="Find experienced mechanical engineers, enclosure designers, and digital sculptors. Verified print-ready files, milestone protection, and seamless handoff into LeaFF OS."
+        subhead="Work with CAD and product-engineering specialists for custom enclosures, precision mechanical assemblies, and guaranteed tolerance fits. Milestone protection and direct LeaFF OS handoff."
         actions={
           <>
             <ButtonLink href="#browse" size="lg">
-              Browse Specialists
+              Hire a Specialist
             </ButtonLink>
             <ButtonLink href="/freelance/apply" variant="secondary" size="lg">
-              Apply as Specialist
+              Become a Specialist
             </ButtonLink>
           </>
         }
       />
 
+      {/* Two Pathways: Customers vs CAD Professionals */}
+      <section className="border-y border-line bg-surface/50 py-8">
+        <div className="mx-auto max-w-content px-6 lg:px-12 grid gap-6 sm:grid-cols-2">
+          <div className="flex flex-col justify-between gap-4 rounded-xl border border-line bg-canvas p-6">
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-accent">
+                For Customers
+              </span>
+              <h2 className="font-display text-lg font-semibold text-fg">
+                Hire a Specialist
+              </h2>
+              <p className="text-xs text-muted leading-relaxed">
+                Connect with vetted mechanical engineers and 3D modelers. Get print-ready STEP/STL files, slice-verified geometry, and escrow protection.
+              </p>
+            </div>
+            <div>
+              <ButtonLink href="#browse" size="sm">
+                Browse Specialists →
+              </ButtonLink>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-between gap-4 rounded-xl border border-line bg-canvas p-6">
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-accent-2">
+                For CAD Professionals
+              </span>
+              <h2 className="font-display text-lg font-semibold text-fg">
+                Become a Specialist
+              </h2>
+              <p className="text-xs text-muted leading-relaxed">
+                Join our founding cohort. Set your own hourly or milestone rates, receive customer briefs, and get paid with milestone-backed security.
+              </p>
+            </div>
+            <div>
+              <ButtonLink href="/freelance/apply" variant="secondary" size="sm">
+                Apply as Specialist →
+              </ButtonLink>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Directory Section */}
       <Section id="browse" tone="canvas">
         <SectionHeading
-          eyebrow="001 / Talent Directory"
-          title="Browse available specialists"
-          description="Filter by discipline, CAD tool, or specific manufacturing need. Review past print-ready projects and request transparent milestone quotes."
+          eyebrow="001 / Curated Network"
+          title="Founding Specialists"
+          description={`A curated first cohort of ${browseResult.total} CAD and product-engineering specialists currently serving the DripLink network.`}
         />
         <div className="mt-10">
           <FreelanceBrowser

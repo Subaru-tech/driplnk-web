@@ -7,7 +7,7 @@ import { FileDropzone, UploadProgress, type PickedFile } from "@/components/uplo
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
-import { renderThumbnail } from "@/lib/model-preview";
+import { renderThumbnail, renderThumbnailWithPhash } from "@/lib/model-preview";
 import { getSupabaseBrowserClient, SUPABASE_URL } from "@/lib/supabase";
 import {
   nameFromFilename,
@@ -20,6 +20,9 @@ import {
   getUploadSession,
   recordUploadedModel,
   updateModelThumbnail,
+  checkFileDuplicateByHash,
+  recordModelHash,
+  recordModelPhash,
 } from "@/driplnk-web-backend/actions/upload";
 
 /**
@@ -137,6 +140,19 @@ export function UploadModelButton({ variant = "primary" }: { variant?: "primary"
       let path = storagePathFor(session.userId, picked.file.name);
 
       try {
+        // Compute SHA-256 hash client-side before upload starts
+        const arrayBuffer = await picked.file.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+        const sha256 = Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+
+        // Reject exact duplicate files immediately before consuming network/storage
+        const dupCheck = await checkFileDuplicateByHash(sha256);
+        if (dupCheck.duplicate) {
+          throw new Error("This file is already published on Driplnk by another creator.");
+        }
+
         if (session.mode === "server") {
           // Clerk session — no Supabase JWT exists. POST the file to the
           // authenticated API route, which verifies the session server-side
@@ -183,13 +199,13 @@ export function UploadModelButton({ variant = "primary" }: { variant?: "primary"
           throw new Error(error || "Failed to save model to your library.");
         }
 
-        // Asynchronously render and save thumbnail in the background.
-        // In "server" mode there is no JWT for the browser-direct art upload,
-        // so attachThumbnail would fail — pass an empty token; it is only
-        // used for the optional (cosmetic) art-bucket write.
+        // Record the SHA-256 on the created model row
+        await recordModelHash(row.id, sha256).catch(() => {});
+
+        // Asynchronously render thumbnail & compute perceptual hash in background
         void (async () => {
           try {
-            const blob = await renderThumbnail(picked.file);
+            const { blob, phash } = await renderThumbnailWithPhash(picked.file);
             if (blob) {
               const reader = new FileReader();
               reader.onload = async () => {
@@ -199,6 +215,9 @@ export function UploadModelButton({ variant = "primary" }: { variant?: "primary"
                 }
               };
               reader.readAsDataURL(blob);
+            }
+            if (phash) {
+              await recordModelPhash(row.id, phash).catch(() => {});
             }
           } catch {
             // Non-fatal: ModelViewer will backfill on first open

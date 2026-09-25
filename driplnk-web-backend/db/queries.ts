@@ -3,28 +3,22 @@ import "server-only";
 import { getSupabaseServerClient, getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getUnifiedUser, isClerkConfigured, syncClerkProfile } from "@/driplnk-web-backend/auth/clerk";
-import { LISTING_SORTS, type Category, type ListingSort } from "@/lib/marketplace";
 import type {
   AcquiredModel,
-  CategoryRecord,
   FreelanceRequest,
   FreelancerProfile,
   LedgerEntry,
-  LibraryItem,
-  LicenseRecord,
   Listing,
   MarketplaceLicenseType,
   MarketplaceModel,
-  ModelFileRecord,
-  ModelVersionRecord,
   PublicListing,
   MartOrder,
   MartVendorOrder,
   Model,
   Payout,
-
   Profile,
   Provider,
+  ProviderStatus,
   Sale,
   SellerProfile,
 } from "@/lib/types";
@@ -495,34 +489,6 @@ export async function getSellerListing(id: string): Promise<QueryResult<Listing 
 
 /* ---------------------------------------------------------- Public browse */
 
-export async function getPublicListings(
-  options: { category?: Category; search?: string; sort?: ListingSort; limit?: number } = {},
-): Promise<QueryResult<PublicListing[]>> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return empty([]);
-
-  const sort = LISTING_SORTS[options.sort ?? "newest"];
-
-  let query = supabase
-    .from("listings")
-    .select(PUBLIC_LISTING_COLUMNS)
-    .eq("status", "published")
-    .order(sort.column, { ascending: sort.ascending, nullsFirst: false });
-
-  if (options.category) query = query.eq("category", options.category);
-  if (options.search) {
-    const escaped = options.search.replace(/[%_]/g, (char) => `\\${char}`);
-    query = query.or(
-      `title.ilike.%${escaped}%,description.ilike.%${escaped}%,tags.cs.{${escaped.toLowerCase()}}`,
-    );
-  }
-  if (options.limit) query = query.limit(options.limit);
-
-  const { data, error } = await query;
-  if (error) return empty([]);
-  return { data: (data as unknown as PublicListing[]) ?? [], backendReady: true };
-}
-
 export async function getPublicListing(slug: string): Promise<QueryResult<PublicListing | null>> {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return empty(null);
@@ -536,66 +502,6 @@ export async function getPublicListing(slug: string): Promise<QueryResult<Public
 
   if (error) return empty(null);
   return { data: (data as unknown as PublicListing) ?? null, backendReady: true };
-}
-
-/** Category counts for the browse sidebar. */
-export async function getCategoryCounts(): Promise<QueryResult<Record<string, number>>> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return empty({});
-
-  const { data, error } = await supabase
-    .from("listings")
-    .select("category")
-    .eq("status", "published");
-
-  if (error) return empty({});
-
-  const counts: Record<string, number> = {};
-  for (const row of (data as { category: string | null }[]) ?? []) {
-    if (row.category) counts[row.category] = (counts[row.category] ?? 0) + 1;
-  }
-  return { data: counts, backendReady: true };
-}
-
-/* ------------------------------------------------------------- Library */
-
-export async function getLibrary(): Promise<QueryResult<LibraryItem[]>> {
-  const supabase = await getOwnerQueryClient();
-  if (!supabase) return empty([]);
-
-  const user = await getUnifiedUser();
-  if (!user) return empty([]);
-
-  const { data, error } = await supabase
-    .from("library_items")
-    .select(
-      "id, listing_id, source, acquired_at, " +
-        "listing:listings(id, title, slug, thumbnail_url, file_path, license, " +
-        "seller:seller_profiles(studio_name))",
-    )
-    .eq("user_id", user.id)
-    .order("acquired_at", { ascending: false });
-
-  if (error) return empty([]);
-  return { data: (data as unknown as LibraryItem[]) ?? [], backendReady: true };
-}
-
-/** Whether the current user already has this listing. Null when signed out. */
-export async function getLibraryEntry(listingId: string): Promise<string | null> {
-  const supabase = await getOwnerQueryClient();
-  if (!supabase) return null;
-
-  const user = await getUnifiedUser();
-  if (!user) return null;
-
-  const { data } = await supabase
-    .from("library_items")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("listing_id", listingId)
-    .maybeSingle();
-
-  return (data as { id: string } | null)?.id ?? null;
 }
 
 /* -------------------------------------------------------------- Admin side */
@@ -719,10 +625,11 @@ export type AdminPendingProvider = {
   provider_id: string;
   user_id: string;
   type: "vendor" | "freelancer";
-  status: "pending" | "approved" | "rejected";
+  status: ProviderStatus;
   created_at: string;
   applicant_name: string;
   applicant_email: string;
+  admin_notes?: string | null;
   details: {
     business_name?: string;
     location?: string;
@@ -735,6 +642,7 @@ export type AdminPendingProvider = {
     rate_type?: string;
     base_rate?: number;
     profile_status?: string;
+    admin_notes?: string | null;
   };
 };
 
@@ -755,10 +663,11 @@ export async function getAdminPendingProviders(typeFilter?: string): Promise<Que
     provider_id: String(row.provider_id),
     user_id: String(row.user_id),
     type: row.type as "vendor" | "freelancer",
-    status: row.status as "pending" | "approved" | "rejected",
+    status: row.status as ProviderStatus,
     created_at: String(row.created_at),
     applicant_name: String(row.applicant_name || "Applicant"),
     applicant_email: String(row.applicant_email || "No email"),
+    admin_notes: (row.admin_notes as string | null) || null,
     details: (row.details as AdminPendingProvider["details"]) || {},
   }));
 
@@ -776,8 +685,13 @@ export async function getAdminMartOrders(statusFilter?: string): Promise<QueryRe
   const client = await getAdminQueryClient();
   if (!client) return empty([]);
 
+  let targetStatus = statusFilter && statusFilter.toLowerCase() !== "all" ? statusFilter : null;
+  if (targetStatus && targetStatus.toLowerCase() === "pending moderation") {
+    targetStatus = "pending_moderation";
+  }
+
   const { data: rpcData, error: rpcError } = await client.rpc("admin_get_mart_orders", {
-    p_status: statusFilter && statusFilter.toLowerCase() !== "all" ? statusFilter : null,
+    p_status: targetStatus,
   });
 
   if (!rpcError && rpcData) {
@@ -800,8 +714,8 @@ export async function getAdminMartOrders(statusFilter?: string): Promise<QueryRe
     `)
     .order("created_at", { ascending: false });
 
-  if (statusFilter && statusFilter.toLowerCase() !== "all") {
-    query = query.eq("status", statusFilter);
+  if (targetStatus) {
+    query = query.eq("status", targetStatus);
   }
 
   const { data, error } = await query;
@@ -1215,81 +1129,66 @@ export async function getMarketplaceCategoryCounts(): Promise<
   return { data: counts, backendReady: true };
 }
 
-export async function getCategoriesHierarchy(): Promise<QueryResult<CategoryRecord[]>> {
+export type MarketplaceCategoryItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  sort_order: number;
+  subcategories: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    sort_order: number;
+  }[];
+};
+
+export async function getMarketplaceCategoriesHierarchy(): Promise<
+  QueryResult<MarketplaceCategoryItem[]>
+> {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return empty([]);
 
   const { data, error } = await supabase
     .from("categories")
-    .select("id, parent_id, name, slug, description, icon, sort_order")
+    .select("id, parent_id, name, slug, description, sort_order")
     .order("sort_order", { ascending: true });
 
   if (error || !data) return empty([]);
-  return { data: data as CategoryRecord[], backendReady: true };
-}
 
-export async function getLicensesList(): Promise<QueryResult<LicenseRecord[]>> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return empty([]);
+  const parents: MarketplaceCategoryItem[] = [];
+  const childrenMap = new Map<string, typeof data>();
 
-  const { data, error } = await supabase
-    .from("licenses")
-    .select("id, name, slug, description, allows_commercial, allows_remix, requires_attribution, is_custom")
-    .order("sort_order", { ascending: true });
-
-  if (error || !data) return empty([]);
-  return { data: data as LicenseRecord[], backendReady: true };
-}
-
-export async function getModelVersions(modelId: string): Promise<QueryResult<ModelVersionRecord[]>> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return empty([]);
-
-  const { data, error } = await supabase
-    .from("model_versions")
-    .select("id, model_id, version_number, changelog, created_at, is_current")
-    .eq("model_id", modelId)
-    .order("created_at", { ascending: false });
-
-  if (error || !data) return empty([]);
-  return { data: data as ModelVersionRecord[], backendReady: true };
-}
-
-export async function getModelFiles(modelId: string): Promise<QueryResult<ModelFileRecord[]>> {
-  const serviceSupabase = getSupabaseServiceClient();
-  const supabase = await getSupabaseServerClient();
-  const client = serviceSupabase ?? supabase;
-  if (!client) return empty([]);
-
-  const { data, error } = await client
-    .from("model_files")
-    .select("id, filename, format, file_size, is_primary, storage_path")
-    .eq("model_id", modelId)
-    .order("is_primary", { ascending: false });
-
-  if (error || !data) return empty([]);
-  return { data: data as ModelFileRecord[], backendReady: true };
-}
-
-export async function isModelFavorited(modelId: string, userId?: string): Promise<boolean> {
-  const supabase = await getOwnerQueryClient();
-  if (!supabase) return false;
-
-  let targetUserId = userId;
-  if (!targetUserId) {
-    const user = await getUnifiedUser();
-    if (!user) return false;
-    targetUserId = user.id;
+  for (const row of data) {
+    if (row.parent_id) {
+      const arr = childrenMap.get(row.parent_id) ?? [];
+      arr.push(row);
+      childrenMap.set(row.parent_id, arr);
+    } else {
+      parents.push({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        description: row.description,
+        sort_order: row.sort_order ?? 999,
+        subcategories: [],
+      });
+    }
   }
 
-  const { data } = await supabase
-    .from("model_favorites")
-    .select("id")
-    .eq("user_id", targetUserId)
-    .eq("model_id", modelId)
-    .maybeSingle();
+  for (const parent of parents) {
+    const subs = childrenMap.get(parent.id) ?? [];
+    parent.subcategories = subs.map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      description: s.description,
+      sort_order: s.sort_order ?? 999,
+    }));
+  }
 
-  return Boolean(data);
+  return { data: parents, backendReady: true };
 }
 
 /* ----------------------------------------------------------- Freelance queries */
@@ -1503,7 +1402,7 @@ export async function getMyFreelanceProvider(): Promise<QueryResult<Provider | n
   try {
     const { data, error } = await supabase
       .from("providers")
-      .select("id, user_id, type, status, created_at")
+      .select("id, user_id, type, status, admin_notes, created_at")
       .eq("user_id", user.id)
       .eq("type", "freelancer")
       .maybeSingle();
@@ -1513,6 +1412,29 @@ export async function getMyFreelanceProvider(): Promise<QueryResult<Provider | n
   } catch (err) {
     console.error("getMyFreelanceProvider error:", err);
     return empty(null);
+  }
+}
+
+export async function getApprovedVendorCount(): Promise<QueryResult<number>> {
+  const serviceSupabase = getSupabaseServiceClient();
+  const supabase = serviceSupabase ?? (await getSupabaseServerClient());
+  if (!supabase) return empty(0);
+
+  try {
+    const { count, error } = await supabase
+      .from("providers")
+      .select("*", { count: "exact", head: true })
+      .eq("type", "vendor")
+      .eq("status", "approved");
+
+    if (error) {
+      console.error("getApprovedVendorCount error:", error);
+      return empty(0);
+    }
+    return { data: count ?? 0, backendReady: true };
+  } catch (err) {
+    console.error("getApprovedVendorCount error:", err);
+    return empty(0);
   }
 }
 

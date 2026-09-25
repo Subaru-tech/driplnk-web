@@ -20,10 +20,9 @@ const isClerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 const links = [
   { href: "/leaff-os", label: "LeaFF OS" },
   { href: "/models", label: "Models" },
-  { href: "/mart", label: "Get a Quote" },
-  { href: "/freelance", label: "Freelance" },
-  { href: "/download", label: "Download" },
-  { href: "/about", label: "About" },
+  { href: "/freelance", label: "Specialists" },
+  { href: "/mart", label: "Manufacturing" },
+  { href: "/mart#quote-estimator", label: "Get a Quote" },
 ];
 
 export function SiteNav() {
@@ -92,9 +91,9 @@ export function SiteNav() {
           <Wordmark introTarget />
         </Link>
 
-        <ul className="hidden items-center gap-8 md:flex">
+        <ul className="hidden items-center gap-7 md:flex">
           {links.map((link) => {
-            const active = pathname === link.href;
+            const active = link.href.includes("#") ? false : pathname === link.href;
             return (
               <li key={link.href}>
                 <Link
@@ -102,7 +101,7 @@ export function SiteNav() {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "text-sm transition-colors",
-                    active ? "text-fg" : "text-muted hover:text-fg",
+                    active ? "text-fg font-medium" : "text-muted hover:text-fg",
                   )}
                 >
                   {link.label}
@@ -112,16 +111,19 @@ export function SiteNav() {
           })}
         </ul>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2.5 md:flex">
           <ThemeToggle />
+          <ButtonLink href="/partner" variant="ghost" size="sm" className="text-xs">
+            Partner with DripLink
+          </ButtonLink>
           {isClerkEnabled ? (
             <>
               <Show when="signed-out">
                 <ButtonLink href="/login" variant="ghost" size="sm">
-                  Log In
+                  Sign In
                 </ButtonLink>
                 <ButtonLink href="/sign-up" variant="primary" size="sm">
-                  Sign Up
+                  Get Started
                 </ButtonLink>
               </Show>
               <Show when="signed-in">
@@ -138,10 +140,10 @@ export function SiteNav() {
           ) : (
             <>
               <ButtonLink href="/login" variant="ghost" size="sm">
-                Log In
+                Sign In
               </ButtonLink>
               <ButtonLink href="/sign-up" variant="primary" size="sm">
-                Sign Up
+                Get Started
               </ButtonLink>
             </>
           )}
@@ -205,6 +207,15 @@ export function SiteNav() {
           </ul>
 
           <div className="mt-8 flex flex-col gap-3 px-6">
+            <ButtonLink
+              href="/partner"
+              variant="ghost"
+              size="lg"
+              className="w-full justify-center border border-line"
+              onClick={closeMenu}
+            >
+              Partner with DripLink
+            </ButtonLink>
             {isClerkEnabled ? (
               <>
                 <Show when="signed-out">
@@ -215,7 +226,7 @@ export function SiteNav() {
                     className="w-full"
                     onClick={closeMenu}
                   >
-                    Log In
+                    Sign In
                   </ButtonLink>
                   <ButtonLink
                     href="/sign-up"
@@ -224,7 +235,7 @@ export function SiteNav() {
                     className="w-full"
                     onClick={closeMenu}
                   >
-                    Sign Up
+                    Get Started
                   </ButtonLink>
                 </Show>
                 <Show when="signed-in">
@@ -262,7 +273,7 @@ export function SiteNav() {
                   className="w-full"
                   onClick={closeMenu}
                 >
-                  Log In
+                  Sign In
                 </ButtonLink>
                 <ButtonLink
                   href="/sign-up"
@@ -271,7 +282,7 @@ export function SiteNav() {
                   className="w-full"
                   onClick={closeMenu}
                 >
-                  Sign Up
+                  Get Started
                 </ButtonLink>
               </>
             )}

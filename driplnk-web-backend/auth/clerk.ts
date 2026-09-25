@@ -49,6 +49,7 @@ export async function syncClerkProfile(): Promise<Profile | null> {
       p_clerk_id: userId,
       p_full_name: fullName,
       p_avatar_url: avatarUrl,
+      p_email: email,
     });
 
     if (!rpcError && rpcProfile && rpcProfile.length > 0) {
@@ -73,6 +74,7 @@ export async function syncClerkProfile(): Promise<Profile | null> {
         clerk_id: userId,
         full_name: fullName,
         avatar_url: avatarUrl,
+        email: email,
         role: "creator",
         credits_balance: 0,
       })

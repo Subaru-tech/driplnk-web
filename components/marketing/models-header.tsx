@@ -5,19 +5,18 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { cn } from "@/lib/cn";
-import { CATEGORIES } from "@/lib/marketplace";
 
-// Ordered priority category strip matching the requested layout
-const PRIMARY_CATEGORY_KEYS = [
-  "mechanical",
-  "robotics",
-  "electronics",
-  "tools",
-  "enclosures",
-  "replacement",
-  "educational",
-  "decorative",
-  "other",
+// Ordered priority category strip matching the requested engineering taxonomy
+const PRIMARY_CATEGORIES = [
+  { key: "mechanical", label: "Mechanical", dbCategory: "Mechanical" },
+  { key: "robotics", label: "Robotics", dbCategory: "Robotics" },
+  { key: "electronics", label: "Electronics", dbCategory: "Electronics" },
+  { key: "tools", label: "Tools", dbCategory: "Tools & Jigs" },
+  { key: "enclosures", label: "Enclosures", dbCategory: "Enclosures" },
+  { key: "replacement", label: "Replacement Parts", dbCategory: "Replacement Parts" },
+  { key: "educational", label: "Educational", dbCategory: "Educational" },
+  { key: "decorative", label: "Decorative", dbCategory: "Art & Decor" },
+  { key: "other", label: "Other", dbCategory: "Other" },
 ] as const;
 
 export function ModelsHeader({
@@ -76,7 +75,7 @@ export function ModelsHeader({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Hero Header */}
+      {/* Marketplace Hero Header */}
       <div className="relative overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 size-72 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col gap-4 max-w-3xl">
@@ -91,7 +90,7 @@ export function ModelsHeader({
               </div>
 
               <h1 className="font-display text-3xl font-semibold tracking-tight text-fg sm:text-4xl md:text-5xl">
-                3D Model Marketplace
+                Models
               </h1>
             </div>
 
@@ -101,16 +100,15 @@ export function ModelsHeader({
               className="inline-flex items-center gap-2 self-start shrink-0 rounded-xl bg-accent px-4 py-2.5 text-xs font-bold text-accent-contrast shadow-sm hover:bg-accent-hover active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="size-4" />
-              <span>Upload Model</span>
+              <span>+ Upload Model</span>
             </Link>
           </div>
 
           <p className="text-sm text-muted sm:text-base leading-relaxed max-w-2xl">
-            Discover, download, customize, and build from a growing community library of engineering
-            CAD models, maker parts, and enclosures.
+            Engineering-grade CAD marketplace for functional 3D printing, robotics hardware, precision enclosures, and replacement parts.
           </p>
 
-          {/* Search Bar */}
+          {/* Prominent Search Bar */}
           <div className="relative mt-2 w-full max-w-2xl">
             <Search
               className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted"
@@ -122,7 +120,7 @@ export function ModelsHeader({
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search models, parts, mechanisms, enclosures... (Press / to focus)"
+              placeholder="Search engineering models, STEP assemblies, enclosures... (Press / to focus)"
               aria-label="Search models"
               className="h-11 w-full rounded-xl border border-line bg-surface/90 pl-10 pr-20 text-sm text-fg shadow-xs backdrop-blur-sm placeholder:text-muted/60 transition-all hover:border-line-strong focus:border-accent focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
             />
@@ -147,11 +145,11 @@ export function ModelsHeader({
         </div>
       </div>
 
-      {/* Clean Category Strip */}
+      {/* Category Navigation Strip */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-xs text-muted px-1">
           <span className="font-medium uppercase tracking-wider text-[11px] text-faint">
-            Browse by Category
+            Category Navigation
           </span>
           {activeCategory && (
             <button
@@ -176,21 +174,21 @@ export function ModelsHeader({
             )}
           >
             <Layers className="size-3.5" aria-hidden="true" />
-            <span>All Models</span>
+            <span>All</span>
           </button>
 
-          {PRIMARY_CATEGORY_KEYS.map((key) => {
-            const label = CATEGORIES[key];
+          {PRIMARY_CATEGORIES.map((item) => {
             const isSelected =
-              activeCategory.toLowerCase() === label.toLowerCase() ||
-              activeCategory.toLowerCase() === key.toLowerCase();
-            const count = counts[label] ?? counts[key];
+              activeCategory.toLowerCase() === item.label.toLowerCase() ||
+              activeCategory.toLowerCase() === item.key.toLowerCase() ||
+              activeCategory.toLowerCase() === item.dbCategory.toLowerCase();
+            const count = counts[item.dbCategory] ?? counts[item.label] ?? counts[item.key];
 
             return (
               <button
-                key={key}
+                key={item.key}
                 type="button"
-                onClick={() => applyParams({ category: isSelected ? null : label })}
+                onClick={() => applyParams({ category: isSelected ? null : item.label })}
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer",
                   isSelected
@@ -198,7 +196,7 @@ export function ModelsHeader({
                     : "border-line bg-surface text-muted hover:border-line-strong hover:bg-raised hover:text-fg"
                 )}
               >
-                <span>{label}</span>
+                <span>{item.label}</span>
                 {count !== undefined && count > 0 && (
                   <span
                     className={cn(

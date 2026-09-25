@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonGroup, Skeleton } from "@/components/ui/skeleton";
 import { OrderStatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { getMartOrders } from "@/lib/queries";
+import { getMartOrders } from "@/driplnk-web-backend/db/queries";
 import { BuyerCompleteOrderButton } from "@/components/dashboard/buyer-mart-order-actions";
 
 export const metadata: Metadata = { title: "Mart Orders" };

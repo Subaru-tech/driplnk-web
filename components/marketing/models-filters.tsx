@@ -9,6 +9,7 @@ import {
   MODEL_FORMATS,
   MODEL_LICENSE_LIST,
   PRINT_MATERIALS,
+  SUBCATEGORIES_BY_CATEGORY,
 } from "@/lib/marketplace";
 
 export const MODEL_SORTS = {
@@ -30,13 +31,14 @@ export function MarketplaceTopBar({
   const [, startTransition] = useTransition();
 
   const category = searchParams.get("category") ?? "";
+  const subcategory = searchParams.get("subcategory") ?? "";
   const license = searchParams.get("license") ?? "";
   const priceFilter = searchParams.get("price") ?? "";
   const format = searchParams.get("format") ?? "";
   const material = searchParams.get("material") ?? "";
   const sort = searchParams.get("sort") ?? "newest";
 
-  const activeCount = [category, license, priceFilter, format, material].filter(Boolean).length;
+  const activeCount = [category, subcategory, license, priceFilter, format, material].filter(Boolean).length;
 
   function apply(next: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -60,7 +62,7 @@ export function MarketplaceTopBar({
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <h2 className="font-display text-xl font-semibold text-fg">
-            {category || "All Models"}
+            {subcategory || category || "All Models"}
           </h2>
           <span className="rounded-full bg-raised px-2.5 py-0.5 font-mono text-xs text-muted border border-line">
             {total} {total === 1 ? "model" : "models"}
@@ -73,6 +75,7 @@ export function MarketplaceTopBar({
             <button
               type="button"
               onClick={onOpenMobileFilters}
+              aria-label="Open filter drawer"
               className="flex lg:hidden items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-fg hover:bg-raised"
             >
               <SlidersHorizontal className="size-3.5 text-accent" />
@@ -90,6 +93,7 @@ export function MarketplaceTopBar({
             <span className="text-muted hidden sm:inline">Sort:</span>
             <select
               id="models-sort-dropdown"
+              aria-label="Sort models"
               value={sort}
               onChange={(e) => apply({ sort: e.target.value })}
               className="h-8 rounded-lg border border-line bg-surface px-2.5 text-xs font-medium text-fg hover:border-line-strong focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
@@ -109,7 +113,10 @@ export function MarketplaceTopBar({
         <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
           <span className="text-muted text-[11px]">Active filters:</span>
           {category && (
-            <FilterTag label={`Category: ${category}`} onRemove={() => apply({ category: null })} />
+            <FilterTag label={`Category: ${category}`} onRemove={() => apply({ category: null, subcategory: null })} />
+          )}
+          {subcategory && (
+            <FilterTag label={`Subcategory: ${subcategory}`} onRemove={() => apply({ subcategory: null })} />
           )}
           {license && (
             <FilterTag label={`License: ${license}`} onRemove={() => apply({ license: null })} />
@@ -126,7 +133,7 @@ export function MarketplaceTopBar({
           <button
             type="button"
             onClick={clearAll}
-            className="flex items-center gap-1 text-[11px] text-accent hover:underline font-medium ml-1"
+            className="flex items-center gap-1 text-[11px] text-accent hover:underline font-medium ml-1 cursor-pointer"
           >
             <RotateCcw className="size-3" />
             Clear all
@@ -144,7 +151,8 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
       <button
         type="button"
         onClick={onRemove}
-        className="rounded p-0.5 text-muted hover:text-fg hover:bg-surface"
+        aria-label={`Remove filter ${label}`}
+        className="rounded p-0.5 text-muted hover:text-fg hover:bg-surface cursor-pointer"
       >
         <X className="size-3" />
       </button>
@@ -165,6 +173,7 @@ export function MarketplaceSidebarFilters({
   const [, startTransition] = useTransition();
 
   const category = searchParams.get("category") ?? "";
+  const subcategory = searchParams.get("subcategory") ?? "";
   const license = searchParams.get("license") ?? "";
   const priceFilter = searchParams.get("price") ?? "";
   const format = searchParams.get("format") ?? "";
@@ -180,8 +189,15 @@ export function MarketplaceSidebarFilters({
     startTransition(() => router.replace(`${pathname}?${params.toString()}`, { scroll: false }));
   }
 
+  // Find subcategories if current category has any
+  const matchedKey = Object.keys(SUBCATEGORIES_BY_CATEGORY).find(
+    (k) => k.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(k)
+  );
+  const subcategories = matchedKey ? SUBCATEGORIES_BY_CATEGORY[matchedKey] : [];
+
   return (
     <aside
+      aria-label="Marketplace filters"
       className={cn(
         "flex flex-col gap-6 rounded-xl border border-line bg-surface/60 p-4 backdrop-blur-xs",
         className
@@ -208,13 +224,13 @@ export function MarketplaceSidebarFilters({
                 type="radio"
                 name="filter-cat"
                 checked={!category}
-                onChange={() => apply({ category: null })}
-                className="accent-accent"
+                onChange={() => apply({ category: null, subcategory: null })}
+                className="accent-accent cursor-pointer"
               />
               <span>All Categories</span>
             </span>
           </label>
-          {CATEGORY_LIST.slice(0, 8).map((cat) => {
+          {CATEGORY_LIST.slice(0, 9).map((cat) => {
             const isChecked =
               category.toLowerCase() === cat.label.toLowerCase() ||
               category.toLowerCase() === cat.id.toLowerCase();
@@ -232,8 +248,8 @@ export function MarketplaceSidebarFilters({
                     type="radio"
                     name="filter-cat"
                     checked={isChecked}
-                    onChange={() => apply({ category: isChecked ? null : cat.label })}
-                    className="accent-accent"
+                    onChange={() => apply({ category: isChecked ? null : cat.label, subcategory: null })}
+                    className="accent-accent cursor-pointer"
                   />
                   <span>{cat.label}</span>
                 </span>
@@ -245,6 +261,52 @@ export function MarketplaceSidebarFilters({
           })}
         </div>
       </div>
+
+      {/* 1b. Subcategories (Shown when active category has subcategories) */}
+      {subcategories && subcategories.length > 0 && (
+        <div className="flex flex-col gap-2.5 border-t border-line/50 pt-4">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">
+            Subcategory
+          </h4>
+          <div className="flex flex-col gap-1 text-xs">
+            <label className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-raised cursor-pointer text-fg">
+              <span className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="filter-subcat"
+                  checked={!subcategory}
+                  onChange={() => apply({ subcategory: null })}
+                  className="accent-accent cursor-pointer"
+                />
+                <span>All Subcategories</span>
+              </span>
+            </label>
+            {subcategories.map((sub) => {
+              const isChecked = subcategory.toLowerCase() === sub.label.toLowerCase();
+              return (
+                <label
+                  key={sub.id}
+                  className={cn(
+                    "flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-raised cursor-pointer transition-colors",
+                    isChecked ? "bg-accent-muted/40 font-medium text-accent" : "text-muted hover:text-fg"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="filter-subcat"
+                      checked={isChecked}
+                      onChange={() => apply({ subcategory: isChecked ? null : sub.label })}
+                      className="accent-accent cursor-pointer"
+                    />
+                    <span>{sub.label}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 2. License */}
       <div className="flex flex-col gap-2.5 border-t border-line/50 pt-4">

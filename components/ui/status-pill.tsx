@@ -68,6 +68,10 @@ export const ORDER_TIMELINE: OrderStatus[] = [
 const orderTones: Record<string, StatusTone> = {
   Placed: "neutral",
   placed: "neutral",
+  pending_vendor_response: "neutral",
+  "Awaiting Vendor": "neutral",
+  pending_moderation: "warning",
+  "Safety Review": "warning",
   Confirmed: "info",
   accepted: "info",
   Printing: "warning",
@@ -83,9 +87,22 @@ const orderTones: Record<string, StatusTone> = {
   Failed: "danger",
 };
 
+const statusLabels: Record<string, string> = {
+  pending_moderation: "Safety Review",
+  pending_vendor_response: "Awaiting Vendor",
+  placed: "Placed",
+  accepted: "Confirmed",
+  printing: "Printing",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  expired_no_vendor_response: "Expired",
+};
+
 export function OrderStatusPill({ status }: { status: string }) {
   const tone = orderTones[status] || "neutral";
-  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  const label = statusLabels[status] || (status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " "));
   return <StatusPill tone={tone}>{label}</StatusPill>;
 }
 

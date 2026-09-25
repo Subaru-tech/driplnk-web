@@ -46,9 +46,9 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
   return (
     <div
       id={`model-card-${model.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-line-strong hover:shadow-xl hover:shadow-black/25"
+      className="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-line-strong hover:shadow-xl hover:shadow-black/30"
     >
-      {/* 3D Preview / Image Viewport */}
+      {/* 1. WHAT IS THIS: Visual Viewport */}
       <div className="relative aspect-4/3 w-full overflow-hidden bg-raised">
         <Link href={`/models/${model.id}`} className="block size-full" tabIndex={-1}>
           {previewImage ? (
@@ -57,19 +57,26 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
               src={previewImage}
               alt={model.title}
               loading="lazy"
-              className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="grid size-full place-items-center bg-gradient-to-br from-raised to-surface">
-              <Box className="size-10 text-faint group-hover:text-muted transition-colors" strokeWidth={1.5} aria-hidden="true" />
+            <div className="grid size-full place-items-center bg-gradient-to-br from-raised via-canvas to-surface">
+              <Box className="size-12 text-faint group-hover:text-accent/60 transition-colors duration-300" strokeWidth={1.5} aria-hidden="true" />
             </div>
           )}
         </Link>
 
-        {/* License Badge */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-md bg-canvas/80 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-sm border border-line/50">
-          <ShieldCheck className="size-3 text-accent" aria-hidden="true" />
-          <span>{license.badge}</span>
+        {/* Category & License Badges Overlay */}
+        <div className="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
+          {model.category && (
+            <span className="rounded-md bg-canvas/90 px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-accent backdrop-blur-md border border-line/60 shadow-xs">
+              {model.category}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1 rounded-md bg-canvas/90 px-2 py-0.5 text-[10px] font-medium text-fg/90 backdrop-blur-md border border-line/50 shadow-xs">
+            <ShieldCheck className="size-3 text-accent" aria-hidden="true" />
+            <span>{license.badge}</span>
+          </span>
         </div>
 
         {/* Wishlist / Favorite Button */}
@@ -77,71 +84,63 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
           type="button"
           onClick={handleToggleFavorite}
           aria-label={favorited ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-canvas/80 text-muted backdrop-blur-sm border border-line/60 transition-colors hover:text-red-400 hover:bg-canvas cursor-pointer"
+          className="absolute top-2.5 right-2.5 flex size-8 items-center justify-center rounded-full bg-canvas/90 text-muted backdrop-blur-md border border-line/70 shadow-xs transition-colors hover:text-rose-400 hover:bg-canvas cursor-pointer"
         >
           <Heart
             className={`size-3.5 transition-transform active:scale-125 ${
-              favorited ? "fill-red-500 text-red-500" : ""
+              favorited ? "fill-rose-500 text-rose-500" : ""
             }`}
           />
         </button>
 
-        {/* Formats Strip Tag */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+        {/* WHAT DO I GET: Formats Floating Tag */}
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1">
           {displayFormats.slice(0, 3).map((fmt) => (
             <span
               key={fmt}
-              className="rounded bg-canvas/90 px-1.5 py-0.2 font-mono text-[9px] font-semibold text-muted backdrop-blur-sm border border-line/60"
+              className="rounded bg-canvas/90 px-1.5 py-0.5 font-mono text-[9px] font-bold text-fg/80 backdrop-blur-md border border-line/60 shadow-xs"
             >
               {fmt}
             </span>
           ))}
+          {displayFormats.length > 3 && (
+            <span className="rounded bg-canvas/90 px-1 py-0.5 font-mono text-[9px] text-muted backdrop-blur-md border border-line/60">
+              +{displayFormats.length - 3}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Details Container */}
-      <div className="flex flex-1 flex-col justify-between p-4">
-        <div className="flex flex-col gap-1.5">
+      {/* 2. DETAILS & HIERARCHY */}
+      <div className="flex flex-1 flex-col justify-between p-4.5">
+        <div className="flex flex-col gap-2">
+          {/* Title: What is this? */}
           <Link
             href={`/models/${model.id}`}
-            className="line-clamp-1 font-display text-sm font-semibold text-fg hover:text-accent transition-colors"
+            className="line-clamp-1 font-display text-base font-bold text-fg hover:text-accent transition-colors"
             title={model.title}
           >
             {model.title}
           </Link>
 
-          <p className="line-clamp-1 text-xs text-muted">
-            {model.category ? (
-              <span className="font-medium text-fg/80">{model.category} · </span>
-            ) : null}
-            <span>by {sellerName}</span>
-          </p>
-
-          {/* Formats List */}
-          <div className="flex items-center gap-1.5 pt-1">
-            <span className="text-[11px] text-faint">CAD formats:</span>
-            <div className="flex items-center gap-1">
-              {displayFormats.map((fmt) => (
-                <span
-                  key={fmt}
-                  className="rounded bg-raised px-1.5 py-0.2 font-mono text-[9px] font-semibold text-fg/90 border border-line/80"
-                >
-                  {fmt}
-                </span>
-              ))}
-            </div>
+          {/* Creator: Who made it? */}
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="grid size-4 shrink-0 place-items-center rounded-full bg-raised font-mono text-[9px] font-bold text-muted border border-line">
+              {sellerName.charAt(0).toUpperCase()}
+            </span>
+            <span className="truncate">by <strong className="font-medium text-fg/90">{sellerName}</strong></span>
           </div>
         </div>
 
-        {/* Price & Primary Action */}
+        {/* 4. HOW MUCH & ACTION */}
         <div className="mt-4 flex items-center justify-between border-t border-line/60 pt-3">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-medium tracking-wider text-faint">
-              {isFree ? "License" : "Price"}
+            <span className="text-[10px] uppercase font-mono font-medium tracking-wider text-muted">
+              {isFree ? "Standard Access" : "Purchase Price"}
             </span>
-            <span className="font-mono text-base font-bold text-fg">
+            <span className="font-mono text-lg font-extrabold text-fg">
               {isFree ? (
-                <span className="text-accent font-semibold">Free</span>
+                <span className="text-emerald-400 font-bold">Free</span>
               ) : (
                 formatCurrency(model.price)
               )}
@@ -150,9 +149,9 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
 
           <Link
             href={`/models/${model.id}`}
-            className="inline-flex items-center justify-center rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-fg transition-all duration-150 hover:border-accent hover:bg-raised hover:text-accent group-hover:border-accent/40"
+            className="inline-flex min-h-[36px] items-center justify-center rounded-[var(--radius-control)] border border-line bg-canvas px-3.5 text-xs font-semibold text-fg shadow-xs transition-all duration-150 hover:border-accent hover:bg-accent hover:text-accent-contrast group-hover:border-line-strong"
           >
-            View Model →
+            Inspect Part →
           </Link>
         </div>
       </div>

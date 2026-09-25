@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { User } from "lucide-react";
+import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -55,6 +56,31 @@ export default function AboutPage() {
           That gap is the whole opportunity. The people who most need a custom bracket, a
           replacement part, or a jig for their own workshop are exactly the people the current tools
           push away.
+        </p>
+      </div>
+
+      <h2 className="mt-16 font-display text-xl font-semibold text-fg">Business details</h2>
+      <div className="mt-6 flex flex-col gap-4 text-base leading-relaxed text-muted">
+        {/* Published per IT Rules 2021 (platform hosting user content must
+            publish entity + Grievance Officer details). Values come from
+            lib/site.ts — placeholders until lawyer/entity review completes. */}
+        <p>
+          <span className="font-medium text-fg">{SITE.legalEntity}</span>
+          <br />
+          {SITE.address}
+          <br />
+          {SITE.addressLine2}
+        </p>
+        <p>
+          General contact: <a className="text-accent hover:underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          <br />
+          Grievance Officer: <span className="font-medium text-fg">{SITE.grievanceOfficer.name}</span> —{" "}
+          <a className="text-accent hover:underline" href={`mailto:${SITE.grievanceOfficer.email}`}>{SITE.grievanceOfficer.email}</a>
+          <br />
+          Complaints are acknowledged within 72 hours and resolved within {SITE.grievanceOfficer.responseDays} days.
+        </p>
+        <p className="text-sm text-faint">
+          GST registration is pending; invoices will be updated once a GSTIN is issued.
         </p>
       </div>
 

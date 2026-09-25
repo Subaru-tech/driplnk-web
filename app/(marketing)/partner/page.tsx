@@ -5,9 +5,9 @@ import { Section } from "@/components/marketing/section";
 import { CtaBand } from "@/components/marketing/cta-band";
 
 export const metadata: Metadata = {
-  title: "Partner With Us — Print Vendors & Freelance Engineers",
+  title: "Partner With Us — Print Vendors & CAD Specialists | DripLnk",
   description:
-    "Partner with DripLnk. Apply to join our vetted 3D printing network (manual review) or create your freelance CAD specialist profile (self-serve, auto-live).",
+    "Partner with DripLnk. Apply to join our vetted 3D printing farm network or become an approved CAD and engineering specialist.",
 };
 
 export default function PartnerPage() {

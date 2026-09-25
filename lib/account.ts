@@ -1,7 +1,7 @@
 import "server-only";
 
 import { parseRole, type UserRole } from "@/lib/roles";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getSupabaseServerClient } from "@/driplnk-web-backend/db/client";
 
 /**
  * The signed-in account's role, read on the server.

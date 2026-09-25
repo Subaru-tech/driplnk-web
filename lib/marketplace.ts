@@ -33,6 +33,26 @@ export const CATEGORY_LIST = Object.entries(CATEGORIES).map(([id, label]) => ({
   label,
 }));
 
+/**
+ * Real subcategories synced with public.categories table hierarchy.
+ */
+export const SUBCATEGORIES_BY_CATEGORY: Record<string, { id: string; label: string }[]> = {
+  mechanical: [
+    { id: "mechanical-brackets", label: "Brackets & Mounts" },
+    { id: "mechanical-gears", label: "Gears & Pulleys" },
+    { id: "mechanical-linear", label: "Linear Motion" },
+  ],
+  robotics: [
+    { id: "robotics-chassis", label: "Chassis & Frames" },
+    { id: "robotics-grippers", label: "Arms & Grippers" },
+    { id: "robotics-sensors", label: "Sensor Mounts" },
+  ],
+  electronics: [
+    { id: "electronics-dev-boards", label: "Arduino & Pi Cases" },
+    { id: "electronics-cable-mgmt", label: "Cable Management" },
+  ],
+};
+
 export const MODEL_FORMATS = ["STL", "STEP", "3MF", "OBJ"] as const;
 export type ModelFormat = typeof MODEL_FORMATS[number];
 

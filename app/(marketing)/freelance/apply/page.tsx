@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { Sparkles, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { getMyFreelanceProvider, getFreelancerProfileById } from "@/driplnk-web-backend/db/queries";
 import { ApplyForm } from "@/components/freelance/apply-form";
 import { Section } from "@/components/marketing/section";
-import { isClerkConfigured } from "@/driplnk-web-backend/auth/clerk";
-import { isSupabaseConfigured } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "Apply as a 3D & CAD Specialist — DripLnk",
@@ -18,16 +15,13 @@ export const dynamic = "force-dynamic";
 
 export default async function FreelanceApplyPage() {
   const user = await getUnifiedUser();
-  const isAuthConfigured = isClerkConfigured || isSupabaseConfigured;
-
-  if (isAuthConfigured && !user) {
-    redirect("/login?redirect=/freelance/apply");
-  }
 
   let existingProfile = null;
+  let existingProvider = null;
   if (user) {
     const { data: provider } = await getMyFreelanceProvider();
     if (provider) {
+      existingProvider = provider;
       const { data: profile } = await getFreelancerProfileById(provider.id);
       existingProfile = profile;
     }
@@ -44,7 +38,7 @@ export default async function FreelanceApplyPage() {
               Specialist Onboarding
             </span>
             <h1 className="font-display text-3xl font-bold text-fg sm:text-4xl">
-              {existingProfile ? "Edit your specialist profile" : "Join the DripLnk Specialist Network"}
+              {existingProfile ? "Edit your specialist profile" : "Become a DripLink Specialist"}
             </h1>
             <p className="text-base leading-relaxed text-muted">
               Connect with hardware creators, robotics builders, and product teams. You control your
@@ -59,7 +53,11 @@ export default async function FreelanceApplyPage() {
         <div className="mx-auto max-w-3xl">
           <ApplyForm
             existingProfile={existingProfile}
-            initialName={user?.name}
+            existingStatus={existingProvider?.status ?? null}
+            adminNotes={existingProvider?.admin_notes ?? null}
+            initialName={user?.name ?? undefined}
+            initialEmail={user?.email ?? undefined}
+            isSignedIn={Boolean(user)}
           />
         </div>
       </Section>

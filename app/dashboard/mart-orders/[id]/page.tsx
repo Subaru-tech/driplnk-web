@@ -6,7 +6,7 @@ import { OrderTimeline } from "@/components/dashboard/order-timeline";
 import { Card, CardTitle } from "@/components/ui/card";
 import { OrderStatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { getMartOrder } from "@/lib/queries";
+import { getMartOrder } from "@/driplnk-web-backend/db/queries";
 import { BuyerCompleteOrderButton } from "@/components/dashboard/buyer-mart-order-actions";
 
 export const metadata: Metadata = { title: "Order Details" };

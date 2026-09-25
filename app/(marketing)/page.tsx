@@ -1,4 +1,5 @@
 import { Boxes, Download, Layers, Printer, SlidersHorizontal, Sparkles } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
 import { CinematicHero } from "@/components/marketing/cinematic-hero";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { HowItWorks } from "@/components/marketing/how-it-works";
@@ -27,27 +28,35 @@ const TICKER = [
 const pillars = [
   {
     icon: Layers,
-    kicker: "Desktop",
-    title: "LeaFF OS",
+    kicker: "DEMAND / 3D MODELS",
+    title: "Marketplace & CAD Models",
     description:
-      "The desktop workspace. Describe a part, get a real editable model, and refine it until it's right.",
-    href: "/leaff-os",
+      "Models create demand. Discover, purchase, and download verified, print-ready mechanical parts, parametric CAD files, and functional components.",
+    href: "/models",
+  },
+  {
+    icon: Sparkles,
+    kicker: "EXPERTISE / FREELANCE",
+    title: "Vetted Specialist Network",
+    description:
+      "Freelancers provide expertise. Hire vetted CAD engineers for custom enclosures, precision mechanical assemblies, and guaranteed tolerance fits (±0.05mm).",
+    href: "/freelance",
   },
   {
     icon: Boxes,
-    kicker: "Multi-Vendor Network",
-    title: "Instant Print Quotes",
+    kicker: "PRODUCTION / MART",
+    title: "Instant Multi-Vendor Mart",
     description:
-      "Upload any CAD model to compare vetted print shop prices. One guaranteed rate, tracked to your door.",
+      "Vendors provide physical production. Connect CAD files directly to verified local 3D print farms with instant geometry-based quotes and tracked dispatch.",
     href: "/mart",
   },
   {
     icon: Download,
-    kicker: "Ecosystem",
-    title: "Download",
+    kicker: "TOOLING / LEAFF OS",
+    title: "LeaFF OS Workspace",
     description:
-      "Get LeaFF OS for desktop and the DripLnk companion app for iOS and Android.",
-    href: "/download",
+      "The parametric CAD generation desktop app. Describe any part, iterate real geometry, and hand off seamlessly to freelance specialists or Mart print farms.",
+    href: "/leaff-os",
   },
 ];
 
@@ -80,6 +89,182 @@ export default function HomePage() {
 
       <Ticker items={TICKER} />
 
+      {/* ------------------------------------------------ How DripLink Works */}
+      <section id="how-driplink-works" className="relative scroll-mt-16 overflow-hidden py-24 md:py-32">
+        <div
+          aria-hidden="true"
+          className="glow-accent absolute top-1/2 left-1/2 aspect-square w-[65vw] -translate-x-1/2 -translate-y-1/2 opacity-35"
+        />
+
+        <div className="relative mx-auto max-w-content px-6 lg:px-12 flex flex-col gap-12">
+          <Reveal className="max-w-2xl">
+            <p className="tech-label text-accent-2">
+              Three-Pillar Ecosystem
+            </p>
+            <h2 className="display-lg mt-4 font-display text-balance text-fg">
+              HOW DRIPLINK WORKS
+            </h2>
+            <p className="mt-4 text-base sm:text-lg text-pretty text-muted">
+              Three interconnected tracks turning ideas into verified physical parts.
+            </p>
+          </Reveal>
+
+          {/* Desktop Visual Flow Rail */}
+          <div className="hidden lg:flex items-center justify-between rounded-xl border border-line bg-surface/60 px-6 py-3 font-mono text-xs text-muted backdrop-blur-sm">
+            <span className="flex items-center gap-2 text-fg font-medium">
+              <span className="size-2 rounded-full bg-accent" />
+              01. MODELS (DISCOVER)
+            </span>
+            <span className="text-faint">→</span>
+            <span className="flex items-center gap-2 text-fg font-medium">
+              <span className="size-2 rounded-full bg-accent-2" />
+              02. SPECIALISTS (HIRE)
+            </span>
+            <span className="text-faint">→</span>
+            <span className="flex items-center gap-2 text-fg font-medium">
+              <span className="size-2 rounded-full bg-emerald-400" />
+              03. MANUFACTURING (MAKE)
+            </span>
+            <span className="text-faint">→</span>
+            <span className="font-semibold text-accent">
+              MART (REAL PRODUCT)
+            </span>
+          </div>
+
+          {/* Three-Card Ecosystem Grid */}
+          <div className="grid gap-6 md:grid-cols-3 items-stretch">
+            {/* Card 1: DISCOVER MODELS */}
+            <Reveal
+              index={0}
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+            >
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-accent uppercase tracking-wider">
+                    01 / DISCOVER
+                  </span>
+                  <span className="grid size-9 place-items-center rounded-lg bg-accent/10 text-accent">
+                    <Layers className="size-4" />
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h3 className="font-display text-xl font-semibold text-fg">
+                    DISCOVER MODELS
+                  </h3>
+                  <p className="text-sm text-pretty text-muted leading-relaxed">
+                    Browse functional CAD models, STEP assemblies, enclosures, robotics components, and print-ready parts.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 border-t border-line/60 pt-6">
+                <ButtonLink href="/models" size="md" className="w-full justify-center">
+                  Browse Models →
+                </ButtonLink>
+              </div>
+            </Reveal>
+
+            {/* Card 2: HIRE SPECIALISTS */}
+            <Reveal
+              index={1}
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+            >
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-accent-2 uppercase tracking-wider">
+                    02 / EXPERTISE
+                  </span>
+                  <span className="grid size-9 place-items-center rounded-lg bg-accent-2/10 text-accent-2">
+                    <Sparkles className="size-4" />
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h3 className="font-display text-xl font-semibold text-fg">
+                    HIRE SPECIALISTS
+                  </h3>
+                  <p className="text-sm text-pretty text-muted leading-relaxed">
+                    Work with CAD and product-engineering specialists for custom design, refinement, and manufacturability.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 flex flex-col gap-2.5 border-t border-line/60 pt-6">
+                <ButtonLink href="/freelance" size="md" className="w-full justify-center">
+                  Hire a Specialist →
+                </ButtonLink>
+                <ButtonLink
+                  href="/freelance/apply"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center text-xs text-muted hover:text-fg"
+                >
+                  Become a Specialist →
+                </ButtonLink>
+              </div>
+            </Reveal>
+
+            {/* Card 3: GET IT MADE */}
+            <Reveal
+              index={2}
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+            >
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                    03 / PRODUCTION
+                  </span>
+                  <span className="grid size-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                    <Printer className="size-4" />
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h3 className="font-display text-xl font-semibold text-fg">
+                    GET IT MADE
+                  </h3>
+                  <p className="text-sm text-pretty text-muted leading-relaxed">
+                    Get matched with manufacturing partners based on equipment, materials, capacity, and location.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 flex flex-col gap-2.5 border-t border-line/60 pt-6">
+                <ButtonLink href="/mart" size="md" className="w-full justify-center">
+                  Get a Quote →
+                </ButtonLink>
+                <ButtonLink
+                  href="/vendor/apply"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center text-xs text-muted hover:text-fg"
+                >
+                  Become a Manufacturing Partner →
+                </ButtonLink>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Convergence: DripLnk Mart */}
+          <Reveal className="relative flex flex-col items-center gap-4 rounded-2xl border border-line bg-surface/50 p-6 sm:p-8 text-center backdrop-blur-sm">
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-accent">
+              DRIPLINK MART
+            </span>
+            <p className="font-display text-lg sm:text-xl font-semibold text-fg">
+              &ldquo;From digital design to physical product.&rdquo;
+            </p>
+            <p className="max-w-2xl text-xs sm:text-sm text-muted leading-relaxed">
+              All three pillars connect through Mart. Sourced CAD files and custom specialist designs flow seamlessly to regional print farms with automated slicing checks, instant quotes, and tracked doorstep delivery.
+            </p>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+              <ButtonLink href="/mart#quote-estimator" size="sm">
+                Get Instant Print Quote →
+              </ButtonLink>
+              <ButtonLink href="/partner" variant="secondary" size="sm">
+                Partner with DripLink
+              </ButtonLink>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <div aria-hidden="true" className="rule-fade mx-auto h-px max-w-content" />
+
       {/* ------------------------------------------------------- Problem */}
       <section id="problem" className="relative scroll-mt-16 overflow-hidden py-28 md:py-40">
         <div
@@ -91,7 +276,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-8">
             <Reveal>
               <p className="tech-label text-accent-2">
-                001 / The problem
+                002 / The problem
               </p>
               <h2 className="display-lg mt-6 font-display text-balance text-fg">
                 Two tools, and neither one finishes the job.
@@ -149,14 +334,13 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-content px-6 lg:px-12">
           <Reveal className="max-w-2xl">
             <p className="tech-label text-accent-2">
-              002 / What we build
+              003 / What we build
             </p>
             <h2 className="display-lg mt-6 font-display text-balance text-fg">
-              Three parts, one pipeline.
+              Three pillars, one physical pipeline.
             </h2>
             <p className="mt-6 text-lg text-pretty text-muted">
-              Each piece is useful on its own. Together they remove every handoff between the idea
-              and the finished part.
+              Models create demand. Freelancers provide engineering expertise. Vendors power physical manufacturing, and Mart connects them seamlessly.
             </p>
           </Reveal>
 
@@ -178,7 +362,7 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-content px-6 lg:px-12">
           <Reveal className="max-w-2xl">
             <p className="tech-label text-accent-2">
-              003 / How it works
+              004 / How it works
             </p>
             <h2 className="display-lg mt-6 font-display text-balance text-fg">
               Three steps, start to finish.

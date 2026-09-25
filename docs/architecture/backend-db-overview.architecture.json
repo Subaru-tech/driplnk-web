@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DripLnk Backend & Database Architecture",
+    "output": "docs/architecture/backend-db-overview.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-overview",
+        "label": "Full Architecture",
+        "focus": ["client", "server_actions", "backend_core", "supabase_ssr", "supabase_admin", "postgres_core", "postgres_rpc"],
+        "note": "End-to-end request flow from Next.js server actions through isolated backend to Supabase Postgres."
+      },
+      {
+        "id": "security-and-auth",
+        "label": "Auth & RLS Enforcement",
+        "focus": ["clerk_auth", "client", "backend_core", "supabase_ssr", "postgres_core"],
+        "note": "Clerk session authentication synchronized to public.profiles with Row-Level Security."
+      },
+      {
+        "id": "atomic-locking",
+        "label": "Atomic RPCs & Locks",
+        "focus": ["backend_core", "supabase_admin", "postgres_rpc", "postgres_core"],
+        "note": "Privileged service client executing SECURITY DEFINER RPCs for SLA race-locking and escrow state machine."
+      },
+      {
+        "id": "assets-and-events",
+        "label": "Storage & Realtime",
+        "focus": ["backend_core", "storage", "postgres_core", "realtime", "email_service"],
+        "note": "CAD/STL asset storage on Backblaze B2 alongside Supabase Realtime pub/sub and Resend transactional notifications."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "clerk_auth",
+      "type": "security",
+      "label": "Clerk Auth",
+      "sublabel": "OAuth & Session JWT",
+      "tag": "Identity",
+      "pos": [40, 80],
+      "size": [130, 56]
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Web Client",
+      "sublabel": "Next.js App / React 19",
+      "brand": "next-js",
+      "pos": [40, 210],
+      "size": [130, 56]
+    },
+    {
+      "id": "server_actions",
+      "type": "backend",
+      "label": "Server Actions",
+      "sublabel": "Next.js App Router",
+      "brand": "next-js",
+      "pos": [240, 210],
+      "size": [140, 56]
+    },
+    {
+      "id": "email_service",
+      "type": "external",
+      "label": "Email Dispatch",
+      "sublabel": "Resend / Webhooks",
+      "pos": [460, 80],
+      "size": [140, 56]
+    },
+    {
+      "id": "backend_core",
+      "type": "backend",
+      "label": "driplnk Backend",
+      "sublabel": "actions & queries",
+      "tag": "server-only",
+      "pos": [460, 210],
+      "size": [140, 56]
+    },
+    {
+      "id": "storage",
+      "type": "cloud",
+      "label": "Object Storage",
+      "sublabel": "Backblaze B2 / S3",
+      "tag": "CAD / 3D Models",
+      "pos": [460, 340],
+      "size": [140, 56]
+    },
+    {
+      "id": "supabase_admin",
+      "type": "security",
+      "label": "Service Role Client",
+      "sublabel": "Privileged RPCs",
+      "brand": "supabase",
+      "pos": [690, 80],
+      "size": [140, 56]
+    },
+    {
+      "id": "supabase_ssr",
+      "type": "security",
+      "label": "SSR Client (RLS)",
+      "sublabel": "Cookie JWT Bound",
+      "brand": "supabase",
+      "pos": [690, 210],
+      "size": [140, 56]
+    },
+    {
+      "id": "postgres_rpc",
+      "type": "database",
+      "label": "RPCs & Locks",
+      "sublabel": "SLA / Escrow / pHash",
+      "brand": "postgresql",
+      "pos": [930, 80],
+      "size": [140, 56]
+    },
+    {
+      "id": "postgres_core",
+      "type": "database",
+      "label": "PostgreSQL DB",
+      "sublabel": "Core State & Ledger",
+      "brand": "postgresql",
+      "pos": [930, 210],
+      "size": [140, 56]
+    },
+    {
+      "id": "realtime",
+      "type": "messagebus",
+      "label": "Supabase Realtime",
+      "sublabel": "CDC & Vendor PubSub",
+      "brand": "supabase",
+      "pos": [930, 340],
+      "size": [140, 56]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Next.js Application Host",
+      "wraps": ["server_actions", "backend_core", "supabase_ssr", "supabase_admin"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Supabase Managed Cloud",
+      "wraps": ["postgres_core", "postgres_rpc", "realtime"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "auth-session",
+      "from": "clerk_auth",
+      "to": "client",
+      "variant": "security"
+    },
+    {
+      "id": "client-action",
+      "from": "client",
+      "to": "server_actions",
+      "label": "action",
+      "variant": "emphasis"
+    },
+    {
+      "id": "action-to-backend",
+      "from": "server_actions",
+      "to": "backend_core"
+    },
+    {
+      "id": "auth-sync",
+      "from": "clerk_auth",
+      "to": "backend_core",
+      "label": "sync",
+      "variant": "security"
+    },
+    {
+      "id": "backend-notify",
+      "from": "backend_core",
+      "to": "email_service",
+      "label": "notify",
+      "variant": "dashed"
+    },
+    {
+      "id": "backend-storage",
+      "from": "backend_core",
+      "to": "storage",
+      "label": "signed URL",
+      "labelDy": 20
+    },
+    {
+      "id": "backend-ssr-client",
+      "from": "backend_core",
+      "to": "supabase_ssr"
+    },
+    {
+      "id": "backend-admin-client",
+      "from": "backend_core",
+      "to": "supabase_admin",
+      "label": "service key",
+      "variant": "security"
+    },
+    {
+      "id": "admin-to-rpc",
+      "from": "supabase_admin",
+      "to": "postgres_rpc",
+      "label": "RPC",
+      "variant": "security"
+    },
+    {
+      "id": "ssr-to-postgres",
+      "from": "supabase_ssr",
+      "to": "postgres_core",
+      "label": "SQL / RLS"
+    },
+    {
+      "id": "postgres-to-realtime",
+      "from": "postgres_core",
+      "to": "realtime",
+      "label": "events",
+      "variant": "dashed",
+      "labelDy": 20
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Client & Authentication",
+      "items": [
+        "Next.js App Router & React 19 Client Components with Clerk Auth",
+        "Server-side sync_clerk_user_profile automatically mirrors Clerk users into public.profiles"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Isolated Backend Module",
+      "items": [
+        "driplnk-web-backend is protected by server-only boundary to eliminate secret leakage",
+        "Dual client model: Cookie-bound SSR client for RLS and Service Role client for atomic RPCs"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Database & Security Gates",
+      "items": [
+        "Supabase PostgreSQL with RLS and SECURITY DEFINER RPCs for race-locking and escrow state machine",
+        "Backblaze B2 storage for 3D CAD/STL files, Realtime CDC streams, and Resend email dispatches"
+      ]
+    }
+  ]
+}

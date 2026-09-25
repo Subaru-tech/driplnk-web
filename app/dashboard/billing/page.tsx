@@ -5,7 +5,7 @@ import { BalanceCard } from "@/components/dashboard/balance-card";
 import { LedgerTable } from "@/components/dashboard/ledger-table";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
-import { getLedgerPage, getProfile } from "@/lib/queries";
+import { getLedgerPage, getProfile } from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "Credits & Billing" };
 

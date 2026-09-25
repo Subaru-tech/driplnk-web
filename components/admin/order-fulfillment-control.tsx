@@ -1,12 +1,13 @@
 "use client";
 
-import { Save } from "lucide-react";
+import { Check, Save, ShieldAlert, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { ORDER_STATUSES, type OrderStatus } from "@/components/ui/status-pill";
 import { useToast } from "@/components/ui/toast";
 import { updateMartOrderAdmin } from "@/driplnk-web-backend/actions/admin";
+import { adminModerateMartOrderAction } from "@/driplnk-web-backend/actions/mart";
 
 export function OrderFulfillmentControl({
   orderId,
@@ -26,6 +27,31 @@ export function OrderFulfillmentControl({
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [isSaving, setIsSaving] = useState(false);
   const toast = useToast();
+
+  async function handleModerate(action: "clear" | "reject") {
+    setIsSaving(true);
+    try {
+      const res = await adminModerateMartOrderAction(
+        orderId,
+        action,
+        action === "clear" ? "Cleared by admin" : "Prohibited firearm/weapon design"
+      );
+      if (res.success) {
+        toast("success", action === "clear" ? "Order cleared and dispatched to vendor." : "Order rejected and cancelled.");
+        if (action === "clear") {
+          setStatus("Confirmed");
+        } else {
+          setStatus("Cancelled");
+        }
+      } else {
+        toast("error", res.error || "Failed to process moderation action.");
+      }
+    } catch {
+      toast("error", "An error occurred while moderating the order.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   async function handleSave() {
     setIsSaving(true);
@@ -49,9 +75,39 @@ export function OrderFulfillmentControl({
     }
   }
 
+  const isHeld = (initialStatus as string) === "pending_moderation" || (status as string) === "pending_moderation";
+
   if (layout === "card") {
     return (
       <div className="flex flex-col gap-2.5">
+        {isHeld && (
+          <div className="flex items-center justify-between rounded-lg border border-warning/40 bg-warning/10 p-2.5">
+            <div className="flex items-center gap-1.5 text-xs text-warning">
+              <ShieldAlert className="size-4 shrink-0" />
+              <span>Held for Weapon Review</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="primary"
+                size="sm"
+                loading={isSaving}
+                onClick={() => handleModerate("clear")}
+                className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white"
+              >
+                <Check className="size-3 mr-1" /> Clear
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                loading={isSaving}
+                onClick={() => handleModerate("reject")}
+                className="h-7 px-2 text-xs"
+              >
+                <X className="size-3 mr-1" /> Reject
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-muted">Assigned Vendor</label>
           <Input
@@ -103,6 +159,34 @@ export function OrderFulfillmentControl({
             </Button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isHeld) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="flex items-center gap-1 font-mono text-xs font-medium text-warning">
+          <ShieldAlert className="size-3.5" /> Held for Review
+        </span>
+        <Button
+          variant="primary"
+          size="sm"
+          loading={isSaving}
+          onClick={() => handleModerate("clear")}
+          className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white"
+        >
+          <Check className="size-3 mr-1" /> Clear & Dispatch
+        </Button>
+        <Button
+          variant="danger"
+          size="sm"
+          loading={isSaving}
+          onClick={() => handleModerate("reject")}
+          className="h-7 px-2 text-xs"
+        >
+          <X className="size-3 mr-1" /> Reject
+        </Button>
       </div>
     );
   }

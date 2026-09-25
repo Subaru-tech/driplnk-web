@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getSupabaseServerClient } from "@/driplnk-web-backend/db/client";
 
 /**
  * Server actions for the public forms.
@@ -20,9 +20,16 @@ const NOT_CONNECTED =
 
 export async function joinWaitlist(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "").trim();
+  const consented = formData.get("consent") === "on";
 
   if (!EMAIL_RE.test(email)) {
     return { status: "error", message: "Enter a valid email address." };
+  }
+  if (!consented) {
+    return {
+      status: "error",
+      message: "Please agree to the Privacy Policy and Terms to join the waitlist.",
+    };
   }
 
   const supabase = await getSupabaseServerClient();
@@ -38,6 +45,10 @@ export async function joinWaitlist(_prev: FormState, formData: FormData): Promis
     return { status: "error", message: NOT_CONNECTED };
   }
 
+  // Consent evidence — never blocks the waitlist join itself.
+  const { logWaitlistConsent } = await import("@/app/consent-actions");
+  await logWaitlistConsent(email);
+
   return { status: "success", message: "You're on the list. We'll be in touch." };
 }
 
@@ -45,9 +56,16 @@ export async function submitContact(_prev: FormState, formData: FormData): Promi
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
+  const consented = formData.get("consent") === "on";
 
   if (!name || name.length > 100) return { status: "error", message: "Please tell us your name." };
   if (!EMAIL_RE.test(email) || email.length > 254) return { status: "error", message: "Enter a valid email address." };
+  if (!consented) {
+    return {
+      status: "error",
+      message: "Please agree to the Privacy Policy and Terms so we can reply to you.",
+    };
+  }
   if (message.length < 10) {
     return { status: "error", message: "Please add a little more detail to your message." };
   }
@@ -71,6 +89,10 @@ export async function submitContact(_prev: FormState, formData: FormData): Promi
       message: "Something went wrong sending that. Please email hello@driplnk.in directly.",
     };
   }
+
+  // Consent evidence — never blocks the message itself.
+  const { logContactConsent } = await import("@/app/consent-actions");
+  await logContactConsent(email);
 
   return { status: "success", message: "Thanks — we'll get back to you shortly." };
 }

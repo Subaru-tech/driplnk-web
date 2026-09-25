@@ -10,7 +10,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCredits } from "@/lib/format";
-import { getActiveOrderCount, getMartOrders, getModelCount, getModels, getProfile } from "@/lib/queries";
+import { getActiveOrderCount, getMartOrders, getModelCount, getModels, getProfile } from "@/driplnk-web-backend/db/queries";
 
 export const metadata: Metadata = { title: "Overview" };
 

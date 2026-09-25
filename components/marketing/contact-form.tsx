@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitContact, type FormState } from "@/app/actions";
+import { ConsentCheckbox } from "@/components/marketing/consent-checkbox";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
@@ -10,6 +11,7 @@ const initial: FormState = { status: "idle", message: "" };
 
 export function ContactForm() {
   const [state, action, pending] = useActionState(submitContact, initial);
+  const [consented, setConsented] = useState(false);
 
   return (
     <form action={action} className="flex flex-col gap-6">
@@ -44,6 +46,8 @@ export function ContactForm() {
           />
         )}
       </Field>
+
+      <ConsentCheckbox checked={consented} onChange={setConsented} />
 
       <div className="flex flex-col gap-3">
         <Button type="submit" loading={pending} className="self-start">

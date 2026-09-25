@@ -131,20 +131,20 @@ export function ModelAcquirePanel({
               size="lg"
               loading={downloading}
               onClick={handleDownload}
-              className="w-full justify-center gap-2 bg-accent text-accent-contrast font-bold hover:bg-accent-hover"
+              className="w-full justify-center gap-2 bg-accent text-accent-contrast font-bold hover:bg-accent-hover cursor-pointer"
             >
               <Download className="size-4" aria-hidden="true" />
-              Download Model
+              Download
             </Button>
 
             <div className="grid grid-cols-2 gap-2">
               <a
                 href={`leaffos://open?model=${modelId}`}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line bg-surface px-3 text-xs font-medium text-fg hover:border-accent hover:text-accent transition-colors"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line bg-surface px-3 text-xs font-medium text-fg hover:border-accent hover:text-accent transition-colors cursor-pointer"
                 title="Open geometry in LeaFF OS"
               >
-                <Cpu className="size-3.5" aria-hidden="true" />
-                <span>Open in LeaFF</span>
+                <Cpu className="size-3.5 text-accent" aria-hidden="true" />
+                <span>Open in LeaFF OS</span>
               </a>
 
               <ButtonLink
@@ -174,36 +174,36 @@ export function ModelAcquirePanel({
             </p>
           </>
         ) : !signedIn ? (
-          /* State 3: Free model, not logged in -> 'Log in to claim' */
+          /* State 3: Free model, not logged in -> 'Log in to acquire' */
           <>
             <ButtonLink
               href={`/login?redirect=/models/${modelId}`}
               id="login-to-claim-btn"
               size="lg"
-              className="w-full justify-center"
+              className="w-full justify-center cursor-pointer"
             >
               <LogIn className="size-4" aria-hidden="true" />
-              Log in to claim
+              Log in to acquire
             </ButtonLink>
             <p className="text-center text-xs text-muted">
               Free models are saved permanently to your personal library account.
             </p>
           </>
         ) : (
-          /* State 4: Free model, logged in, not acquired -> working 'Claim' button */
+          /* State 4: Free model, logged in, not acquired -> working 'Acquire Model' button */
           <>
             <Button
               id="claim-model-btn"
               size="lg"
               loading={pending}
               onClick={handleClaim}
-              className="w-full justify-center"
+              className="w-full justify-center cursor-pointer"
             >
               <Download className="size-4" aria-hidden="true" />
-              Claim Model
+              Acquire Model
             </Button>
             <p className="text-center text-xs text-muted">
-              Free claim · Instant library access · Zero checkout required
+              Instant library access · Zero checkout required
             </p>
           </>
         )}
