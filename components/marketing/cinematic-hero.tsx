@@ -16,31 +16,31 @@ import { PrintCanvas } from "@/components/marketing/print-canvas";
  */
 export function CinematicHero() {
   return (
-    <section className="relative flex min-h-svh flex-col justify-start pt-20 sm:pt-24 lg:pt-20 pb-12 lg:pb-16 overflow-hidden bg-void">
+    <section className="relative flex min-h-svh flex-col justify-between pt-20 sm:pt-24 lg:pt-20 pb-8 sm:pb-12 lg:pb-10 overflow-hidden bg-void">
       {/* Key + fill lights, drifting slowly so a still frame never feels dead */}
       <div
         aria-hidden="true"
-        className="glow-accent drift absolute top-0 left-1/2 aspect-square w-[80vw] max-w-4xl -translate-x-1/2 opacity-40"
+        className="glow-accent drift absolute top-0 left-1/2 aspect-square w-[80vw] max-w-4xl -translate-x-1/2 opacity-40 pointer-events-none"
       />
       <div
         aria-hidden="true"
-        className="glow-accent-2 absolute -bottom-1/4 left-1/2 aspect-square w-[70vw] max-w-3xl -translate-x-1/2 opacity-50"
+        className="glow-accent-2 absolute -bottom-1/4 left-1/2 aspect-square w-[70vw] max-w-3xl -translate-x-1/2 opacity-50 pointer-events-none"
       />
 
       {/* The machine, printing. Full opacity */}
-      <PrintCanvas className="absolute inset-0 size-full" />
+      <PrintCanvas className="absolute inset-0 size-full pointer-events-none" />
 
       {/* Seat it into the page */}
-      <div aria-hidden="true" className="vignette absolute inset-0" />
+      <div aria-hidden="true" className="vignette absolute inset-0 pointer-events-none" />
 
-      {/* Hero copy block: balanced naturally below navbar with zero dead space */}
-      <div className="relative mx-auto flex w-full max-w-content flex-col items-center px-6 pt-2 pb-10 sm:pt-4 sm:pb-14 text-center lg:items-start lg:px-12 lg:pt-4 lg:pb-12 lg:text-left">
-        <div className="flex flex-col items-center lg:max-w-[36rem] xl:max-w-[42rem] lg:items-start">
+      {/* Main hero content: headline top-left, Get a Print Quote below printer on the right */}
+      <div className="relative z-10 mx-auto flex w-full max-w-content flex-1 flex-col justify-between px-6 lg:px-12">
+        {/* Upper content: Headline and primary actions */}
+        <div className="flex flex-col items-center lg:items-start lg:max-w-[36rem] xl:max-w-[42rem] text-center lg:text-left pt-2 lg:pt-4">
           <p className="hero-pull tech-label mb-3 sm:mb-6 text-accent-2">
             Idea &nbsp;→&nbsp; Geometry &nbsp;→&nbsp; Part
           </p>
 
-          {/* Hand-broken on desktop */}
           <h1 className="hero-pull display-xl font-display text-balance text-fg lg:text-pretty">
             One-stop platform
             <br className="hidden lg:inline" />
@@ -57,12 +57,23 @@ export function CinematicHero() {
             <ButtonLink href="/sign-up" size="lg">
               Sign Up
             </ButtonLink>
-            <ButtonLink href="/mart" variant="secondary" size="lg">
+            <ButtonLink href="#how-driplink-works" variant="ghost" size="lg">
+              See how it works
+            </ButtonLink>
+          </div>
+        </div>
+
+        {/* Bottom bar: Get a Print Quote placed directly below the 3D printer */}
+        <div className="w-full flex justify-center lg:justify-end pt-8 pb-3 sm:pb-6">
+          <div className="hero-pull w-full max-w-xs sm:w-auto lg:w-[44%] flex justify-center">
+            <ButtonLink
+              href="/mart"
+              variant="secondary"
+              size="lg"
+              className="shadow-2xl backdrop-blur-md bg-surface/90 hover:bg-surface border-line-control hover:border-accent transition-all px-8 py-3 text-base"
+            >
               <Printer className="size-4" aria-hidden="true" />
               Get a Print Quote
-            </ButtonLink>
-            <ButtonLink href="#problem" variant="ghost" size="lg">
-              See how it works
             </ButtonLink>
           </div>
         </div>

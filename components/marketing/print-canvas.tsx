@@ -698,7 +698,7 @@ export function PrintCanvas({ className }: { className?: string }) {
 
       if (wide) {
         const topSafe = 68; // comfortably below 64px navbar
-        const bottomSafe = 20;
+        const bottomSafe = 100; // room for the Get a Print Quote button directly below the printer
         const rightSafe = 24;
         const availH = Math.max(160, height - topSafe - bottomSafe);
 
@@ -706,8 +706,8 @@ export function PrintCanvas({ className }: { className?: string }) {
         const textRightBound = Math.min(width * 0.46, 600);
         const availW = Math.max(160, width - textRightBound - rightSafe);
 
-        // Scale up printer to fill available viewport height naturally
-        unit = Math.min((availH * 0.96) / modelH, availW / modelW, 2.75);
+        // Scale printer to fit inside available height with bottomSafe clearance
+        unit = Math.min(availH / modelH, availW / modelW, 2.35);
 
         const machineW = modelW * unit;
         const machineH = modelH * unit;
@@ -717,15 +717,15 @@ export function PrintCanvas({ className }: { className?: string }) {
         const machineLeft = Math.max(textRightBound, rightEdge - machineW);
         originX = machineLeft - bbox.left * unit;
 
-        // Position vertically: align gracefully near top to fill upper viewport
-        const topEdge = topSafe + Math.min(16, Math.max(4, (availH - machineH) * 0.25));
+        // Position vertically: align near topSafe so machine ends cleanly above bottomSafe
+        const topEdge = topSafe + 8;
         originY = topEdge + bbox.top * unit;
       } else {
-        const heightFrac = medium ? 0.38 : 0.28;
+        const heightFrac = medium ? 0.35 : 0.25;
         const widthFrac = 0.88;
         unit = Math.min((height * heightFrac) / modelH, (width * widthFrac) / modelW);
         originX = width * 0.5 - bboxCx * unit;
-        originY = height * 0.98;
+        originY = height * 0.80;
       }
 
       /* ---- assembly ------------------------------------------------------
