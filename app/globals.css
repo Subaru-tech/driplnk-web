@@ -16,75 +16,74 @@
 [data-theme="dark"] {
   /* ------------------------------------------------------------------------
      LUXURY COLOR PALETTE:
-       - Dun:             #E8D1BA (warm ivory / linen / sand)
-       - Gamboge:         #EDA335 (warm golden saffron / amber)
-       - Brunswick Green: #2A5945 (deep noble emerald / pine green)
-       - Celadon:         #9DD0B6 (soothing sage / mint green)
+       - Ice Blue:    #D6E6F3 (crisp, luminous frosty off-white / ice)
+       - Powder Blue: #A6C5D7 (soft, elegant dusty sky blue)
+       - Sapphire:    #0F52BA (vivid, royal electric cobalt blue)
+       - Deep Navy:   #071325 (deep midnight navy canvas & surfaces)
      ---------------------------------------------------------------------- */
-  --bg-void: #183629;
+  --bg-void: #030914;
   /* deepest — hero backdrop, full-bleed floors */
-  --bg-primary: #214938;
-  /* rich dark Brunswick Green canvas */
-  --bg-secondary: #2A5945;
-  /* Brunswick Green cards, panels, surfaces */
-  --bg-tertiary: #346C55;
+  --bg-primary: #071325;
+  /* rich Deep Navy canvas */
+  --bg-secondary: #0D1F3C;
+  /* Deep Navy cards, panels, surfaces */
+  --bg-tertiary: #142C52;
   /* hover states, nested panels */
-  --border: #3E7D63;
+  --border: #1C3B6B;
   /* decorative dividers */
-  --border-strong: #50997B;
+  --border-strong: #285392;
   /* card boundaries, prominent lines */
-  --border-control: #72B797;
+  --border-control: #4B7AB8;
   /* interactive controls (inputs, buttons) - 3:1+ WCAG contrast */
 
-  /* Dun + Celadon typography */
-  --text-primary: #F8EFE4;
-  /* warm Dun ivory — crisp and radiant */
-  --text-secondary: #C7E0D3;
-  /* soft Celadon mist */
-  --text-tertiary: #8EAEA0;
-  /* faint Celadon sage */
+  /* Ice Blue + Powder Blue typography */
+  --text-primary: #F0F6FC;
+  /* luminous Ice Blue — ultra-crisp readability */
+  --text-secondary: #A6C5D7;
+  /* Powder Blue — calming, elegant secondary */
+  --text-tertiary: #6A8FA8;
+  /* faint dusty slate */
 
-  /* Dun (#E8D1BA) primary accent */
-  --accent: #E8D1BA;
-  /* Dun — primary CTA, focus, signal */
-  --accent-hover: #F3E1CF;
-  --accent-muted: #386F57;
-  --accent-contrast: #183629;
-  /* deep Brunswick green text ON accent */
+  /* Ice Blue (#D6E6F3) primary accent */
+  --accent: #D6E6F3;
+  /* Ice Blue — primary CTA, focus, signal */
+  --accent-hover: #EAF2FA;
+  --accent-muted: #142C52;
+  --accent-contrast: #071325;
+  /* Deep Navy text ON accent: 13.5:1 contrast */
 
-  /* Celadon (#9DD0B6) secondary accent */
-  --accent-2: #9DD0B6;
-  /* Celadon — foliage, links, active indicators */
-  --accent-2-muted: #1F4534;
+  /* Sapphire (#0F52BA) secondary accent */
+  --accent-2: #0F52BA;
+  /* Sapphire — royal electric highlight, links, active indicators */
+  --accent-2-muted: #0A2859;
 
   /* Explicit palette tokens */
-  --dun: #E8D1BA;
-  --gamboge: #EDA335;
-  --brunswick: #2A5945;
-  --celadon: #9DD0B6;
+  --ice-blue: #D6E6F3;
+  --powder-blue: #A6C5D7;
+  --sapphire: #0F52BA;
+  --deep-navy: #071325;
 
   /* Canvas-only material tones for 3D hero scene */
-  --machine: #9DD0B6;
-  /* printer frame — Celadon */
-  --bark: #C4842E;
-  /* trunk + branches */
-  --brass: #EDA335;
-  /* Gamboge gold metal */
+  --machine: #A6C5D7;
+  /* printer frame — Powder Blue */
+  --bark: #0F52BA;
+  /* trunk + branches — Sapphire accent */
+  --brass: #D6E6F3;
+  /* Ice Blue gleaming metal */
 
   /* Brand logo */
-  --logo-paper: #E8D1BA;
-  /* Dun — "Drip" */
-  --logo-ink: #EDA335;
-  /* Gamboge — "Lnk" */
+  --logo-paper: #D6E6F3;
+  /* Ice Blue — "Drip" */
+  --logo-ink: #0F52BA;
+  /* Sapphire — "Lnk" */
 
-  --danger: #FF8C82;
-  --danger-muted: #452422;
-  --warning: #EDA335;
-  /* Gamboge */
-  --warning-muted: #43321A;
-  --info: #9DD0B6;
-  /* Celadon */
-  --info-muted: #1D4032;
+  --danger: #FF7B72;
+  --danger-muted: #3D1818;
+  --warning: #58A6FF;
+  --warning-muted: #102A4C;
+  --info: #0F52BA;
+  /* Sapphire */
+  --info-muted: #0A2859;
 
   color-scheme: dark;
 }
@@ -130,11 +129,11 @@
   --color-accent-2-muted: var(--accent-2-muted);
 
   /* Luxury Palette Tokens */
-  --color-dun: var(--dun);
-  --color-gamboge: var(--gamboge);
-  --color-brunswick: var(--brunswick);
-  --color-celadon: var(--celadon);
-  --color-gold: var(--gamboge);
+  --color-ice-blue: var(--ice-blue);
+  --color-powder-blue: var(--powder-blue);
+  --color-sapphire: var(--sapphire);
+  --color-deep-navy: var(--deep-navy);
+  --color-gold: var(--sapphire);
 
   /* Status — reserved for status pills, errors and alerts ONLY.
      Never use these decoratively (spec §1.1 rationale). */
@@ -407,9 +406,9 @@
   /* Molten gradient text for the one word that carries the headline. */
   .text-accent-gradient {
     background: linear-gradient(100deg,
-        var(--dun) 0%,
-        var(--gamboge) 50%,
-        var(--celadon) 100%);
+        var(--ice-blue) 0%,
+        var(--powder-blue) 45%,
+        var(--sapphire) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -449,9 +448,9 @@
   /* Hero background mesh — sits at low opacity behind text with luxury hues. */
   .hero-mesh {
     background-image:
-      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--dun) 45%, transparent), transparent 70%),
-      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--gamboge) 35%, transparent), transparent 70%),
-      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--celadon) 30%, transparent), transparent 70%);
+      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--ice-blue) 45%, transparent), transparent 70%),
+      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--sapphire) 35%, transparent), transparent 70%),
+      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--powder-blue) 30%, transparent), transparent 70%);
   }
 
   /* ==========================================================================
