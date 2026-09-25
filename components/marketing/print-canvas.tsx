@@ -180,13 +180,13 @@ export function PrintCanvas({ className }: { className?: string }) {
     let startedAt = performance.now() - HEAD_START;
 
     const rootStyles = getComputedStyle(document.documentElement);
-    let cream = readRgb(rootStyles, "--accent", [250, 247, 238]);
-    let foliage = readRgb(rootStyles, "--accent-2", [169, 210, 107]);
-    let machine = readRgb(rootStyles, "--machine", [151, 161, 137]);
-    let bark = readRgb(rootStyles, "--bark", [192, 139, 82]);
-    let brass = readRgb(rootStyles, "--brass", [217, 180, 92]);
-    let logoPaper = readRgb(rootStyles, "--logo-paper", [247, 247, 245]);
-    let logoInk = readRgb(rootStyles, "--logo-ink", [20, 20, 20]);
+    let cream = readRgb(rootStyles, "--accent", [255, 255, 255]);
+    let foliage = readRgb(rootStyles, "--accent-2", [0, 194, 255]);
+    let machine = readRgb(rootStyles, "--machine", [143, 160, 181]);
+    let bark = readRgb(rootStyles, "--bark", [255, 120, 46]);
+    let brass = readRgb(rootStyles, "--brass", [245, 158, 11]);
+    let logoPaper = readRgb(rootStyles, "--logo-paper", [255, 255, 255]);
+    let logoInk = readRgb(rootStyles, "--logo-ink", [255, 120, 46]);
 
     /* Path2D is browser-only, so build inside the effect. */
     const MARK_D = new Path2D(MARK_D_PATH);

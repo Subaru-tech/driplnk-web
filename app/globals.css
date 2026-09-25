@@ -15,75 +15,76 @@
 :root,
 [data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     LUXURY COLOR PALETTE:
-       - Ice Blue:    #D6E6F3 (crisp, luminous frosty off-white / ice)
-       - Powder Blue: #A6C5D7 (soft, elegant dusty sky blue)
-       - Sapphire:    #0F52BA (vivid, royal electric cobalt blue)
-       - Deep Navy:   #071325 (deep midnight navy canvas & surfaces)
+     DRIPLNK PRO DESIGN SYSTEM — OBSIDIAN & PRECISION TITANIUM
+     Signature Accents:
+       - Solar Amber:     #FF782E (molten filament, hot nozzle, energy, "Lnk")
+       - Laser Cyan:      #00C2FF (digital CAD precision, wireframe, links)
+       - Platinum White:  #FFFFFF (crisp authority CTA, pure contrast)
+       - Deep Obsidian:   #0C0E13 (flawless dark canvas, reduces eye fatigue)
      ---------------------------------------------------------------------- */
-  --bg-void: #030914;
+  --bg-void: #07080B;
   /* deepest — hero backdrop, full-bleed floors */
-  --bg-primary: #071325;
-  /* rich Deep Navy canvas */
-  --bg-secondary: #0D1F3C;
-  /* Deep Navy cards, panels, surfaces */
-  --bg-tertiary: #142C52;
-  /* hover states, nested panels */
-  --border: #1C3B6B;
-  /* decorative dividers */
-  --border-strong: #285392;
+  --bg-primary: #0C0E13;
+  /* rich obsidian canvas */
+  --bg-secondary: #13161D;
+  /* titanium cards, panels, surfaces */
+  --bg-tertiary: #1A1F29;
+  /* hover states, elevated controls, wells */
+  --border: #212735;
+  /* subtle drafting grid dividers */
+  --border-strong: #2D3547;
   /* card boundaries, prominent lines */
-  --border-control: #4B7AB8;
+  --border-control: #434F69;
   /* interactive controls (inputs, buttons) - 3:1+ WCAG contrast */
 
-  /* Ice Blue + Powder Blue typography */
-  --text-primary: #F0F6FC;
-  /* luminous Ice Blue — ultra-crisp readability */
-  --text-secondary: #A6C5D7;
-  /* Powder Blue — calming, elegant secondary */
-  --text-tertiary: #6A8FA8;
-  /* faint dusty slate */
+  /* Platinum + Cool Slate typography */
+  --text-primary: #F3F4F6;
+  /* crisp platinum white — ultra-clean legibility */
+  --text-secondary: #9CA3AF;
+  /* cool refined slate */
+  --text-tertiary: #64748B;
+  /* faint metallic slate */
 
-  /* Ice Blue (#D6E6F3) primary accent */
-  --accent: #D6E6F3;
-  /* Ice Blue — primary CTA, focus, signal */
-  --accent-hover: #EAF2FA;
-  --accent-muted: #142C52;
-  --accent-contrast: #071325;
-  /* Deep Navy text ON accent: 13.5:1 contrast */
+  /* Primary CTA: Pure Crisp White with Deep Obsidian text */
+  --accent: #FFFFFF;
+  /* CTA / focus / high-signal button fill */
+  --accent-hover: #E5E7EB;
+  --accent-muted: #1E2533;
+  --accent-contrast: #07080B;
+  /* dark text on white CTA: 19:1 contrast */
 
-  /* Sapphire (#0F52BA) secondary accent */
-  --accent-2: #0F52BA;
-  /* Sapphire — royal electric highlight, links, active indicators */
-  --accent-2-muted: #0A2859;
+  /* Secondary Accent: Laser Cyan (#00C2FF) */
+  --accent-2: #00C2FF;
+  /* CAD precision, wireframe highlights, live indicators */
+  --accent-2-muted: #08283B;
 
-  /* Explicit palette tokens */
-  --ice-blue: #D6E6F3;
-  --powder-blue: #A6C5D7;
-  --sapphire: #0F52BA;
-  --deep-navy: #071325;
+  /* Signature Accents */
+  --amber: #FF782E;
+  --cyan: #00C2FF;
+  --platinum: #FFFFFF;
+  --obsidian: #0C0E13;
 
   /* Canvas-only material tones for 3D hero scene */
-  --machine: #A6C5D7;
-  /* printer frame — Powder Blue */
-  --bark: #0F52BA;
-  /* trunk + branches — Sapphire accent */
-  --brass: #D6E6F3;
-  /* Ice Blue gleaming metal */
+  --machine: #8FA0B5;
+  /* printer frame — cool titanium steel */
+  --bark: #FF782E;
+  /* trunk + branches — warm amber */
+  --brass: #F59E0B;
+  /* golden brass pulleys & lead screw */
 
   /* Brand logo */
-  --logo-paper: #D6E6F3;
-  /* Ice Blue — "Drip" */
-  --logo-ink: #0F52BA;
-  /* Sapphire — "Lnk" */
+  --logo-paper: #FFFFFF;
+  /* White — "Drip" */
+  --logo-ink: #FF782E;
+  /* Solar Amber — "Lnk" */
 
-  --danger: #FF7B72;
-  --danger-muted: #3D1818;
-  --warning: #58A6FF;
-  --warning-muted: #102A4C;
-  --info: #0F52BA;
-  /* Sapphire */
-  --info-muted: #0A2859;
+  /* Status Colors */
+  --danger: #EF4444;
+  --danger-muted: #3B1214;
+  --warning: #F59E0B;
+  --warning-muted: #3B2A0F;
+  --info: #00C2FF;
+  --info-muted: #0A2938;
 
   color-scheme: dark;
 }
@@ -128,12 +129,12 @@
   --color-accent-2: var(--accent-2);
   --color-accent-2-muted: var(--accent-2-muted);
 
-  /* Luxury Palette Tokens */
-  --color-ice-blue: var(--ice-blue);
-  --color-powder-blue: var(--powder-blue);
-  --color-sapphire: var(--sapphire);
-  --color-deep-navy: var(--deep-navy);
-  --color-gold: var(--sapphire);
+  /* Signature Design Tokens */
+  --color-amber: var(--amber);
+  --color-cyan: var(--cyan);
+  --color-platinum: var(--platinum);
+  --color-obsidian: var(--obsidian);
+  --color-gold: var(--brass);
 
   /* Status — reserved for status pills, errors and alerts ONLY.
      Never use these decoratively (spec §1.1 rationale). */
@@ -405,10 +406,10 @@
 
   /* Molten gradient text for the one word that carries the headline. */
   .text-accent-gradient {
-    background: linear-gradient(100deg,
-        var(--ice-blue) 0%,
-        var(--powder-blue) 45%,
-        var(--sapphire) 100%);
+    background: linear-gradient(105deg,
+        #FFFFFF 0%,
+        #FF8C42 45%,
+        #00C2FF 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -448,9 +449,9 @@
   /* Hero background mesh — sits at low opacity behind text with luxury hues. */
   .hero-mesh {
     background-image:
-      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--ice-blue) 45%, transparent), transparent 70%),
-      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--sapphire) 35%, transparent), transparent 70%),
-      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--powder-blue) 30%, transparent), transparent 70%);
+      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--amber) 25%, transparent), transparent 70%),
+      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--cyan) 20%, transparent), transparent 70%),
+      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--accent) 15%, transparent), transparent 70%);
   }
 
   /* ==========================================================================

@@ -104,10 +104,10 @@ const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: "#0F52BA",
-    colorBackground: "#0D1F3C",
-    colorText: "#F0F6FC",
-    colorTextSecondary: "#A6C5D7",
+    colorPrimary: "#FF782E",
+    colorBackground: "#13161D",
+    colorText: "#F3F4F6",
+    colorTextSecondary: "#9CA3AF",
     borderRadius: "0.5rem",
     fontFamily: "var(--font-inter)",
     fontFamilyButtons: "var(--font-space-grotesk)",
