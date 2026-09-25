@@ -13,90 +13,80 @@
    ========================================================================= */
 
 :root,
-[data-theme="light"],
 [data-theme="dark"] {
   /* ------------------------------------------------------------------------
-     DONTLOOKUP.APP DESIGN SYSTEM — TACTILE PAPER & INK
-     Source: https://www.dontlookup.app/
-     Signature Palette Tokens:
-       - Paper:        #F4F3EF (signature warm editorial off-white paper)
-       - Ink:          #14140F (deep rich tactile warm-black ink)
-       - Red:          #C0342A (vermilion red alarm, molten filament, "Lnk")
-       - Gold:         #F2C31A (coin gold / marigold highlight)
-       - Butter:       #F8E08A (soft warm sticky-note yellow)
-       - Amber:        #C98F06 (deep antique coin gold / warning)
-       - Blueprint:    #2B5A9B (classic blueprint / drafting ink blue)
-       - Sky:          #9ABEEF (belief / converted crowd periwinkle sky)
+     DRIPLNK PRO DESIGN SYSTEM — OBSIDIAN & PRECISION TITANIUM
+     Signature Accents:
+       - Solar Amber:     #FF782E (molten filament, hot nozzle, energy, "Lnk")
+       - Laser Cyan:      #00C2FF (digital CAD precision, wireframe, links)
+       - Platinum White:  #FFFFFF (crisp authority CTA, pure contrast)
+       - Deep Obsidian:   #0C0E13 (flawless dark canvas, reduces eye fatigue)
      ---------------------------------------------------------------------- */
-  --bg-void: #EBE9E1;
-  /* subtle deep paper floor / hero backdrop vignette */
-  --bg-primary: #F4F3EF;
-  /* signature warm tactile paper canvas */
-  --bg-secondary: #FFFFFF;
-  /* crisp white paper cards, panels, sheets */
-  --bg-tertiary: #E8E6DF;
-  /* elevated wells, hover states, table headers */
-  --border: #DCD8CE;
-  /* subtle drafting paper dividers & creases */
-  --border-strong: #14140F;
-  /* crisp bold tactile ink boundaries */
-  --border-control: #14140F;
-  /* interactive controls (inputs, buttons) - bold ink border */
+  --bg-void: #07080B;
+  /* deepest — hero backdrop, full-bleed floors */
+  --bg-primary: #0C0E13;
+  /* rich obsidian canvas */
+  --bg-secondary: #13161D;
+  /* titanium cards, panels, surfaces */
+  --bg-tertiary: #1A1F29;
+  /* hover states, elevated controls, wells */
+  --border: #212735;
+  /* subtle drafting grid dividers */
+  --border-strong: #2D3547;
+  /* card boundaries, prominent lines */
+  --border-control: #434F69;
+  /* interactive controls (inputs, buttons) - 3:1+ WCAG contrast */
 
-  /* Ink & Pencil typography */
-  --text-primary: #14140F;
-  /* rich black ink — 16.5:1 WCAG AAA contrast */
-  --text-secondary: #57564F;
-  /* graphite pencil note — 5.5:1 WCAG AA contrast */
-  --text-tertiary: #87857C;
-  /* subtle editorial metadata */
+  /* Platinum + Cool Slate typography */
+  --text-primary: #F3F4F6;
+  /* crisp platinum white — ultra-clean legibility */
+  --text-secondary: #9CA3AF;
+  /* cool refined slate */
+  --text-tertiary: #64748B;
+  /* faint metallic slate */
 
-  /* Primary CTA: Deep Tactile Ink Button (#14140F) with Paper text */
-  --accent: #14140F;
+  /* Primary CTA: Pure Crisp White with Deep Obsidian text */
+  --accent: #FFFFFF;
   /* CTA / focus / high-signal button fill */
-  --accent-hover: #2B2A24;
-  --accent-muted: #E2DED4;
-  --accent-contrast: #F4F3EF;
-  /* paper text on ink CTA: 16.5:1 contrast */
+  --accent-hover: #E5E7EB;
+  --accent-muted: #1E2533;
+  --accent-contrast: #07080B;
+  /* dark text on white CTA: 19:1 contrast */
 
-  /* Secondary Accent: Drafting Blue (#2B5A9B) from --follow */
-  --accent-2: #2B5A9B;
-  /* CAD precision, blueprint highlights, active links */
-  --accent-2-muted: #E3ECF7;
+  /* Secondary Accent: Laser Cyan (#00C2FF) */
+  --accent-2: #00C2FF;
+  /* CAD precision, wireframe highlights, live indicators */
+  --accent-2-muted: #08283B;
 
-  /* Explicit Palette Tokens from dontlookup.app */
-  --paper: #F4F3EF;
-  --ink: #14140F;
-  --red: #C0342A;
-  --y1: #F8E08A;
-  --y2: #F2C31A;
-  --y3: #C98F06;
-  --convert: #9ABEEF;
-  --follow: #2B5A9B;
+  /* Signature Accents */
+  --amber: #FF782E;
+  --cyan: #00C2FF;
+  --platinum: #FFFFFF;
+  --obsidian: #0C0E13;
 
   /* Canvas-only material tones for 3D hero scene */
-  --machine: #57564F;
-  /* printer frame — technical graphite */
-  --bark: #C0342A;
-  /* trunk + branches — vermilion red */
-  --brass: #F2C31A;
-  /* pulleys & lead screw — coin gold */
+  --machine: #8FA0B5;
+  /* printer frame — cool titanium steel */
+  --bark: #FF782E;
+  /* trunk + branches — warm amber */
+  --brass: #F59E0B;
+  /* golden brass pulleys & lead screw */
 
   /* Brand logo */
-  --logo-paper: #14140F;
-  /* Ink — "Drip" */
-  --logo-ink: #C0342A;
-  /* Vermilion Red — "Lnk" */
+  --logo-paper: #FFFFFF;
+  /* White — "Drip" */
+  --logo-ink: #FF782E;
+  /* Solar Amber — "Lnk" */
 
   /* Status Colors */
-  --danger: #C0342A;
-  --danger-muted: #FCE8E7;
-  --warning: #C98F06;
-  --warning-muted: #FEF7E6;
-  --info: #2B5A9B;
-  --info-muted: #EBF2FA;
+  --danger: #EF4444;
+  --danger-muted: #3B1214;
+  --warning: #F59E0B;
+  --warning-muted: #3B2A0F;
+  --info: #00C2FF;
+  --info-muted: #0A2938;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ============================================================================
@@ -139,18 +129,12 @@
   --color-accent-2: var(--accent-2);
   --color-accent-2-muted: var(--accent-2-muted);
 
-  /* Signature Design Tokens from dontlookup.app */
-  --color-paper: var(--paper);
-  --color-ink: var(--ink);
-  --color-red: var(--red);
-  --color-gold: var(--y2);
-  --color-butter: var(--y1);
-  --color-blueprint: var(--follow);
-  --color-sky: var(--convert);
-  --color-amber: var(--y2);
-  --color-cyan: var(--follow);
-  --color-platinum: var(--paper);
-  --color-obsidian: var(--ink);
+  /* Signature Design Tokens */
+  --color-amber: var(--amber);
+  --color-cyan: var(--cyan);
+  --color-platinum: var(--platinum);
+  --color-obsidian: var(--obsidian);
+  --color-gold: var(--brass);
 
   /* Status — reserved for status pills, errors and alerts ONLY.
      Never use these decoratively (spec §1.1 rationale). */
@@ -350,16 +334,16 @@
     background-size: 16px 16px;
   }
 
-  /* Rim lighting behind a section — warm gold and periwinkle sky light */
+  /* Rim lighting behind a section — the "key light" of the grade. */
   .glow-accent {
     background: radial-gradient(60% 50% at 50% 50%,
-        color-mix(in oklab, var(--y1) 50%, transparent),
+        color-mix(in oklab, var(--accent) 30%, transparent),
         transparent 70%);
   }
 
   .glow-accent-2 {
     background: radial-gradient(55% 50% at 50% 50%,
-        color-mix(in oklab, var(--convert) 40%, transparent),
+        color-mix(in oklab, var(--accent-2) 22%, transparent),
         transparent 70%);
   }
 
@@ -420,12 +404,12 @@
     background: var(--accent-2);
   }
 
-  /* Signature gradient text: Deep Ink to Vermilion Red to Blueprint Blue */
+  /* Molten gradient text for the one word that carries the headline. */
   .text-accent-gradient {
     background: linear-gradient(105deg,
-        #14140F 0%,
-        #C0342A 48%,
-        #2B5A9B 100%);
+        #FFFFFF 0%,
+        #FF8C42 45%,
+        #00C2FF 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -462,12 +446,12 @@
     }
   }
 
-  /* Hero background mesh — watercolor washes of Butter Yellow, Periwinkle Sky, and Vermilion Red. */
+  /* Hero background mesh — sits at low opacity behind text with luxury hues. */
   .hero-mesh {
     background-image:
-      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--y1) 35%, transparent), transparent 70%),
-      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--convert) 30%, transparent), transparent 70%),
-      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--red) 14%, transparent), transparent 70%);
+      radial-gradient(60% 55% at 20% 15%, color-mix(in oklab, var(--amber) 25%, transparent), transparent 70%),
+      radial-gradient(50% 50% at 85% 25%, color-mix(in oklab, var(--cyan) 20%, transparent), transparent 70%),
+      radial-gradient(60% 60% at 55% 95%, color-mix(in oklab, var(--accent) 15%, transparent), transparent 70%);
   }
 
   /* ==========================================================================
@@ -593,8 +577,8 @@
     inline-size: 100%;
     background: linear-gradient(90deg,
         transparent 0%,
-        var(--red) 35%,
-        var(--accent-2) 65%,
+        var(--accent) 35%,
+        var(--accent) 65%,
         transparent 100%);
     transform: translateX(-100%);
     opacity: 0;

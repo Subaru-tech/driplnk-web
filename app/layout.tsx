@@ -104,16 +104,16 @@ const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: "#14140F",
-    colorBackground: "#FFFFFF",
-    colorText: "#14140F",
-    colorTextSecondary: "#57564F",
+    colorPrimary: "#FF782E",
+    colorBackground: "#13161D",
+    colorText: "#F3F4F6",
+    colorTextSecondary: "#9CA3AF",
     borderRadius: "0.5rem",
     fontFamily: "var(--font-inter)",
     fontFamilyButtons: "var(--font-space-grotesk)",
   },
   elements: {
-    userButtonPopoverCard: "border border-line-strong bg-surface shadow-xl rounded-[var(--radius-card)]",
+    userButtonPopoverCard: "border border-line bg-surface shadow-2xl rounded-[var(--radius-card)]",
     userPreviewMainIdentifier: "text-fg font-medium",
     userPreviewSecondaryIdentifier: "text-muted",
     userButtonPopoverActionButton: "hover:bg-raised text-fg transition-colors",
@@ -133,7 +133,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      data-theme="light"
+      data-theme="dark"
       suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} h-full`}
     >

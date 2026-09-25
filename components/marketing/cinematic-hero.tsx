@@ -12,7 +12,7 @@ import { PrintCanvas } from "@/components/marketing/print-canvas";
  * not from pushing the machine aside.
  *
  * There is deliberately no page-wide grid: the only grid in the scene is the
- * printer's own build surface, directly under the tree.
+ * printer's own build surface, directly under the robot.
  */
 export function CinematicHero() {
   return (

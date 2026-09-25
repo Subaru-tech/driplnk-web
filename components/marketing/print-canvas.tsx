@@ -5,14 +5,14 @@ import { INTRO, buildElapsedMs, introSeconds, setLogoAnchor } from "@/lib/intro"
 
 /**
  * The hero visual: the DripLnk Core — a bed-slinger 3D printer drawn as a
- * dead-on front elevation, printing a tree that rotates 360° as it builds.
+ * dead-on front elevation, printing a companion robot that rotates 360° as it builds.
  *
  * Deliberate choices:
  *   · The MACHINE never rotates or tilts. A front elevation is the reading
  *     people recognise instantly, so the silhouette does the work.
- *   · Only the TREE rotates. All the motion in the frame belongs to the part.
- *   · The tree is stacked horizontal layer lines — exactly what a real print
- *     looks like head-on. As it spins, the off-axis canopy spheres orbit and
+ *   · Only the ROBOT rotates. All the motion in the frame belongs to the part.
+ *   · The robot is stacked horizontal layer lines — exactly what a real print
+ *     looks like head-on. As it spins, the 3D features orbit and
  *     each layer's width changes; that width change IS the rotation.
  *   · The control screen shows the animation's real build percentage, so the
  *     machine is never reporting a number that contradicts what you see.
@@ -110,54 +110,383 @@ const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
   a[2] + (b[2] - a[2]) * t,
 ];
 
-/* --- the tree ----------------------------------------------------------- */
-const FORK = 0.34;
-/*
- * Every sphere must satisfy y + r <= 1, or its crown sits above the last
- * printed layer and gets sliced flat — the tree then never finishes no matter
- * how long the build runs. The previous set peaked at 1.10, so a tenth of the
- * canopy was unreachable by construction. Highest crown here is 0.96.
+/* --- the 3D robot companion ---------------------------------------------- */
+type PartMaterial =
+  | "armor"
+  | "dark"
+  | "visor"
+  | "eye-cyan"
+  | "eye-amber"
+  | "gold"
+  | "cyan"
+  | "raft";
+
+type Slice = {
+  cx: number;
+  cz: number;
+  r: number;
+  rx_r?: number;
+  rz_r?: number;
+  mat: PartMaterial;
+};
+
+/**
+ * 3D parametric sliced geometry of the robot companion.
+ * All features satisfy 0 <= t <= 0.94 and stay strictly within the print volume.
  */
-const CANOPY: { x: number; y: number; z: number; r: number }[] = [
-  { x: 0, y: 0.66, z: 0, r: 0.3 },
-  { x: -0.23, y: 0.56, z: 0.1, r: 0.22 },
-  { x: 0.24, y: 0.58, z: -0.08, r: 0.23 },
-  { x: 0.05, y: 0.75, z: 0.05, r: 0.2 },
-  { x: -0.15, y: 0.7, z: -0.14, r: 0.17 },
-  { x: 0.17, y: 0.69, z: 0.15, r: 0.16 },
-];
-
-type Slice = { cx: number; cz: number; r: number; bark: boolean };
-
 function crossSections(t: number): Slice[] {
   const out: Slice[] = [];
-  if (t < 0.022) {
-    /* Brim disc — the printed raft the reference model sits on. */
-    out.push({ cx: 0, cz: 0, r: 0.2, bark: true });
+
+  // 1. Bed Raft / Brim (t < 0.02)
+  if (t < 0.02) {
+    out.push({ cx: 0, cz: 0.01, r: 0.22, mat: "raft" });
   }
-  if (t < FORK) {
-    const taper = 0.075 - 0.028 * (t / FORK);
-    const flare = t < 0.09 ? 1 + (0.09 - t) * 6 : 1;
-    out.push({ cx: 0, cz: 0, r: taper * flare, bark: true });
-  } else if (t < 0.6) {
-    const k = (t - FORK) / (0.6 - FORK);
-    const spread = 0.17 * k;
-    for (let b = 0; b < 3; b++) {
-      const a = (b / 3) * Math.PI * 2 + 0.5;
+
+  // 2. Feet & Soles (t: 0.012 to 0.085)
+  if (t >= 0.012 && t < 0.085) {
+    const isSole = t < 0.032;
+    const mat: PartMaterial = isSole ? "dark" : "armor";
+    const footScale = 1 - (t - 0.012) * 2.2;
+    const fw = 0.046 * (0.85 + 0.15 * footScale);
+    const fl = 0.070 * (0.85 + 0.15 * footScale);
+    for (const s of [-1, 1]) {
       out.push({
-        cx: Math.cos(a) * spread,
-        cz: Math.sin(a) * spread,
-        r: 0.046 - 0.018 * k,
-        bark: true,
+        cx: s * 0.085,
+        cz: 0.015,
+        r: fw,
+        rx_r: fw,
+        rz_r: fl,
+        mat,
+      });
+      if (isSole) {
+        out.push({
+          cx: s * 0.085,
+          cz: -0.025,
+          r: fw * 0.75,
+          rx_r: fw * 0.75,
+          rz_r: fl * 0.35,
+          mat: "dark",
+        });
+      }
+    }
+  }
+
+  // 3. Ankles & Shins (t: 0.085 to 0.21)
+  if (t >= 0.085 && t < 0.21) {
+    const isAnkle = t < 0.115;
+    for (const s of [-1, 1]) {
+      if (isAnkle) {
+        out.push({ cx: s * 0.082, cz: 0.005, r: 0.028, mat: "dark" });
+      } else {
+        const k = (t - 0.115) / (0.21 - 0.115);
+        const calfFlare = 1 + Math.sin(k * Math.PI) * 0.25;
+        const sw = 0.034 * calfFlare;
+        const sl = 0.038 * calfFlare;
+        out.push({
+          cx: s * 0.080,
+          cz: 0.005,
+          r: sw,
+          rx_r: sw,
+          rz_r: sl,
+          mat: "armor",
+        });
+        out.push({
+          cx: s * 0.080,
+          cz: -0.022 * calfFlare,
+          r: 0.016,
+          mat: "dark",
+        });
+      }
+    }
+  }
+
+  // 4. Knee Joints (t: 0.21 to 0.25)
+  if (t >= 0.21 && t < 0.25) {
+    for (const s of [-1, 1]) {
+      out.push({ cx: s * 0.078, cz: 0.008, r: 0.030, mat: "dark" });
+      out.push({ cx: s * 0.078, cz: 0.028, r: 0.022, mat: "armor" });
+    }
+  }
+
+  // 5. Thighs (t: 0.25 to 0.34)
+  if (t >= 0.25 && t < 0.34) {
+    const k = (t - 0.25) / (0.34 - 0.25);
+    const legX = 0.076 - k * 0.012;
+    for (const s of [-1, 1]) {
+      out.push({
+        cx: s * legX,
+        cz: 0.005,
+        r: 0.036,
+        rx_r: 0.035,
+        rz_r: 0.038,
+        mat: "armor",
+      });
+      out.push({
+        cx: s * (legX - 0.015),
+        cz: 0.002,
+        r: 0.018,
+        mat: "dark",
       });
     }
   }
-  for (const s of CANOPY) {
-    const dy = t - s.y;
-    if (Math.abs(dy) < s.r) {
-      out.push({ cx: s.x, cz: s.z, r: Math.sqrt(s.r * s.r - dy * dy), bark: false });
+
+  // 6. Hands (t: 0.26 to 0.33)
+  if (t >= 0.26 && t < 0.33) {
+    for (const s of [-1, 1]) {
+      out.push({
+        cx: s * 0.162,
+        cz: 0.012,
+        r: 0.025,
+        rx_r: 0.024,
+        rz_r: 0.028,
+        mat: "armor",
+      });
+      out.push({
+        cx: s * 0.156,
+        cz: 0.010,
+        r: 0.014,
+        mat: "dark",
+      });
     }
   }
+
+  // 7. Forearms & Wrists (t: 0.33 to 0.42)
+  if (t >= 0.33 && t < 0.42) {
+    const isWrist = t < 0.35;
+    for (const s of [-1, 1]) {
+      if (isWrist) {
+        out.push({ cx: s * 0.160, cz: 0.008, r: 0.022, mat: "dark" });
+      } else {
+        const k = (t - 0.35) / (0.42 - 0.35);
+        const faW = 0.028 + k * 0.006;
+        out.push({
+          cx: s * 0.160,
+          cz: 0.005,
+          r: faW,
+          rx_r: faW,
+          rz_r: faW * 1.1,
+          mat: "armor",
+        });
+      }
+    }
+  }
+
+  // 8. Pelvis & Lower Abdomen (t: 0.33 to 0.43)
+  if (t >= 0.33 && t < 0.43) {
+    const k = (t - 0.33) / (0.43 - 0.33);
+    const pW = 0.065 + k * 0.025;
+    out.push({
+      cx: 0,
+      cz: 0,
+      r: pW,
+      rx_r: pW,
+      rz_r: 0.048,
+      mat: "dark",
+    });
+    if (t < 0.39) {
+      out.push({
+        cx: 0,
+        cz: 0.028,
+        r: 0.028,
+        mat: "armor",
+      });
+    }
+  }
+
+  // 9. Midriff / Waist (t: 0.43 to 0.47)
+  if (t >= 0.43 && t < 0.47) {
+    out.push({
+      cx: 0,
+      cz: 0,
+      r: 0.082,
+      rx_r: 0.085,
+      rz_r: 0.052,
+      mat: "dark",
+    });
+  }
+
+  // 10. Torso & Upper Chest (t: 0.47 to 0.57)
+  if (t >= 0.47 && t < 0.57) {
+    const k = (t - 0.47) / (0.57 - 0.47);
+    const cW = 0.092 + Math.sin(k * Math.PI) * 0.026;
+    const cL = 0.068 + Math.sin(k * Math.PI) * 0.018;
+
+    out.push({
+      cx: 0,
+      cz: 0.005,
+      r: cW,
+      rx_r: cW,
+      rz_r: cL,
+      mat: "armor",
+    });
+
+    out.push({
+      cx: 0,
+      cz: 0,
+      r: cW * 0.88,
+      rx_r: cW * 0.88,
+      rz_r: cL * 0.85,
+      mat: "dark",
+    });
+
+    if (t >= 0.49 && t < 0.54) {
+      out.push({
+        cx: 0,
+        cz: 0.076,
+        r: 0.022,
+        mat: "gold",
+      });
+      out.push({
+        cx: 0,
+        cz: 0.078,
+        r: 0.012,
+        mat: "eye-amber",
+      });
+    }
+
+    out.push({
+      cx: 0,
+      cz: -0.075,
+      r: 0.045,
+      rx_r: 0.058,
+      rz_r: 0.030,
+      mat: "dark",
+    });
+    for (const s of [-1, 1]) {
+      out.push({
+        cx: s * 0.035,
+        cz: -0.095,
+        r: 0.012,
+        mat: "cyan",
+      });
+    }
+  }
+
+  // 11. Elbows, Biceps & Shoulders (t: 0.42 to 0.56)
+  if (t >= 0.42 && t < 0.56) {
+    for (const s of [-1, 1]) {
+      if (t < 0.46) {
+        out.push({ cx: s * 0.160, cz: 0, r: 0.022, mat: "dark" });
+      } else if (t < 0.49) {
+        out.push({ cx: s * 0.158, cz: 0.002, r: 0.025, mat: "armor" });
+      } else {
+        const sk = (t - 0.49) / (0.56 - 0.49);
+        const sr = 0.036 * Math.sin(sk * Math.PI);
+        if (sr > 0.008) {
+          out.push({ cx: s * 0.155, cz: 0.005, r: sr, mat: "armor" });
+          out.push({ cx: s * 0.138, cz: 0.002, r: sr * 0.6, mat: "dark" });
+        }
+      }
+    }
+  }
+
+  // 12. Neck (t: 0.57 to 0.61)
+  if (t >= 0.57 && t < 0.61) {
+    out.push({ cx: 0, cz: 0.005, r: 0.038, mat: "dark" });
+    out.push({ cx: 0, cz: 0.005, r: 0.046, mat: "armor" });
+  }
+
+  // 13. Head & Helmet (t: 0.61 to 0.91)
+  if (t >= 0.61 && t < 0.91) {
+    const headCenterY = 0.755;
+    const headRadiusY = 0.145;
+    const dy = (t - headCenterY) / headRadiusY;
+    if (Math.abs(dy) < 1) {
+      const headProfile = Math.sqrt(1 - dy * dy);
+      const headW = 0.182 * headProfile;
+      const headL = 0.175 * headProfile;
+
+      out.push({
+        cx: 0,
+        cz: 0.005,
+        r: headW,
+        rx_r: headW,
+        rz_r: headL,
+        mat: "armor",
+      });
+
+      if (t >= 0.65 && t < 0.85) {
+        const vDy = (t - 0.745) / 0.095;
+        if (Math.abs(vDy) < 1) {
+          const vProfile = Math.sqrt(1 - vDy * vDy);
+          const vW = 0.142 * vProfile;
+          const vL = 0.078 * vProfile;
+
+          out.push({
+            cx: 0,
+            cz: 0.088,
+            r: vW,
+            rx_r: vW,
+            rz_r: vL,
+            mat: "visor",
+          });
+
+          if (t >= 0.69 && t < 0.79) {
+            const eDy = (t - 0.740) / 0.045;
+            if (Math.abs(eDy) < 1) {
+              const eRadius = 0.034 * Math.sqrt(1 - eDy * eDy);
+              out.push({
+                cx: -0.058,
+                cz: 0.145,
+                r: eRadius,
+                mat: "eye-cyan",
+              });
+              out.push({
+                cx: 0.058,
+                cz: 0.145,
+                r: eRadius,
+                mat: "eye-amber",
+              });
+            }
+          }
+        }
+      }
+
+      if (t >= 0.70 && t < 0.81) {
+        const earDy = (t - 0.755) / 0.052;
+        if (Math.abs(earDy) < 1) {
+          const earR = 0.038 * Math.sqrt(1 - earDy * earDy);
+          for (const s of [-1, 1]) {
+            out.push({
+              cx: s * (headW + 0.012),
+              cz: 0.008,
+              r: earR,
+              mat: "armor",
+            });
+            out.push({
+              cx: s * (headW + 0.016),
+              cz: 0.008,
+              r: earR * 0.75,
+              mat: "cyan",
+            });
+            out.push({
+              cx: s * (headW + 0.018),
+              cz: 0.008,
+              r: earR * 0.40,
+              mat: "gold",
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // 14. Top Crest (t: 0.90 to 0.94)
+  if (t >= 0.90 && t < 0.94) {
+    const crestDy = (t - 0.915) / 0.022;
+    if (Math.abs(crestDy) < 1) {
+      const cW = 0.032 * Math.sqrt(1 - crestDy * crestDy);
+      out.push({
+        cx: 0,
+        cz: 0.025,
+        r: cW,
+        rx_r: cW,
+        rz_r: 0.018,
+        mat: "cyan",
+      });
+    }
+  }
+
   return out;
 }
 
@@ -180,13 +509,13 @@ export function PrintCanvas({ className }: { className?: string }) {
     let startedAt = performance.now() - HEAD_START;
 
     const rootStyles = getComputedStyle(document.documentElement);
-    let cream = readRgb(rootStyles, "--accent", [20, 20, 15]);
-    let foliage = readRgb(rootStyles, "--accent-2", [43, 90, 155]);
-    let machine = readRgb(rootStyles, "--machine", [87, 86, 79]);
-    let bark = readRgb(rootStyles, "--bark", [192, 52, 42]);
-    let brass = readRgb(rootStyles, "--brass", [242, 195, 26]);
-    let logoPaper = readRgb(rootStyles, "--logo-paper", [20, 20, 15]);
-    let logoInk = readRgb(rootStyles, "--logo-ink", [192, 52, 42]);
+    let cream = readRgb(rootStyles, "--accent", [255, 255, 255]);
+    let foliage = readRgb(rootStyles, "--accent-2", [0, 194, 255]);
+    let machine = readRgb(rootStyles, "--machine", [143, 160, 181]);
+    let bark = readRgb(rootStyles, "--bark", [255, 120, 46]);
+    let brass = readRgb(rootStyles, "--brass", [245, 158, 11]);
+    let logoPaper = readRgb(rootStyles, "--logo-paper", [255, 255, 255]);
+    let logoInk = readRgb(rootStyles, "--logo-ink", [255, 120, 46]);
 
     /* Path2D is browser-only, so build inside the effect. */
     const MARK_D = new Path2D(MARK_D_PATH);
@@ -359,12 +688,12 @@ export function PrintCanvas({ className }: { className?: string }) {
       const modelW = bbox.right - bbox.left;
       /* Narrow screens can't fit a full machine AND the whole copy block, so
          the machine shrinks and sits hard against the bottom edge — sized so
-         the TREE specifically clears the CTA row, since the tree is the part
+         the ROBOT specifically clears the CTA row, since the robot is the part
          worth seeing. */
       /* The tablet band only started being reached once breakpoints moved to
          viewport width (the canvas box is ~15px narrower, so 768 used to fall
          through to the narrow branch). Its numbers are tuned here for the
-         first time: 0.44 put the canopy 11px into the CTA row. */
+         first time: 0.44 put the helmet 11px into the CTA row. */
       const bboxCx = (bbox.left + bbox.right) / 2;
 
       if (wide) {
@@ -451,13 +780,15 @@ export function PrintCanvas({ className }: { className?: string }) {
          both the head and the bead can be driven from it. */
       const cosS = Math.cos(spin);
       const sinS = Math.sin(spin);
-      const TREE_SCALE = M.printH * 0.98;
+      const ROBOT_SCALE = M.printH * 0.98;
 
       const liveT = LAYERS > 1 ? Math.min(1, built / (LAYERS - 1)) : 0;
       const liveSpans: { a: number; b: number }[] = [];
       for (const s of crossSections(liveT)) {
-        const rx = (s.cx * cosS - s.cz * sinS) * TREE_SCALE;
-        const hw = s.r * TREE_SCALE;
+        const rx = (s.cx * cosS - s.cz * sinS) * ROBOT_SCALE;
+        const rx_r = s.rx_r ?? s.r;
+        const rz_r = s.rz_r ?? s.r;
+        const hw = Math.sqrt((rx_r * cosS) ** 2 + (rz_r * sinS) ** 2) * ROBOT_SCALE;
         liveSpans.push({ a: rx - hw, b: rx + hw });
       }
       const layerMin = liveSpans.length ? Math.min(...liveSpans.map((s) => s.a)) : 0;
@@ -477,7 +808,7 @@ export function PrintCanvas({ className }: { className?: string }) {
       const scrH = 28;
       rect(scrX, scrY, scrW, scrH, machine, 0.75, 0.28, 2);
       if (detail) {
-        label("Workshop Core", scrX + 4, scrY + scrH - 5, 5.4, cream, 0.85);
+        label("Robo Companion", scrX + 4, scrY + scrH - 5, 5.4, cream, 0.85);
         label("Printing...", scrX + 4, scrY + scrH - 13, 5, foliage, 0.9);
         /* progress bar reflecting the real build state */
         rect(scrX + 4, scrY + 6, scrW - 30, 4, machine, 0.55, 0.12, 1, 1);
@@ -648,7 +979,7 @@ export function PrintCanvas({ className }: { className?: string }) {
       /* ============================================== X GANTRY + RAILS */
       /* Derived from the layer being deposited, not a standalone offset.
          The two were computed independently before, which left the nozzle a
-         constant 24 units BELOW the top of the print — buried inside the tree
+         constant 24 units BELOW the top of the print — buried inside the model
          instead of riding on it. Anchoring the gantry to the top layer plus
          the nozzle drop makes the tip land exactly on the layer it's laying. */
       const topLayerY = M.bedY + 6 + printed;
@@ -786,54 +1117,109 @@ export function PrintCanvas({ className }: { className?: string }) {
         }
       }
 
-      /* ============================================================ TREE */
-      const treeBase = plateY + 6;
-      const beadWidth = Math.max(1.4, (M.printH / LAYERS) * unit * 1.3);
+      /* =========================================================== ROBOT */
+      const robotBase = plateY + 6;
+      const beadWidth = Math.max(1.8, (M.printH / LAYERS) * unit * 1.45);
 
       /* Nothing prints until the machine exists. */
-      const treeLayers = assembling ? 0 : built;
-      for (let i = 0; i < treeLayers; i++) {
+      const robotLayers = assembling ? 0 : built;
+      for (let i = 0; i < robotLayers; i++) {
         const t = i / (LAYERS - 1);
-        const y = treeBase + t * M.printH;
+        const y = robotBase + t * M.printH;
         const heat = Math.max(0, 1 - (built - i) / 7);
         const isLive = i === built - 1;
 
         const slices = crossSections(t)
-          .map((s) => ({
-            ...s,
-            rx: s.cx * cosS - s.cz * sinS,
-            rz: s.cx * sinS + s.cz * cosS,
-          }))
+          .map((s) => {
+            const rx_r = s.rx_r ?? s.r;
+            const rz_r = s.rz_r ?? s.r;
+            const hw = Math.sqrt((rx_r * cosS) ** 2 + (rz_r * sinS) ** 2) * ROBOT_SCALE;
+            return {
+              ...s,
+              rx: s.cx * cosS - s.cz * sinS,
+              rz: s.cx * sinS + s.cz * cosS,
+              hw,
+            };
+          })
           .sort((a, b) => a.rz - b.rz);
 
         for (const s of slices) {
-          const base = s.bark ? bark : foliage;
-          const color = mix(base, cream, heat * heat);
-          const depth = 0.62 + 0.38 * ((s.rz + 0.4) / 0.8);
-          const alpha = Math.min(1, (0.52 + 0.48 * heat) * depth);
-          const cx = s.rx * TREE_SCALE;
-          const halfW = s.r * TREE_SCALE;
+          let base: Rgb;
+          let glow = false;
+          switch (s.mat) {
+            case "armor":
+              base = [244, 246, 252]; // solid clean white ceramic armor
+              break;
+            case "dark":
+              base = [34, 40, 52]; // dark graphite titanium chassis
+              break;
+            case "visor":
+              base = [12, 14, 20]; // deep glossy black face visor
+              break;
+            case "eye-cyan":
+              base = [0, 235, 255]; // electric laser cyan glowing eye
+              glow = true;
+              break;
+            case "eye-amber":
+              base = [255, 170, 42]; // warm solar amber glowing eye
+              glow = true;
+              break;
+            case "gold":
+              base = brass; // golden brass/amber chest emblem ring & ear hub
+              break;
+            case "cyan":
+              base = foliage; // laser cyan accent ring & head crest
+              glow = true;
+              break;
+            case "raft":
+              base = [75, 88, 108]; // print bed brim raft
+              break;
+            default:
+              base = cream;
+          }
 
-          ctx.lineCap = "round";
-          ctx.beginPath();
-          ctx.moveTo(sx(cx - halfW), sy(y));
-          ctx.lineTo(sx(cx + halfW), sy(y));
-          ctx.strokeStyle = rgba(color, alpha);
-          ctx.lineWidth = beadWidth;
-          ctx.stroke();
+          const color = mix(base, cream, heat * heat);
+          const depth = glow ? 1.0 : (0.75 + 0.25 * Math.max(0, (s.rz + 0.25) / 0.5));
+          const alpha = glow
+            ? 1.0
+            : Math.min(1, (0.88 + 0.12 * heat) * Math.max(0.65, depth));
+          const cx = s.rx * ROBOT_SCALE;
+          const halfW = s.hw;
+
+          if (glow) {
+            ctx.save();
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = rgba(base, 0.9);
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(sx(cx - halfW), sy(y));
+            ctx.lineTo(sx(cx + halfW), sy(y));
+            ctx.strokeStyle = rgba(color, 1.0);
+            ctx.lineWidth = beadWidth * 1.15;
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(sx(cx - halfW), sy(y));
+            ctx.lineTo(sx(cx + halfW), sy(y));
+            ctx.strokeStyle = rgba(color, alpha);
+            ctx.lineWidth = beadWidth;
+            ctx.stroke();
+          }
 
           /* The bead the nozzle is laying right now: a short hot segment of
              the live layer directly under the tip. This is what visually ties
              the head to the print — without it the layer just appears whole. */
           if (isLive && overMaterial) {
-            const w = Math.max(3, TREE_SCALE * 0.045);
+            const w = Math.max(3, ROBOT_SCALE * 0.045);
             const a = Math.max(cx - halfW, headX - w);
             const b = Math.min(cx + halfW, headX + w);
             if (b > a) {
               ctx.beginPath();
               ctx.moveTo(sx(a), sy(y));
               ctx.lineTo(sx(b), sy(y));
-              ctx.strokeStyle = rgba(cream, 0.95);
+              ctx.strokeStyle = rgba(cream, 0.98);
               ctx.lineWidth = beadWidth * 1.15;
               ctx.stroke();
             }

@@ -324,7 +324,7 @@ export default function HomePage() {
 
       {/* --------------------------------------------------------- Stack */}
       {/* No grid here — the only grid in the design is the printer's build
-          surface, directly under the tree. */}
+          surface, directly under the robot. */}
       <section id="stack" className="relative scroll-mt-16 overflow-hidden py-28 md:py-40">
         <div
           aria-hidden="true"
