@@ -126,6 +126,12 @@
       "sourceType": "github",
       "skillPath": "skills/features/clerk-webhooks/SKILL.md",
       "computedHash": "e3c348bdc6dee1f28bc56577cd4aac605d3dfc3c63fcb10fc51e6c04c1fe3fb0"
+    },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
     }
   }
 }
