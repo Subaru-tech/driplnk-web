@@ -241,7 +241,7 @@ export function FreelanceBrowser({
             return (
               <div
                 key={freelancer.provider_id}
-                className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-surface p-6 transition-all duration-200 hover:-translate-y-1 hover:border-line-strong hover:shadow-xl hover:shadow-black/20"
+                className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-surface p-6 transition-colors hover:border-line-strong"
               >
                 <div className="flex flex-col gap-4">
                   {/* Header: Avatar, Name, Verified Badge */}

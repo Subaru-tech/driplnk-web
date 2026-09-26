@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   CheckCircle2,
   Printer,
-  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -34,14 +33,14 @@ export function PartnerPortal() {
       {/* Dual Pathway Grid */}
       <div className="grid gap-8 md:grid-cols-2 items-stretch">
         {/* Track 1: Specialist */}
-        <div className="relative flex flex-col justify-between rounded-2xl border border-line bg-gradient-to-b from-surface to-canvas p-7 sm:p-8 transition-all duration-300 hover:border-line-strong hover:shadow-xl">
+        <div className="relative flex flex-col justify-between rounded-2xl border border-line bg-surface p-7 sm:p-8 transition-colors hover:border-line-strong">
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-accent">
                 01 / CAD SPECIALIST
               </span>
               <span className="grid size-10 place-items-center rounded-xl bg-accent/10 text-accent">
-                <Sparkles className="size-5" />
+                <Wand2 className="size-5" />
               </span>
             </div>
 
@@ -86,19 +85,18 @@ export function PartnerPortal() {
               className="w-full justify-center"
             >
               <span>Become a Specialist</span>
-              <ArrowRight className="size-4" />
             </ButtonLink>
             <Link
               href="/freelance"
               className="text-center text-xs text-muted hover:text-fg transition-colors"
             >
-              Browse active specialists directory →
+              Browse active specialists directory
             </Link>
           </div>
         </div>
 
         {/* Track 2: Print Vendor */}
-        <div className="relative flex flex-col justify-between rounded-2xl border border-line bg-gradient-to-b from-surface to-canvas p-7 sm:p-8 transition-all duration-300 hover:border-line-strong hover:shadow-xl">
+        <div className="relative flex flex-col justify-between rounded-2xl border border-line bg-surface p-7 sm:p-8 transition-colors hover:border-line-strong">
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-accent">
@@ -151,13 +149,12 @@ export function PartnerPortal() {
               className="w-full justify-center"
             >
               <span>Become a Manufacturing Partner</span>
-              <ArrowRight className="size-4" />
             </ButtonLink>
             <Link
               href="/mart"
               className="text-center text-xs text-muted hover:text-fg transition-colors"
             >
-              Explore DripLnk Mart manufacturing →
+              Explore DripLnk Mart manufacturing
             </Link>
           </div>
         </div>

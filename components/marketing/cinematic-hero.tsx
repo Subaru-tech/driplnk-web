@@ -39,7 +39,7 @@ export function CinematicHero() {
           {/* Left Column: Headline, subtext, actions, and trust metrics */}
           <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left py-4 sm:py-6">
             <div className="hero-pull inline-flex items-center gap-2 rounded-full border border-line-control bg-surface/60 px-3.5 py-1 text-xs font-mono text-accent-2 mb-4 sm:mb-6 backdrop-blur-sm">
-              <span className="size-1.5 rounded-full bg-accent-2 animate-pulse" />
+              <span className="size-1.5 rounded-full bg-accent-2" />
               <span>Idea &nbsp;→&nbsp; Geometry &nbsp;→&nbsp; Part</span>
             </div>
 
@@ -48,7 +48,7 @@ export function CinematicHero() {
               <br className="hidden lg:inline" />
               {" "}for turning ideas
               <br className="hidden lg:inline" />
-              {" "}<span className="text-accent-gradient">into products.</span>
+              {" "}<span className="text-fg">into products.</span>
             </h1>
 
             <p className="hero-pull mt-4 sm:mt-6 max-w-lg text-base sm:text-lg text-pretty text-muted">
@@ -87,9 +87,9 @@ export function CinematicHero() {
               <ButtonLink
                 href="/mart"
                 size="lg"
-                className="group relative flex items-center gap-2.5 px-8 py-3.5 text-base font-semibold shadow-2xl backdrop-blur-md bg-surface/90 hover:bg-surface border border-line-control hover:border-accent text-fg transition-all rounded-xl hover:scale-[1.02]"
+                className="group relative flex items-center gap-2.5 px-8 py-3.5 text-base font-semibold backdrop-blur-md bg-surface/90 hover:bg-surface border border-line-control hover:border-accent text-fg transition-colors rounded-xl"
               >
-                <Printer className="size-4 text-accent transition-transform group-hover:scale-110" aria-hidden="true" />
+                <Printer className="size-4 text-accent" aria-hidden="true" />
                 <span>Get a Print Quote</span>
                 <span className="text-accent text-xs font-mono px-2 py-0.5 rounded bg-accent/15 border border-accent/25 ml-1">Instant</span>
               </ButtonLink>

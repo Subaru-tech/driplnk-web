@@ -1,4 +1,4 @@
-import { Boxes, Download, Layers, Printer, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Boxes, Download, Layers, Printer, SlidersHorizontal, Wand2 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { CinematicHero } from "@/components/marketing/cinematic-hero";
 import { CtaBand } from "@/components/marketing/cta-band";
@@ -35,7 +35,7 @@ const pillars = [
     href: "/models",
   },
   {
-    icon: Sparkles,
+    icon: Wand2,
     kicker: "EXPERTISE / FREELANCE",
     title: "Vetted Specialist Network",
     description:
@@ -62,7 +62,7 @@ const pillars = [
 
 const steps = [
   {
-    icon: Sparkles,
+    icon: Wand2,
     title: "Generate",
     description: "Describe the part you need. LeaFF OS turns it into a real, editable model.",
   },
@@ -136,7 +136,7 @@ export default function HomePage() {
             {/* Card 1: DISCOVER MODELS */}
             <Reveal
               index={0}
-              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-surface p-6 sm:p-8"
             >
               <div className="flex flex-col gap-5">
                 <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export default function HomePage() {
               </div>
               <div className="mt-8 border-t border-line/60 pt-6">
                 <ButtonLink href="/models" size="md" className="w-full justify-center">
-                  Browse Models →
+                  Browse Models
                 </ButtonLink>
               </div>
             </Reveal>
@@ -166,7 +166,7 @@ export default function HomePage() {
             {/* Card 2: HIRE SPECIALISTS */}
             <Reveal
               index={1}
-              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-surface p-6 sm:p-8"
             >
               <div className="flex flex-col gap-5">
                 <div className="flex items-center justify-between">
@@ -174,7 +174,7 @@ export default function HomePage() {
                     02 / EXPERTISE
                   </span>
                   <span className="grid size-9 place-items-center rounded-lg bg-accent-2/10 text-accent-2">
-                    <Sparkles className="size-4" />
+                    <Wand2 className="size-4" />
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -188,7 +188,7 @@ export default function HomePage() {
               </div>
               <div className="mt-8 flex flex-col gap-2.5 border-t border-line/60 pt-6">
                 <ButtonLink href="/freelance" size="md" className="w-full justify-center">
-                  Hire a Specialist →
+                  Hire a Specialist
                 </ButtonLink>
                 <ButtonLink
                   href="/freelance/apply"
@@ -196,7 +196,7 @@ export default function HomePage() {
                   size="sm"
                   className="w-full justify-center text-xs text-muted hover:text-fg"
                 >
-                  Become a Specialist →
+                  Become a Specialist
                 </ButtonLink>
               </div>
             </Reveal>
@@ -204,7 +204,7 @@ export default function HomePage() {
             {/* Card 3: GET IT MADE */}
             <Reveal
               index={2}
-              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-gradient-to-b from-surface to-canvas p-6 sm:p-8 transition-all hover:border-line-strong hover:shadow-xl"
+              className="flex flex-col justify-between rounded-[var(--radius-card)] border border-line bg-surface p-6 sm:p-8"
             >
               <div className="flex flex-col gap-5">
                 <div className="flex items-center justify-between">
@@ -226,7 +226,7 @@ export default function HomePage() {
               </div>
               <div className="mt-8 flex flex-col gap-2.5 border-t border-line/60 pt-6">
                 <ButtonLink href="/mart" size="md" className="w-full justify-center">
-                  Get a Quote →
+                  Get a Quote
                 </ButtonLink>
                 <ButtonLink
                   href="/vendor/apply"
@@ -234,7 +234,7 @@ export default function HomePage() {
                   size="sm"
                   className="w-full justify-center text-xs text-muted hover:text-fg"
                 >
-                  Become a Manufacturing Partner →
+                  Become a Manufacturing Partner
                 </ButtonLink>
               </div>
             </Reveal>
@@ -253,7 +253,7 @@ export default function HomePage() {
             </p>
             <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
               <ButtonLink href="/mart#quote-estimator" size="sm">
-                Get Instant Print Quote →
+                Get Instant Print Quote
               </ButtonLink>
               <ButtonLink href="/partner" variant="secondary" size="sm">
                 Partner with DripLink

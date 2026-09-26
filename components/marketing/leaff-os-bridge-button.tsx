@@ -28,16 +28,16 @@ export function LeaffOsBridgeButton({
         variant="secondary"
         size="lg"
         onClick={handleLaunch}
-        className="w-full justify-center gap-2 border-accent/40 bg-accent/5 hover:bg-accent/10 hover:border-accent text-accent font-semibold transition-all group"
+        className="w-full justify-center gap-2 border-accent/40 bg-accent/5 hover:bg-accent/10 hover:border-accent text-accent font-semibold transition-colors"
       >
-        <Cpu className="size-4 text-accent transition-transform group-hover:scale-110" aria-hidden="true" />
+        <Cpu className="size-4 text-accent" aria-hidden="true" />
         <span>Open in LeaFF OS</span>
-        <ArrowUpRight className="size-3.5 opacity-70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        <ArrowUpRight className="size-3.5 opacity-70" />
       </Button>
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl">
+          <div className="relative w-full max-w-md rounded-2xl border border-line bg-surface p-6">
             <button
               type="button"
               onClick={() => setModalOpen(false)}

@@ -1,4 +1,4 @@
-import { ArrowRight, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 export type Layer = {
@@ -70,10 +70,6 @@ export function LayerStack({ layers }: { layers: Layer[] }) {
                 className="group inline-flex w-fit items-center gap-1.5 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
               >
                 Learn more
-                <ArrowRight
-                  className="size-4 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
               </Link>
             </div>
           </article>

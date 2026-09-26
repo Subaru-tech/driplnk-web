@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, Sparkles, Clock } from "lucide-react";
+import { ShieldCheck, Star, Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export type TrustBadgeType = "verified" | "featured" | "new";
@@ -59,13 +59,13 @@ export function TrustBadge({
       return (
         <div
           className={cn(
-            "flex items-start gap-3 rounded-[var(--radius-control)] border border-purple-500/30 bg-purple-500/10 p-3 text-xs",
+            "flex items-start gap-3 rounded-[var(--radius-control)] border border-amber/30 bg-amber/10 p-3 text-xs",
             className
           )}
         >
-          <Sparkles className="size-4 shrink-0 mt-0.5 text-purple-400" />
+          <Star className="size-4 shrink-0 mt-0.5 text-amber" />
           <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-purple-300">Featured by DripLnk</span>
+            <span className="font-semibold text-amber">Featured by DripLnk</span>
             <span className="text-[11px] text-muted">Curated by DripLnk for demonstrated physical precision.</span>
           </div>
         </div>
@@ -75,13 +75,13 @@ export function TrustBadge({
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 font-mono font-medium tracking-wide text-purple-400 select-none",
+          "inline-flex items-center gap-1.5 rounded-full border border-amber/30 bg-amber/10 font-mono font-medium tracking-wide text-amber select-none",
           size === "sm" ? "px-2.5 py-0.5 text-[11px]" : "px-3 py-1 text-xs",
           className
         )}
         title="Curated by DripLnk for demonstrated physical precision"
       >
-        <Sparkles className={size === "sm" ? "size-3 text-purple-400" : "size-3.5 text-purple-400"} />
+        <Star className={size === "sm" ? "size-3 text-amber" : "size-3.5 text-amber"} />
         <span>Featured</span>
       </span>
     );

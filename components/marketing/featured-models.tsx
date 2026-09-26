@@ -1,4 +1,4 @@
-import { ArrowRight, Box, Sparkles } from "lucide-react";
+import { Box, Star } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format";
 import type { MarketplaceModel } from "@/lib/types";
@@ -14,7 +14,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
     <section aria-labelledby="featured-models-heading" className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-accent" aria-hidden="true" />
+          <Star className="size-4 text-accent" aria-hidden="true" />
           <h2 id="featured-models-heading" className="font-display text-lg font-semibold text-fg sm:text-xl">
             Featured Models
           </h2>
@@ -24,7 +24,6 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
           className="group flex items-center gap-1 text-xs font-medium text-muted hover:text-fg transition-colors"
         >
           <span>View all</span>
-          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </a>
       </div>
 
@@ -39,7 +38,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
             <Link
               key={item.id}
               href={`/models/${item.id}`}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface p-3 transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-line-strong hover:shadow-xl hover:shadow-black/25"
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface p-3 transition-colors hover:border-line-strong"
             >
               {/* Thumbnail Container */}
               <div className="relative aspect-16/10 w-full overflow-hidden rounded-lg bg-raised">
@@ -49,7 +48,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
                     src={preview}
                     alt={item.title}
                     loading="lazy"
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="size-full object-cover"
                   />
                 ) : (
                   <div className="grid size-full place-items-center">
@@ -78,7 +77,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
               {/* Card Meta */}
               <div className="flex flex-1 flex-col justify-between pt-3">
                 <div className="flex flex-col gap-1">
-                  <h3 className="line-clamp-1 text-sm font-semibold text-fg group-hover:text-accent transition-colors" title={item.title}>
+                  <h3 className="line-clamp-1 text-sm font-semibold text-fg" title={item.title}>
                     {item.title}
                   </h3>
                   <p className="text-[11px] text-muted line-clamp-1">by {author}</p>
@@ -92,9 +91,7 @@ export function FeaturedModels({ models = [] }: { models?: MarketplaceModel[] })
                       formatCurrency(item.price)
                     )}
                   </span>
-                  <span className="text-[11px] font-medium text-muted group-hover:text-fg">
-                    View →
-                  </span>
+                  <span className="text-[11px] font-medium text-muted">View</span>
                 </div>
               </div>
             </Link>
