@@ -183,3 +183,22 @@ export async function deleteB2Object(key: string): Promise<{ success: boolean; e
     return { success: false, error: err instanceof Error ? err.message : "Failed to delete B2 object." };
   }
 }
+
+/**
+ * Fetches object bytes and metadata directly from Backblaze B2.
+ */
+export async function getB2Object(key: string) {
+  const client = getB2Client();
+  const command = new GetObjectCommand({
+    Bucket: B2_CONFIG.bucketName,
+    Key: key,
+  });
+  const res = await client.send(command);
+  const bytes = await res.Body?.transformToByteArray();
+  return {
+    bytes: bytes ? Buffer.from(bytes) : null,
+    contentType: res.ContentType || "application/octet-stream",
+    contentLength: res.ContentLength,
+  };
+}
+

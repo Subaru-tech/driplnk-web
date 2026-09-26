@@ -158,6 +158,7 @@ export async function loadModel(
   buffer: ArrayBuffer,
   filename: string,
   preset: MaterialPreset = "silver",
+  renderer?: WebGLRendererType,
 ): Promise<Object3D> {
   const THREE = await import("three");
   const ext = extensionOf(filename);
@@ -258,18 +259,69 @@ export async function loadModel(
     case ".gltf": {
       const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
       const loader = new GLTFLoader();
-      const gltf = await loader.parseAsync(buffer, "");
-      gltf.scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+
+      // Marketplace GLBs (Sketchfab/CGTrader exports) are commonly Draco
+      // mesh-compressed, Meshopt-packed or KTX2-textured — wire the bundled
+      // decoders so those parse instead of throwing. Decoder wasm is fetched
+      // from CDN (gstatic/unpkg) — three.js's documented hosting.
+      // ponytail: no local wasm hosting; swap paths to /public if offline
+      // support ever matters.
+      const { DRACOLoader } = await import("three/addons/loaders/DRACOLoader.js");
+      const draco = new DRACOLoader();
+      draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+      loader.setDRACOLoader(draco);
+
+      let ktx2: import("three/addons/loaders/KTX2Loader.js").KTX2Loader | null = null;
+      if (renderer) {
+        try {
+          const { KTX2Loader } = await import("three/addons/loaders/KTX2Loader.js");
+          ktx2 = new KTX2Loader();
+          ktx2.setTranscoderPath("https://unpkg.com/three@0.185.1/examples/jsm/libs/basis/");
+          ktx2.detectSupport(renderer);
+          loader.setKTX2Loader(ktx2);
+        } catch {
+          ktx2 = null; // KTX2 optional — uncompressed assets still parse
         }
-      });
-      return gltf.scene;
+      }
+
+      try {
+        const { MeshoptDecoder } = await import("three/addons/libs/meshopt_decoder.module.js");
+        loader.setMeshoptDecoder(MeshoptDecoder);
+      } catch {
+        // optional
+      }
+
+      try {
+        const gltf = await loader.parseAsync(buffer, "");
+        gltf.scene.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        return gltf.scene;
+      } finally {
+        draco.dispose();
+        ktx2?.dispose();
+      }
     }
     case ".gcode": {
       const { GCodeLoader } = await import("three/addons/loaders/GCodeLoader.js");
       const obj = new GCodeLoader().parse(new TextDecoder().decode(buffer));
+      // Slicer-grade toolpath styling: vivid extrusion lines, subtle travel moves
+      obj.traverse((child) => {
+        if (child instanceof THREE.LineSegments && child.material) {
+          const mat = child.material as import("three").LineBasicMaterial;
+          if (mat.name === "extruded") {
+            mat.color.setHex(0x00e5b4); // Sleek cyber teal / mint
+            mat.linewidth = 1.5;
+          } else if (mat.name === "path") {
+            mat.color.setHex(0x64748b);
+            mat.transparent = true;
+            mat.opacity = 0.3;
+          }
+        }
+      });
       obj.rotation.x = -Math.PI / 2;
       return obj;
     }
@@ -322,7 +374,23 @@ export async function renderThumbnailWithPhash(
   try {
     const THREE = await import("three");
     const buffer = await file.arrayBuffer();
-    const object = await loadModel(buffer, file.name, "silver");
+
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true,
+    });
+    renderer.setSize(size, size, false);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const object = await loadModel(buffer, file.name, "silver", renderer);
 
     const scene = new THREE.Scene();
     scene.add(object);
@@ -370,21 +438,6 @@ export async function renderThumbnailWithPhash(
     // Three-quarter dynamic angle
     camera.position.set(distance * 0.75, distance * 0.45, distance * 0.75);
     camera.lookAt(center);
-
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-      preserveDrawingBuffer: true,
-    });
-    renderer.setSize(size, size, false);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     // Try applying studio environment map
     const envMap = await createStudioEnvironment(renderer);

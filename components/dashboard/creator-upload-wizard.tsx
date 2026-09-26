@@ -35,6 +35,11 @@ type PickedModelFile = {
   name: string;
   size: string;
   extension: string;
+  /** Real handle — uploaded to B2 when the draft/publish step runs. */
+  file?: File;
+  /** B2 key returned by /api/upload/model once bytes are stored. */
+  storagePath?: string;
+  fileSize?: number;
 };
 
 const DEFAULT_TAGS = ["robotics", "nema17", "mount", "maker"];
@@ -51,12 +56,8 @@ export function CreatorUploadWizard() {
   const [fileSha256, setFileSha256] = useState<string | null>(null);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
-  // Step 1: Upload Files
-  const [files, setFiles] = useState<PickedModelFile[]>([
-    { name: "nema17_bracket_main.stl", size: "3.4 MB", extension: "STL" },
-    { name: "nema17_mounting_plate.step", size: "1.2 MB", extension: "STEP" },
-    { name: "nema17_project_kit.3mf", size: "4.8 MB", extension: "3MF" },
-  ]);
+  // Step 1: Upload Files (real files only — empty until the user picks some)
+  const [files, setFiles] = useState<PickedModelFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
 
   // Step 2: Model Information & Visuals
@@ -182,7 +183,7 @@ export function CreatorUploadWizard() {
     const newPicked: PickedModelFile[] = fileArray.map((f) => {
       const ext = f.name.split(".").pop()?.toUpperCase() || "CAD";
       const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
-      return { name: f.name, size: `${sizeMb} MB`, extension: ext };
+      return { name: f.name, size: `${sizeMb} MB`, extension: ext, file: f, fileSize: f.size };
     });
     setFiles([...files, ...newPicked]);
     toast("success", `Added ${newPicked.length} file${newPicked.length === 1 ? "" : "s"}.`);
@@ -202,8 +203,37 @@ export function CreatorUploadWizard() {
     }
   }
 
+  /** Uploads any picked files that don't have a B2 storage path yet. */
+  async function uploadPendingFiles(): Promise<boolean> {
+    const pending = files.filter((f) => f.file && !f.storagePath);
+    if (pending.length === 0) return true;
+
+    try {
+      for (const picked of pending) {
+        const body = new FormData();
+        body.append("file", picked.file!);
+        const res = await fetch("/api/upload/model", { method: "POST", body });
+        const result = (await res.json().catch(() => null)) as
+          { success?: boolean; error?: string; storagePath?: string } | null;
+        if (!res.ok || !result?.success || !result.storagePath) {
+          throw new Error(result?.error || `Upload of ${picked.name} failed (${res.status}).`);
+        }
+        picked.storagePath = result.storagePath;
+      }
+      setFiles([...files]);
+      return true;
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "File upload failed.");
+      return false;
+    }
+  }
+
   async function handleSaveDraft() {
     setSavingDraft(true);
+    if (!(await uploadPendingFiles())) {
+      setSavingDraft(false);
+      return;
+    }
     try {
       const res = await saveModelDraft({
         id: createdModelId || undefined,
@@ -227,10 +257,11 @@ export function CreatorUploadWizard() {
           printTime,
           assemblyNotes,
         },
-        filePath: files[0] ? `models/${files[0].name}` : undefined,
+        filePath: files[0]?.storagePath,
         files: files.map((f, i) => ({
           filename: f.name,
-          storagePath: `models/${f.name}`,
+          storagePath: f.storagePath || `models/${f.name}`,
+          fileSize: f.fileSize,
           format: f.extension,
           isPrimary: i === 0,
         })),
@@ -254,6 +285,10 @@ export function CreatorUploadWizard() {
   async function handleSubmit(status: "pending_review" | "published" = "pending_review") {
     setPublishing(true);
     setSubmissionStatus(status);
+    if (!(await uploadPendingFiles())) {
+      setPublishing(false);
+      return;
+    }
     try {
       const res = await publishCreatorModelListing({
         id: createdModelId || undefined,
@@ -277,10 +312,11 @@ export function CreatorUploadWizard() {
           printTime,
           assemblyNotes,
         },
-        filePath: `models/${files[0]?.name || "model.stl"}`,
+        filePath: files[0]?.storagePath || `models/${files[0]?.name || "model.stl"}`,
         files: files.map((f, i) => ({
           filename: f.name,
-          storagePath: `models/${f.name}`,
+          storagePath: f.storagePath || `models/${f.name}`,
+          fileSize: f.fileSize,
           format: f.extension,
           isPrimary: i === 0,
         })),

@@ -134,10 +134,7 @@ export default async function ModelDetailPage({
 
   return (
     <Section>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
+      <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       <div className="flex flex-col gap-10">
         {/* Navigation Breadcrumb & Favorite Button */}
         <div className="flex items-center justify-between gap-4">
@@ -171,7 +168,13 @@ export default async function ModelDetailPage({
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
           {/* 3D Model Viewer & Viewport */}
           <div className="flex flex-col gap-4">
-            <ModelDetailViewer title={model.title} previewImages={previewImages} />
+            <ModelDetailViewer
+              title={model.title}
+              modelId={model.id}
+              previewImages={previewImages}
+              hasThumbnail={previewImages.length > 0}
+              files={model.files}
+            />
           </div>
 
           {/* Model Meta & Actions Box */}

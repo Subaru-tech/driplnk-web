@@ -325,7 +325,6 @@ export async function publishCreatorModelListing(
     license_type: input.licenseType || "standard",
     license_id: licenseId,
     price: cleanPrice,
-    currency: "INR",
     preview_image_paths: cleanPreviewPaths,
     thumbnail_url: input.thumbnailUrl || (cleanPreviewPaths[0] ?? null),
     storage_path: primaryFilePath,
@@ -649,10 +648,24 @@ export async function deleteUploadedModel(id: string): Promise<{ success: boolea
     return { success: false, error: "Model not found or not owned by you." };
   }
 
-  // 2. Remove file from storage (both B2 and legacy Supabase Storage)
-  if (model.storage_path) {
-    await deleteB2Object(model.storage_path).catch(() => {});
-    await supabase.storage.from("model-files").remove([model.storage_path]).catch(() => {});
+  // 2. Remove every stored file from B2 (primary + secondary model_files),
+  // then the legacy Supabase Storage copies. Without this, secondary format
+  // uploads (STEP/3MF variants) would leak in the bucket forever.
+  const { data: fileRows } = await supabase
+    .from("model_files")
+    .select("storage_path")
+    .eq("model_id", id);
+
+  const storageKeys = [
+    ...new Set([
+      model.storage_path,
+      ...(fileRows ?? []).map((f) => f.storage_path).filter((p): p is string => Boolean(p)),
+    ]),
+  ].filter((k): k is string => Boolean(k));
+
+  await Promise.all(storageKeys.map((key) => deleteB2Object(key).catch(() => {})));
+  if (storageKeys.length > 0) {
+    await supabase.storage.from("model-files").remove(storageKeys).catch(() => {});
   }
 
   // 3. Delete database row

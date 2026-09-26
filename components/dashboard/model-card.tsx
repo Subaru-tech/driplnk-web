@@ -9,7 +9,6 @@ import { ModelViewer } from "@/components/viewer/model-viewer";
 import { useToast } from "@/components/ui/toast";
 import { formatCredits, formatDate } from "@/lib/format";
 import { canPreview } from "@/lib/model-preview";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { Model } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -26,6 +25,7 @@ export function ModelCard({ model }: { model: Model }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFilename, setPreviewFilename] = useState("");
   const [previewError, setPreviewError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -51,34 +51,33 @@ export function ModelCard({ model }: { model: Model }) {
 
     toast("success", `"${model.name}" deleted.`);
     router.refresh();
-  }
-
-  /* The file lives in a PRIVATE bucket, so the viewer can't be handed a plain
-     URL — it gets a short-lived signed one, minted per preview. */
+  }  /* The file lives in a PRIVATE bucket (Backblaze B2) — the viewer can't be
+     handed a direct URL. It gets the same-origin streaming proxy instead,
+     which authorizes the owner server-side. */
   const viewable = Boolean(model.storage_path && canPreview(model.storage_path));
 
   async function openPreview() {
-    const path = model.storage_path;
-    if (!path) return;
+    if (!model.storage_path) return;
 
     setPreviewError(null);
     setPreviewUrl("pending");
 
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setPreviewError("Preview isn't available — the backend isn't connected.");
-      return;
-    }
-
-    const { data, error } = await supabase.storage
-      .from("model-files")
-      .createSignedUrl(path, 300);
-
-    if (error || !data) {
+    try {
+      const res = await fetch(`/api/models/${model.id}/preview-url`);
+      if (!res.ok) {
+        setPreviewError("Couldn't open that file. It may have been removed.");
+        return;
+      }
+      const json = await res.json();
+      if (!json?.url) {
+        setPreviewError("This file can't be previewed in 3D.");
+        return;
+      }
+      setPreviewFilename(json.filename ?? "");
+      setPreviewUrl(json.url);
+    } catch {
       setPreviewError("Couldn't open that file. It may have been removed.");
-      return;
     }
-    setPreviewUrl(data.signedUrl);
   }
 
   const actions = [
@@ -228,7 +227,7 @@ export function ModelCard({ model }: { model: Model }) {
         {previewError ? null : previewUrl && previewUrl !== "pending" ? (
           <ModelViewer
             url={previewUrl}
-            filename={model.storage_path ?? model.name}
+            filename={previewFilename || (model.storage_path ?? model.name)}
             modelId={model.id}
             hasThumbnail={Boolean(model.thumbnail_url)}
             className="aspect-4/3 w-full"

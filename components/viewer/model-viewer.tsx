@@ -84,8 +84,28 @@ export function ModelViewer({
         const THREE = await import("three");
         const { OrbitControls } = await import("three/addons/controls/OrbitControls.js");
 
-        const object = await loadModel(buffer, filename, preset);
+        /* Renderer first — KTX2 texture support detection needs a live renderer */
+        const width = container.clientWidth || 1;
+        const height = container.clientHeight || 1;
+        const renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: false,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(width, height, false);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.domElement.className = "size-full touch-none cursor-grab active:cursor-grabbing";
+
+        const object = await loadModel(buffer, filename, preset, renderer);
         if (disposed) {
+          renderer.dispose();
+          renderer.forceContextLoss();
           await disposeObject(object);
           return;
         }
@@ -113,8 +133,6 @@ export function ModelViewer({
         scene.add(object);
 
         /* ---- Camera & Object Framing ---- */
-        const width = container.clientWidth || 1;
-        const height = container.clientHeight || 1;
         const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 10000);
 
         const { distance, radius, size } = await frameObject(object, 40);
@@ -180,21 +198,7 @@ export function ModelViewer({
         ground.position.y = -size.y / 2 - 0.001;
         scene.add(ground);
 
-        /* ---- Renderer ---- */
-        const renderer = new THREE.WebGLRenderer({
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance",
-          preserveDrawingBuffer: true,
-        });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(width, height, false);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.domElement.className = "size-full touch-none cursor-grab active:cursor-grabbing";
+        /* ---- Renderer (created above — needs to exist before loadModel for KTX2) ---- */
         container.appendChild(renderer.domElement);
 
         /* ---- Environment Map ---- */
