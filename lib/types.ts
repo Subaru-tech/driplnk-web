@@ -202,6 +202,7 @@ export type MarketplaceModel = {
   category: string | null;
   license_type: MarketplaceLicenseType;
   price: number;
+  thumbnail_url?: string | null;
   preview_image_paths: string[];
   file_path?: string;
   status: MarketplaceModelStatus;

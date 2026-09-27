@@ -794,6 +794,7 @@ export async function getMarketplaceModels(options: {
         category: row.category,
         license_type: row.license_type,
         price: Number(row.price || 0),
+        thumbnail_url: (row.preview_image_paths && row.preview_image_paths[0]) ?? null,
         preview_image_paths: row.preview_image_paths ?? [],
         status: row.status,
         created_at: row.created_at,
@@ -825,7 +826,7 @@ export async function getMarketplaceModels(options: {
     let query = supabase
       .from("models")
       .select(
-        "id, seller_user_id, title, description, category, license_type, price, preview_image_paths, status, created_at, seller:profiles!models_seller_user_id_fkey(id, full_name, avatar_url)",
+        "id, seller_user_id, title, description, category, license_type, price, preview_image_paths, thumbnail_url, status, created_at, seller:profiles!models_seller_user_id_fkey(id, full_name, avatar_url)",
         { count: "exact" }
       )
       .eq("status", "published");
@@ -869,6 +870,7 @@ export async function getMarketplaceModels(options: {
         category: (row.category as string) ?? null,
         license_type: (row.license_type as MarketplaceLicenseType) ?? "standard",
         price: Number(row.price || 0),
+        thumbnail_url: (row.thumbnail_url as string) ?? ((row.preview_image_paths as string[])?.[0] ?? null),
         preview_image_paths: (row.preview_image_paths as string[]) ?? [],
         status: (row.status as "draft" | "published") ?? "published",
         created_at: String(row.created_at),

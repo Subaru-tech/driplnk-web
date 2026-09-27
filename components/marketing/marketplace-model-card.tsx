@@ -23,9 +23,10 @@ export function MarketplaceModelCard({ model }: { model: MarketplaceModel }) {
   };
 
   const previewImage =
-    model.preview_image_paths && model.preview_image_paths.length > 0
-      ? model.preview_image_paths[0]
-      : null;
+    model.thumbnail_url ||
+    (model.preview_image_paths && model.preview_image_paths.length > 0
+      ? model.preview_image_paths.find(Boolean) || null
+      : null);
 
   const isFree = model.price === 0;
   const sellerName = model.seller_name || model.seller?.full_name || "DripLnk Creator";
