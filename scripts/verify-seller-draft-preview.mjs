@@ -100,6 +100,7 @@ if (emailId) {
 // ── 2. Browser: sign in, walk the wizard, verify preview ─────────────────────
 let modelId = null;
 let b2Path = null;
+let b2FileDownloads = 0;
 const consoleErrors = [];
 
 // Resolves the Frontend API URL from the publishable key and mints a
@@ -118,6 +119,11 @@ try {
   });
   const page = await context.newPage();
   page.on("pageerror", (err) => consoleErrors.push(String(err).slice(0, 200)));
+  // Cap-burn visibility: count successful model-file streams (each one is a
+  // real B2 download; the anon 404 never reaches B2 and isn't counted).
+  page.on("response", (r) => {
+    if (/\/api\/models\/[0-9a-f-]+\/file/.test(r.url()) && r.status() === 200) b2FileDownloads++;
+  });
 
   // clerk.signIn (email overload) requires a prior navigation to a page that
   // loads Clerk; it then mints a ticket via the Backend API and activates the
@@ -311,5 +317,8 @@ try {
 try { fs.unlinkSync(STL_PATH); } catch {}
 
 const passed = results.filter((r) => r.ok).length;
-console.log(`\n${passed}/${results.length} checks passed\n`);
+console.log(
+  `\n${passed}/${results.length} checks passed`
+  + `  (B2 downloads: ${b2FileDownloads}, cache: n/a — draft files are unique per run)\n`
+);
 process.exit(passed === results.length ? 0 : 1);

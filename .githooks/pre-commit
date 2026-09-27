@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Fast commit gate: typecheck + lint + prod build. The full E2E battery runs
+# on pre-push (see .githooks/pre-push). Bypass with: git commit --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+echo "▶ pre-commit: typecheck"
+npx tsc --noEmit
+
+echo "▶ pre-commit: lint"
+npm run lint
+
+# NOTE: deliberately build:prod, never plain `next build` — a plain build
+# writes .next/ while `next dev` may be serving from it (the dist-dir split
+# exists precisely so these never collide).
+echo "▶ pre-commit: prod build (.next-prod)"
+npm run build:prod
+
+echo "✅ pre-commit checks passed"

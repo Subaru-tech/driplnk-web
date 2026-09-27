@@ -1,0 +1,82 @@
+name: Verify (typecheck, lint, build, E2E)
+
+# Mirrors the local git gate (.githooks/): pre-commit's static checks on every
+# push, pre-push's full verify:all battery only when the secrets needed to run
+# the app (Supabase + Clerk + B2) are configured. Missing secrets degrade to
+# static checks with a notice instead of failing.
+on:
+  push:
+    branches: [V1, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege workflow token (same policy as rls-regression.yml): the job
+# only reads the repository — every external credential arrives as a secret.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Static gate (always) — no secrets required ──────────────────────────
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      # build:prod uses the separate .next-prod dist dir; Clerk and backend
+      # reads degrade gracefully when keys are absent, so this always runs.
+      - name: Prod build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run build:prod
+
+      # ── E2E gate (only with app secrets) — mirrors .githooks/pre-push ──────
+      - name: E2E battery (verify:all)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          B2_S3_ENDPOINT: ${{ secrets.B2_S3_ENDPOINT }}
+          B2_REGION: ${{ secrets.B2_REGION }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ] || [ -z "$B2_APPLICATION_KEY" ]; then
+            echo "::notice::Set the Supabase, Clerk and B2 repository secrets to enable the E2E battery. Static checks passed; skipping E2E."
+            exit 0
+          fi
+
+          # The verify scripts parse .env.local directly (no dotenv dep), so
+          # materialize it from the exported secrets before starting the server.
+          env | grep -E '^(NEXT_PUBLIC_|SUPABASE_|CLERK_|B2_)' > .env.local
+
+          npm run dev &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:3000 && break
+            sleep 2
+          done
+          node scripts/verify-all.mjs

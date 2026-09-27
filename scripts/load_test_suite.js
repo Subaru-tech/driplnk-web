@@ -53,6 +53,12 @@ export default function () {
     errorRate.add(!pass);
   } else if (rand < 0.50) {
     // 2. Individual Model Page SSR (with 3D viewer bootstrap)
+    // ⚠️ B2 cap: this fetches HTML only — k6 never executes JS, so the
+    // viewer's /api/models/[id]/file download (Class B, 1 GB/day free cap)
+    // does NOT fire here. If you port this scenario to a JS-executing load
+    // tool (browser-based k6 browser module, Playwright, Lighthouse), each
+    // detail-page hit WILL trigger a full B2 download — use the disk cache
+    // from verify-model-previews.mjs or a non-viewer route instead.
     const res = http.get(`${BASE_WEB_URL}/models/83c8025c-b172-4013-9edb-4f015d95a107`, {
       tags: { name: 'WebApp_ModelDetail' },
     });

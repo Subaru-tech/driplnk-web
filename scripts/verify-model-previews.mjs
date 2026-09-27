@@ -11,7 +11,7 @@
  */
 
 import { chromium } from "playwright-core";
-import { readFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, statSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -44,6 +44,43 @@ if (!models?.length) {
 
 console.log(`\n🔍 Verifying ${models.length} model pages on ${BASE}\n`);
 
+// ── Disk cache for /file responses (stops daily B2 Class-B cap burn) ────────
+// Geometry files are immutable (unique storage path per upload), so the model
+// file response is cached on disk after the first download; repeat runs replay
+// it and hit B2 zero times. --no-cache forces a live B2 pass. Cache entries
+// expire after 7 days to bound disk use.
+const NO_CACHE = process.argv.includes("--no-cache");
+const CACHE_DIR = "/tmp/driplnk-e2e-file-cache";
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let cacheHits = 0;
+let cacheMisses = 0;
+
+function cachePathFor(url) {
+  const u = new URL(url);
+  const key = `${u.pathname}${u.search}`.replace(/[^a-zA-Z0-9-]/g, "_");
+  return resolve(CACHE_DIR, `${key}.json`);
+}
+
+async function routeWithCache(route) {
+  const cf = cachePathFor(route.request().url());
+  if (!NO_CACHE && existsSync(cf) && Date.now() - statSync(cf).mtimeMs < CACHE_TTL_MS) {
+    const { status, headers, body } = JSON.parse(readFileSync(cf, "utf8"));
+    cacheHits++;
+    await route.fulfill({ status, headers, body: Buffer.from(body, "base64") });
+    return;
+  }
+  const response = await route.fetch();
+  if (response.ok()) {
+    cacheMisses++;
+    mkdirSync(CACHE_DIR, { recursive: true });
+    writeFileSync(
+      cf,
+      JSON.stringify({ status: response.status(), headers: response.headers(), body: (await response.body()).toString("base64") })
+    );
+  }
+  await route.fulfill({ response });
+}
+
 // ── Browser setup ────────────────────────────────────────────────────────────
 const browser = await chromium.launch({
   executablePath: "/usr/bin/google-chrome",
@@ -61,6 +98,7 @@ const results = [];
 
 for (const m of models) {
   const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+  await context.route("**/api/models/*/file*", routeWithCache);
   const page = await context.newPage();
 
   const consoleErrors = [];
@@ -167,5 +205,8 @@ for (const m of models) {
 await browser.close();
 
 const passed = results.filter((r) => r.outcome.startsWith("PASS")).length;
-console.log(`\n${passed}/${results.length} models verified with interactive 3D preview\n`);
+console.log(
+  `\n${passed}/${results.length} models verified with interactive 3D preview`
+  + `  (B2 downloads: ${cacheMisses}, disk-cache hits: ${cacheHits}${NO_CACHE ? ", cache bypassed" : ""})\n`
+);
 process.exit(passed === results.length ? 0 : 1);

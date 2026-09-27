@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Push gate: full E2E battery (rendering diagnostic + 3 suites) against dev on
+# :3000. Skips with a warning when no server is up. Bypass with:
+#   git push --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+if ! curl -sf -o /dev/null --max-time 3 http://localhost:3000; then
+  echo "⚠️  pre-push: no dev server on :3000 — skipping verify:all."
+  echo "    Start one with: npm run dev  (then push again, or bypass: git push --no-verify)"
+  exit 0
+fi
+
+echo "▶ pre-push: full E2E battery against :3000"
+npm run verify:all
+
+echo "✅ pre-push verification passed"
