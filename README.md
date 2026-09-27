@@ -15,6 +15,18 @@ runs in "backend not connected" mode**: every dashboard panel renders its real e
 a banner says so explicitly, and auth is inert. No sample data is ever substituted — see
 "The no-fabricated-data rule" below.
 
+### Production preview (port 3100)
+
+Dev and prod build into **separate dist dirs** so a prod build can never clobber a running
+`next dev` server's `.next` (this actually happened once — it's why rendering randomly broke).
+
+```bash
+npm run build:prod   # builds into .next-prod
+npm run start:prod   # serves it on :3100
+```
+
+Dev keeps using `.next` via plain `npm run dev` on :3000. Both servers can run side by side.
+
 ## Two kinds of account
 
 One account. Everyone signs up the same way; selling is opted into later.
@@ -149,6 +161,29 @@ Endpoints still to build, each currently failing honestly with a toast:
   state until then.
 
 Also add an `avatars` storage bucket for profile pictures.
+
+## E2E verification scripts
+
+Browser suites (playwright-core + system Chrome, SwiftShader GL) live in `scripts/`. All take
+`--base http://localhost:PORT` and default to dev on :3000. Run them individually or chain
+everything with `npm run verify:all [-- --base http://localhost:3100]` (stops at first failure):
+
+| Script | Covers |
+| --- | --- |
+| `verify-become-seller.mjs` | sign-in → storefront creation → role promotion → re-visit idempotency (5 checks) |
+| `verify-seller-draft-preview.mjs` | upload wizard → draft → owner-gated stream → WebGL ready → anon 404 → cleanup (8 checks) |
+| `verify-model-previews.mjs` | every published model page renders its 3D viewer |
+| `diagnose-rendering.mjs` | 5 public pages: console/hydration errors, CSS probe, network failures, screenshots |
+
+**B2 download cap.** Free-tier Backblaze allows ~1 GB of downloads per day, resetting 00:00 GMT
+(05:30 IST). The model-file endpoint streams full B2 objects, so careless test runs burn it and
+the 3D viewer dies with "Couldn't fetch the model file" until the reset. Defenses in place:
+
+- `verify-model-previews.mjs` disk-caches file responses in `/tmp/driplnk-e2e-file-cache`
+  (7-day TTL). Geometry uploads are immutable, so repeat runs hit B2 **zero** times.
+  `--no-cache` forces a live pass.
+- The draft suite can't cache (each run uploads a fresh unique STL) — it spends ~2–3 downloads.
+- Both suites print per-run download counts in their summary; don't re-run them in a loop.
 
 ## Verified
 

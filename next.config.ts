@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /* Separate dist dir for production build/start (NEXT_DIST_DIR=.next-prod
+     npm run build && NEXT_DIST_DIR=.next-prod npx next start -p 3100) so a
+     prod build never clobbers the running `next dev` server's .next again. */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
   /* Allow LAN and localhost origins in development for assets/HMR/scripts */
   allowedDevOrigins: [
     "192.168.0.203",

@@ -1,8 +1,8 @@
 # DripLnk Platform — Comprehensive Feature & Architecture Status
 
-**Generated On:** September 12, 2026  
-**Codebase:** `Subaru-tech/driplnkk-website`  
-**Stack:** Next.js 16.3.1 (App Router) · React 19.2.8 · Tailwind CSS v4 · Three.js 0.185.1 · Clerk Authentication · Supabase (PostgreSQL + RLS + Storage)
+**Generated On:** September 27, 2026  
+**Codebase:** `Subaru-tech/driplnkk-website` (branch `V1`)  
+**Stack:** Next.js 16.3.5 (App Router, Turbopack) · React 19.2.8 · Tailwind CSS v4 · Three.js 0.185.1 · Clerk Authentication · Supabase (PostgreSQL + RLS + Storage) · Backblaze B2 (S3-compatible model storage)
 
 ---
 
@@ -340,7 +340,56 @@ RAZORPAY_KEY_SECRET=...
 
 ---
 
-## 7. Immediate Next Steps / Roadmap
+## 7. Work In Progress & Operational Status (as of September 27, 2026)
+
+### 7.1 Uncommitted Working Tree (implemented, pending commit)
+
+| File(s) | Change | Status |
+| :--- | :--- | :--- |
+| `lib/rate-limit.ts` (new) | Zero-dependency in-memory fixed-window rate limiter for expensive API routes. Exact on single-node prod; approximate per-instance on serverless (documented `ponytail:` ceiling — upgrade path: Upstash Redis / platform WAF). | Implemented; **verified in prod build** |
+| `app/api/upload/model/route.ts`, `app/api/models/[id]/file/route.ts`, `app/api/models/[id]/preview-url/route.ts` | Rate-limit wiring on the B2-buffering public hot paths (e.g. 120 file reads/min/IP). | Implemented |
+| `app/api/models/[id]/file/route.ts` + `components/viewer/model-viewer.tsx` | B2 "cap exceeded" errors now surface as **503 `storage_cap_exceeded`** with `Retry-After`, and the 3D viewer shows a retry-later message instead of a generic "Couldn't fetch". | Implemented |
+| `driplnk-web-backend/actions/seller.ts` | `becomeSeller` rewrite: slugified studio names + service-client inserts. | Implemented; E2E 5/5 |
+| `scripts/check-backend-health.mjs` (new), `scripts/verify-become-seller.mjs` (new) | Backend health check; become-seller E2E verification. | Implemented |
+| `scripts/verify-model-previews.mjs` | Published-preview E2E now caches `/api/models/[id]/file` responses on disk (`/tmp/driplnk-e2e-file-cache`, 7-day TTL) — repeat runs hit B2 **zero** times (verified: 28/28 cache hits, 14/14 PASS). `--no-cache` forces a live pass. | Implemented |
+| `scripts/verify-seller-draft-preview.mjs` | Same cache-count reporting (B2 downloads shown in summary; ~3/run — draft files are unique per run, so no disk cache applies). | Implemented |
+| `scripts/diagnose-rendering.mjs` (new) | Headless-Chrome rendering diagnostic: console/page errors, failed requests, CSS probe, hydration signatures, per-page screenshots. | Implemented |
+| `.githooks/pre-commit` + `.githooks/pre-push` (new, `core.hooksPath` set) | Split verification gate: commit runs typecheck + lint + **prod** build (deliberately `build:prod` so `.next` is never touched while dev serves); push runs the full `verify:all` battery, auto-skipped when no dev server is up. Bypass: `--no-verify`. Already caught a real issue on first run (`.next-prod` chunks breaking lint → ESLint ignore added). | Implemented; pre-commit verified end-to-end |
+| `.github/workflows/verify.yml` (new) | CI mirror of the gate: typecheck + lint + prod build on every push/PR (no secrets needed); full E2E battery only when Supabase/Clerk/B2 secrets are configured (graceful `::notice::` skip otherwise, matching `rls-regression.yml` conventions). Node 22, npm cache, concurrency-group cancellation, `.env.local` materialized from secrets for the scripts' direct-file parsing. | Implemented; activates on next push to GitHub |
+
+### 7.2 Recently Completed (since last tracker refresh)
+
+- **Security audit** run (see `SECURITY_AUDIT_2026-09-13.md`); JSON-LD **XSS fixed** in `app/layout.tsx` and `app/(marketing)/models/[id]/page.tsx` (text-child rendering instead of `dangerouslySetInnerHTML`; verified hydration-safe).
+- **Draft-preview fixes + E2E suites** committed (`a951c7f`): `scripts/verify-seller-draft-preview.mjs`, `scripts/verify-model-previews.mjs`.
+- **Marketing style polish** committed (`584fc80`): flat cards, Wand2 icons, gradient/arrows removal across marketing components.
+- **Dev-server incident resolved**: a prod `npm run build` overwrote the shared `.next` while `next dev` was serving → stale chunks / glitchy rendering. Fixed by killing stale dev processes, `rm -rf .next`, fresh dev server; headless diagnostic confirms all 5 public pages render clean (zero console/hydration errors, correct CSS).
+- **Seeded-model ownership fix (Sep 27)**: all 14 reseeded marketplace models repointed from the personal profile ("Rakshit Shanbhag", which every card displayed as creator) to a dedicated headless **"DripLnk Studio"** platform profile (`d1ea0000-…d1ea`, role seller, shadow `auth.users` row via `sync_clerk_user_profile` with `p_email` arg to disambiguate overloads). `reseed-marketplace-models.mjs` updated so future reseeds keep the platform identity. Verified: `/models` shows 0 "Rakshit" / 16 "DripLnk Studio"; full E2E battery re-passed 27/27 after the move.
+- **Launch catalog reseed (Sep 27)**: seed catalog rebuilt functional-first per launch strategy — 21 real, permissively-licensed models (NASA 3D-Resources public domain: ISS-printed wrench/wire-tie/torque tool, test coupons, CubeSat/LISA kits, Ka-band hardware; 3MF Consortium MIT: print-in-place gear mechanisms, lattice study). Mix: 12 functional (Tools & Jigs 7, Mechanical 4, Robotics 1), 6 Educational, 3 display — no branded/licensed models ("Ferrari 458" removed), no multi-material/support-heavy prints, all free to claim. Thumbnails intentionally omitted (live 3D hover preview + auto-backfill instead). **Reseed script safety fix:** wipe scoped to platform-owned rows only — previously it deleted *every* model in the DB including user uploads. Verified: 21/21 viewer E2E PASS; E2E disk cache pruned of dead entries (32 removed).
+
+### 7.3 Verification Snapshot
+
+| Check | Result |
+| :--- | :--- |
+| `npx tsc --noEmit` | ✅ Clean |
+| `npm run lint` | ✅ 0 errors |
+| Rendering diagnostic (5 public pages) | ✅ Clean — CSS pipeline, hydration, network all green |
+| Rendering diagnostic (prod :3100) | ✅ Clean — 0 real failures; aborted Link prefetches (`?_rsc=`) classified as info, normal in prod |
+| Full E2E battery (prod :3100) | ✅ 27/27 — parity with dev; prod costs 2 B2 downloads vs dev's 3 (StrictMode double-mount only in dev) |
+| Published-preview E2E | ✅ 14/14 |
+| Become-seller E2E | ✅ 5/5 |
+| Draft-preview E2E | ✅ 8/8 (re-run Sep 27 after B2 cap reset) |
+
+### 7.4 Known Issues & Blockers
+
+| Issue | Impact | Resolution |
+| :--- | :--- | :--- |
+| **B2 free-tier daily Class B cap** (exhausted by a ~270-download E2E burst on Sep 26; reset confirmed Sep 27) | When active: `/api/models/[id]/file` 503s → 3D viewer shows retry message. | Self-heals at **00:00 GMT daily** (verified). Recurrence mitigated: `verify-model-previews.mjs` disk-caches file downloads (0 B2 hits on repeat runs) and both viewer suites report per-run download counts. Full script audit (Sep 27, all 16 scripts): viewer suites are the only B2 downloaders — gallery images are static `public/` files, `test_http_routes.ts`/`diagnose-rendering.mjs`/`verify-become-seller.mjs` never hit the file route, and `load_test_suite.js`'s detail-page scenario is HTML-only (k6 executes no JS; guard comment added against JS-executing ports). Raise cap in B2 console → Caps & Alerts (≈ $0.01/GB) if needed. |
+| **Migration `20260911110000_fix_admin_orders_and_storage_grants.sql` unapplied** (DB drift: hosted Supabase `vjlsuadvxjmxrwnqytmu` is source of truth; local Docker stack stale) | `getAdminMartOrders` / `updateMartOrderAdmin` fail with PGRST204 → Admin Mart-order dispatch broken. | Requires `SUPABASE_ACCESS_TOKEN` to run `supabase migration push`. |
+| **Node v20.20.2 vs `engines` >=22** | Warnings only (@supabase/supabase-js deprecation). | Upgrade to Node 22 when convenient. |
+| ~~Prod server on :3100 serving a wiped `.next`~~ | **Resolved Sep 27**: prod now builds/serves from a dedicated `.next-prod` dist dir (`npm run build:prod` / `npm run start:prod`, selected via `NEXT_DIST_DIR` in `next.config.ts`), so a prod build can never clobber the running dev server's `.next` again. Verified: :3000 dev and :3100 prod coexist and render identically. | — |
+| **Razorpay gateway stubbed** | Paid checkout unavailable. | Tracked in roadmap §8.1. |
+
+## 8. Immediate Next Steps / Roadmap
 
 1. **Payment Gateway Integration (Primary Blocker for Full Launch)**:
    - Connect Razorpay / Stripe to the escrow state machine (`order_payments`, `transition_order_payment_state`) and checkout routes for paid CAD model purchases, wallet reloads, and Mart print orders.
@@ -357,3 +406,7 @@ RAZORPAY_KEY_SECRET=...
    - Provision live Gupshup or Interakt credentials to activate the WhatsApp/SMS fallback pipeline in `vendor-order-notification`.
 4. **ClamAV Live Daemon Provisioning**:
    - Supply `CLAMAV_HOST` and `CLAMAV_PORT` to connect the already-deployed `model-virus-scanner` Edge Function to a live ClamAV cluster.
+5. **Apply Pending Database Migration**:
+   - Provide `SUPABASE_ACCESS_TOKEN` and push `20260911110000_fix_admin_orders_and_storage_grants.sql` to the hosted project to unblock admin Mart-order fulfillment (see §7.4).
+6. **Commit In-Flight Hardening Work**:
+   - Land the rate limiting, storage-cap error handling, `becomeSeller` rewrite, and verification/diagnostic scripts currently in the working tree (§7.1).
