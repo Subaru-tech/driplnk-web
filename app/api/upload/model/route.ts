@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
 import { uploadModelToB2 } from "@/lib/b2-client";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Allowlist of safe 3D model formats
 export const ALLOWED_MODEL_EXTENSIONS = [".stl", ".step", ".stp", ".3mf", ".obj"];
@@ -109,6 +110,23 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { success: false, error: "Authentication required to upload model files." },
         { status: 401 }
+      );
+    }
+
+    // Uploads buffer up to 50MB per request before validation — bound the
+    // per-user spend (burst of 10, sustained 60/hour) before any buffering.
+    const perMinute = rateLimit(`upload:m:${user.id}`, 10, 60_000);
+    if (!perMinute.ok) {
+      return NextResponse.json(
+        { success: false, error: "Too many uploads. Please wait a bit and try again." },
+        { status: 429, headers: { "Retry-After": String(perMinute.retryAfterSeconds) } }
+      );
+    }
+    const perHour = rateLimit(`upload:h:${user.id}`, 60, 3_600_000);
+    if (!perHour.ok) {
+      return NextResponse.json(
+        { success: false, error: "Upload limit reached for this hour. Try again later." },
+        { status: 429, headers: { "Retry-After": String(perHour.retryAfterSeconds) } }
       );
     }
 

@@ -77,7 +77,19 @@ export function ModelViewer({
     (async () => {
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Couldn't fetch the model file.");
+        if (!response.ok) {
+          let apiError: string | null = null;
+          try {
+            apiError = (await response.json())?.error ?? null;
+          } catch {
+            /* non-JSON error body */
+          }
+          throw new Error(
+            apiError === "storage_cap_exceeded"
+              ? "Preview storage hit its daily download cap — resets at 12:00 AM GMT. Try again later."
+              : "Couldn't fetch the model file."
+          );
+        }
         const buffer = await response.arrayBuffer();
         if (disposed) return;
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // Formats renderable by the Three.js ModelViewer
 const RENDERABLE_EXTS = new Set(["stl", "obj", "glb", "gltf", "3mf", "ply", "gcode"]);
@@ -15,6 +16,16 @@ export async function GET(
 ) {
   const { id } = await params;
   const fileId = req.nextUrl.searchParams.get("fileId");
+
+  // Cheap route (no storage fetch), but it precedes every /file hit — keep it
+  // inside the same per-IP budget so it can't be hammered for DB lookups.
+  const rl = rateLimit(`file:${clientIp(req.headers)}`, 120, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSeconds) } }
+    );
+  }
 
   // Service client: draft rows are RLS-hidden from anon sessions (Clerk-only
   // users have no Supabase session), so ownership is enforced by the gate below

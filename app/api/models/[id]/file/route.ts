@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getB2Object } from "@/lib/b2-client";
 import { getSupabaseServiceClient } from "@/driplnk-web-backend/db/client";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const RENDERABLE_EXTS = new Set(["stl", "obj", "glb", "gltf", "3mf", "ply", "gcode"]);
 
@@ -25,6 +26,17 @@ export async function GET(
 ) {
   const { id } = await params;
   const fileId = req.nextUrl.searchParams.get("fileId");
+
+  // Each hit streams a full B2 object into memory. Rate-limit the public hot
+  // path per IP before touching the database or storage (per-viewer budget:
+  // 120 reads/minute, ample for the WebGL viewer's single fetch).
+  const rl = rateLimit(`file:${clientIp(req.headers)}`, 120, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSeconds) } }
+    );
+  }
 
   // Service client: draft rows are RLS-hidden from anon sessions (Clerk-only
   // users have no Supabase session), so ownership is enforced by the gate below
@@ -131,6 +143,14 @@ export async function GET(
       },
     });
   } catch (err) {
+    // B2 free-tier daily download cap — self-heals at 00:00 GMT. Report it as
+    // a retryable condition instead of a generic server error.
+    if (err instanceof Error && err.message.includes("cap exceeded")) {
+      return NextResponse.json(
+        { error: "storage_cap_exceeded" },
+        { status: 503, headers: { "Retry-After": "3600" } }
+      );
+    }
     console.error("Failed to stream model preview file from B2:", err);
     return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
