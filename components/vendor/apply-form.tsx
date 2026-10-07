@@ -446,40 +446,39 @@ export function VendorApplyForm({
     setSubmitting(true);
 
     try {
-      const fullApplicationData: VendorApplicationData = {
-        businessName: cleanBusinessName,
+      // Payout details (bank/UPI) are NOT sent here — they go into vendor_payout_details
+      // after approval via a separate secure action. Storing raw bank details in the
+      // applications table is a privacy risk since multiple admins browse it during review.
+      const printerFleet = printerTechnologies.map((printerType) => ({
+        printerType,
+        count: parseInt(printerCount.trim() || "1", 10) || 1,
+        buildVolumeX: parseInt(buildVolumeX.trim() || "256", 10) || 256,
+        buildVolumeY: parseInt(buildVolumeY.trim() || "256", 10) || 256,
+        buildVolumeZ: parseInt(buildVolumeZ.trim() || "256", 10) || 256,
+      }));
+
+      // Operational context in notes (non-PII, fine for admin review)
+      const operationalNotes = JSON.stringify({
         contactPerson: contactPerson.trim(),
         businessEmail: businessEmail.trim(),
         phone: phone.trim(),
         address: address.trim(),
-        city: city.trim(),
-        state: stateVal.trim(),
-        gstin: gstin.trim(),
-        registrationDetails: registrationDetails.trim(),
         websiteUrl: websiteUrl.trim(),
-        printerTechnologies,
-        materialsSupported: materials,
-        buildVolumeX: buildVolumeX.trim() || "256",
-        buildVolumeY: buildVolumeY.trim() || "256",
-        buildVolumeZ: buildVolumeZ.trim() || "256",
-        printerCount: printerCount.trim() || "1",
+        registrationDetails: registrationDetails.trim(),
         capabilities,
         turnaround,
-        maxCapacity,
         serviceRegions,
         shippingCapabilities,
-        payoutMethod,
-        beneficiaryName: beneficiaryName.trim(),
-        accountNumber: accountNumber.trim(),
-        ifsc: ifsc.trim().toUpperCase(),
-        upiId: upiId.trim(),
-      };
+      });
 
       const res = await applyVendor({
         businessName: cleanBusinessName,
         location: `${city.trim()}, ${stateVal.trim()}`,
         materialsSupported: materials,
-        capacityNotes: JSON.stringify(fullApplicationData),
+        capacityNotes: operationalNotes,
+        printerFleet,
+        gstNumber: gstin.trim() || undefined,
+        monthlyCapacityEstimate: maxCapacity || undefined,
       });
 
       if (!res.success) {

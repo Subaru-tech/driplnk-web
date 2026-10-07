@@ -13,6 +13,9 @@ export type ApplyFreelancerInput = {
   portfolioUrls: string[];
   rateType: RateType;
   baseRate: number;
+  softwareProficiency?: string[]; // e.g. ["Fusion 360", "SolidWorks", "Blender"]
+  rateExpectation?: string;        // e.g. "₹2,000/hr"
+  specialization?: string;         // e.g. "Mechanism & Gear Design"
 };
 
 export type FreelanceActionResult<T = unknown> = {
@@ -143,7 +146,12 @@ export async function applyFreelancer(
     : [];
 
   try {
-    const { data: rpcRes, error: rpcErr } = await serviceSupabase.rpc("register_freelancer_profile", {
+    const cleanSoftware = Array.isArray(input.softwareProficiency)
+      ? input.softwareProficiency.map((s) => String(s).trim().slice(0, 40)).filter(Boolean).slice(0, 15)
+      : [];
+
+
+    let { data: rpcRes, error: rpcErr } = await serviceSupabase.rpc("register_freelancer_profile", {
       p_user_id: user.id,
       p_display_name: cleanName,
       p_bio: input.bio?.trim() || null,
@@ -151,7 +159,26 @@ export async function applyFreelancer(
       p_portfolio_urls: cleanPortfolio,
       p_rate_type: input.rateType,
       p_base_rate: input.baseRate,
+      p_software_proficiency: cleanSoftware,
+      p_rate_expectation: input.rateExpectation?.trim().slice(0, 100) || null,
+      p_specialization: input.specialization?.trim().slice(0, 80) || null,
     });
+
+    // Backward compatibility: if migration 20260928000000 has not been run on remote DB yet,
+    // fall back to 7-param signature so applicant submissions never fail.
+    if (rpcErr && rpcErr.code === "PGRST202") {
+      const fallback = await serviceSupabase.rpc("register_freelancer_profile", {
+        p_user_id: user.id,
+        p_display_name: cleanName,
+        p_bio: input.bio?.trim() || null,
+        p_skills: cleanSkills,
+        p_portfolio_urls: cleanPortfolio,
+        p_rate_type: input.rateType,
+        p_base_rate: input.baseRate,
+      });
+      rpcRes = fallback.data;
+      rpcErr = fallback.error;
+    }
 
     if (rpcErr) {
       console.error("register_freelancer_profile RPC error:", rpcErr);

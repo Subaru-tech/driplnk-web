@@ -264,6 +264,9 @@ export type FreelancerProfile = {
   status?: ProviderStatus;
   admin_notes?: string | null;
   updated_at?: string;
+  software_proficiency?: string[];
+  rate_expectation?: string | null;
+  specialization?: string | null;
 };
 
 export type FreelanceRequestStatus =
@@ -296,14 +299,39 @@ export type FreelanceRequest = {
 
 /* ------------------------------------------------------------- Vendor side */
 
+export type PrinterFleetEntry = {
+  printerType: string;
+  model?: string;
+  count: number;
+  buildVolumeX?: number;
+  buildVolumeY?: number;
+  buildVolumeZ?: number;
+};
+
 export type VendorProfile = {
   provider_id: string;
   business_name: string;
   location: string | null;
   materials_supported: string[];
   capacity_notes: string | null;
+  printer_fleet?: PrinterFleetEntry[] | Record<string, unknown>[];
+  gst_number?: string | null;
+  monthly_capacity_estimate?: string | null;
   status?: ProviderStatus;
   admin_notes?: string | null;
+  updated_at?: string;
+};
+
+export type VendorPayoutDetails = {
+  id: string;
+  provider_id: string;
+  user_id: string;
+  payout_method: "bank_transfer" | "upi";
+  beneficiary_name: string | null;
+  account_number: string | null;
+  ifsc_code: string | null;
+  upi_id: string | null;
+  created_at?: string;
   updated_at?: string;
 };
 

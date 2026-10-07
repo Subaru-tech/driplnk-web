@@ -288,34 +288,50 @@ All stored procedures are defined with `SECURITY DEFINER`, strict `search_path =
 
 ---
 
-## 5. Overall Feature Completeness Matrix
+## 5. Launch Gates & Operational Readiness Matrix
 
-| Domain | Feature | Frontend Status | Backend Status | Database Status | Overall Status |
+### 5.1 Canonical Launch Gates
+
+Prior to public launch, the platform enforces strict gating across security, authentication, and payment boundaries:
+
+| Gate | Category | Status | Requirement & Verification Condition |
+| :--- | :--- | :--- | :--- |
+| **P0** | **Security & RPC Lockdown** | **Hardened (Requires Live Re-Verification)** | Audit every `SECURITY DEFINER` function; confirm `REVOKE EXECUTE FROM PUBLIC, anon, authenticated` across all mutating and administrative RPCs (`respond_to_mart_order`, `claim_model_acquisition`, `create_mart_order`, freelancer/vendor actions). Enforce server-side identity derivation (`getUnifiedUser()`) on all server actions to prevent forged caller UUIDs. |
+| **P0** | **Production Authentication** | **Pending Domain Smoke Test** | Fresh end-to-end verification on the canonical production domain (`driplinkk-website.vercel.app`): signup → Google OAuth & email login → shadow profile creation → dashboard access → model claim → session resume. Must not rely on local or development-instance mock sessions. |
+| **P0** | **Payments** | **Pending Gateway Setup (Non-Live UI)** | Razorpay gateway integration is pending. Any UI permitting purchases or completed checkouts must remain explicitly non-live (disabled buttons, "Coming Soon" indicators) until end-to-end payment creation, webhook signature verification, failure handling, and atomic escrow state transitions are fully operational. |
+| **P1** | **Realtime Updates** | **Roadmap Item** | Realtime socket subscriptions for `freelance_requests` and `mart_orders` are future enhancements. Status updates currently rely on server action revalidations; do not market live push notifications as operational. |
+| **P1** | **Asset Previews** | **Roadmap Item** | Automated serverless STL/STEP/3MF render and preview generation pipeline remains scheduled for post-launch roadmap. |
+
+---
+
+### 5.2 Calibrated Feature Completeness Matrix
+
+| Domain | Feature | Frontend Status | Backend Status | Database Status | Launch Readiness Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Identity** | Clerk + Supabase Auth | Complete | Complete | Complete | **100% Operational** |
-| **Identity** | Multi-Role Routing (Creator / Seller / Admin) | Complete | Complete | Complete | **100% Operational** |
-| **Marketplace** | 3D Models Catalog & Search | Complete | Complete | Complete | **100% Operational** |
-| **Marketplace** | Model Detail & Three.js 3D Viewer | Complete | Complete | Complete | **100% Operational** |
-| **Marketplace** | Free Claim & Entitled Downloads | Complete | Complete | Complete | **100% Operational** |
-| **Marketplace** | Multi-File Kits (STL, STEP, 3MF, etc.) | Complete | Complete | Complete | **100% Operational** |
-| **Marketplace** | Model Favorites / Wishlist | Complete | Complete | Complete | **100% Operational** |
-| **Studio** | Creator 3-Step CAD Upload Wizard | Complete | Complete | Complete | **100% Operational** |
-| **Studio** | CAD Drafts & Marketplace Publishing | Complete | Complete | Complete | **100% Operational** |
-| **My Library** | Library Model Management & Inspection | Complete | Complete | Complete | **100% Operational** |
-| **Manufacturing** | Mart On-Demand Print Quoting | Complete | Complete | Complete | **100% Operational** |
-| **Manufacturing** | 3D Mesh Slicing & Density Math | Complete | Complete | Complete | **100% Operational** |
-| **Manufacturing** | Print Order Tracking & Timeline | Complete | Complete | Complete | **100% Operational** |
-| **Manufacturing** | Vendor Manufacturing Portal | Complete | Complete | Complete | **100% Operational** |
-| **Freelance** | CAD Designer Directory & Portfolio | Complete | Complete | Complete | **100% Operational** |
-| **Freelance** | Client Hire Flow & Deliverables Tracker | Complete | Complete | Complete | **100% Operational** |
-| **Freelance** | Freelancer Project Management Portal | Complete | Complete | Complete | **100% Operational** |
-| **Seller** | Storefront & Listings Management | Complete | Complete | Complete | **100% Operational** |
-| **Seller** | Sales Analytics & UPI Payouts UI | Complete | Complete | Complete | **100% Operational** |
-| **Admin** | Marketplace Review & Moderation Queue | Complete | Complete | Complete | **100% Operational** |
-| **Admin** | Mart Orders Vendor Dispatcher | Complete | Complete | Complete | **100% Operational** |
-| **Marketing** | Interactive Download Hub (LeaFF OS) | Complete | Complete | Complete | **100% Operational** |
-| **Marketing** | Interactive Partner Portal | Complete | Complete | Complete | **100% Operational** |
-| **Monetization** | Razorpay / Stripe Payment Checkout | UI Modal Ready | Stubbed Action | Schema Ready | **Pending Gateway Setup** |
+| **Identity** | Clerk + Supabase Auth Sync | Complete | Complete | Complete | **Operational (Pending Prod Smoke Test)** |
+| **Identity** | Multi-Role Routing (Creator / Seller / Admin) | Complete | Complete | Complete | **Operational** |
+| **Marketplace** | 3D Models Catalog & Search | Complete | Complete | Complete | **Operational** |
+| **Marketplace** | Model Detail & Three.js 3D Viewer | Complete | Complete | Complete | **Operational** |
+| **Marketplace** | Free Claim & Entitled Downloads | Complete | Complete | Complete | **Operational (Free Models Only)** |
+| **Marketplace** | Multi-File Kits (STL, STEP, 3MF, etc.) | Complete | Complete | Complete | **Operational** |
+| **Marketplace** | Model Favorites / Wishlist | Complete | Complete | Complete | **Operational** |
+| **Studio** | Creator 3-Step CAD Upload Wizard | Complete | Complete | Complete | **Operational** |
+| **Studio** | CAD Drafts & Marketplace Publishing | Complete | Complete | Complete | **Operational** |
+| **My Library** | Library Model Management & Inspection | Complete | Complete | Complete | **Operational** |
+| **Manufacturing** | Mart On-Demand Print Quoting | Complete | Complete | Complete | **Operational** |
+| **Manufacturing** | 3D Mesh Slicing & Density Math | Complete | Complete | Complete | **Operational** |
+| **Manufacturing** | Print Order Tracking & Timeline | Complete | Complete | Complete | **Operational (Polled/Revalidated)** |
+| **Manufacturing** | Vendor Manufacturing Portal & Payouts UI | Complete | Complete | Complete | **Operational** |
+| **Freelance** | CAD Designer Directory & Portfolio | Complete | Complete | Complete | **Operational** |
+| **Freelance** | Client Hire Flow & Deliverables Tracker | Complete | Complete | Complete | **Operational** |
+| **Freelance** | Freelancer Project Management Portal | Complete | Complete | Complete | **Operational** |
+| **Seller** | Storefront & Listings Management | Complete | Complete | Complete | **Operational** |
+| **Seller** | Sales Analytics & UPI Payouts UI | Complete | Complete | Complete | **Operational** |
+| **Admin** | Marketplace Review & Moderation Queue | Complete | Complete | Complete | **Operational** |
+| **Admin** | Mart Orders Prohibited CAD Screening & Dispatch | Complete | Complete | Complete | **Operational** |
+| **Marketing** | Interactive Download Hub (LeaFF OS) | Complete | Complete | Complete | **Operational** |
+| **Marketing** | Interactive Partner Portal | Complete | Complete | Complete | **Operational** |
+| **Monetization** | Razorpay Payment Checkout | UI Modal Ready | Stubbed Action | Schema Ready | **Non-Live (Pending Gateway Setup)** |
 
 ---
 

@@ -15,7 +15,7 @@ import {
   Truck,
 } from "lucide-react";
 import { getUnifiedUser } from "@/driplnk-web-backend/auth/clerk";
-import { getMyVendorProvider } from "@/driplnk-web-backend/actions/vendor";
+import { getMyVendorProvider, getMyVendorPayoutDetails } from "@/driplnk-web-backend/actions/vendor";
 import { getVendorOrders } from "@/driplnk-web-backend/db/queries";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { OrderStatusPill } from "@/components/ui/status-pill";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { VendorOrderActions } from "@/components/dashboard/vendor-order-actions";
 import { ProfileCompleteness } from "@/components/trust/profile-completeness";
+import { VendorPayoutCard } from "@/components/vendor/vendor-payout-card";
 
 export const metadata: Metadata = {
   title: "Vendor Hub — DripLnk Mart",
@@ -188,7 +189,10 @@ export default async function VendorDashboardPage() {
   }
 
   // 4. Approved Vendor -> Full Dashboard
-  const { data: orders } = await getVendorOrders();
+  const [{ data: orders }, payoutResult] = await Promise.all([
+    getVendorOrders(),
+    getMyVendorPayoutDetails(),
+  ]);
 
   const activeJobs = orders.filter((o) => ["placed", "accepted", "printing", "shipped"].includes(o.status));
   const completedJobs = orders.filter((o) => ["delivered", "completed"].includes(o.status));
@@ -245,6 +249,9 @@ export default async function VendorDashboardPage() {
           <span className="text-xs text-faint">Offline customer settlement</span>
         </Card>
       </div>
+
+      {/* Payout & Disbursement Configuration */}
+      <VendorPayoutCard initialSummary={payoutResult.data} />
 
       {/* Incoming Orders Section */}
       <div className="flex flex-col gap-4">

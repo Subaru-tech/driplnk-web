@@ -1,4 +1,4 @@
-import { Box, Truck } from "lucide-react";
+import { Box, Clock, Truck, AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { BackendNotice } from "@/components/dashboard/backend-notice";
@@ -10,24 +10,98 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCredits } from "@/lib/format";
-import { getActiveOrderCount, getMartOrders, getModelCount, getModels, getProfile } from "@/driplnk-web-backend/db/queries";
+import { getActiveOrderCount, getMartOrders, getModelCount, getModels, getProfile, getMyFreelanceProvider } from "@/driplnk-web-backend/db/queries";
+import { getMyVendorProvider } from "@/driplnk-web-backend/actions/vendor";
 
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
-  const [profile, modelCount, activeOrders, recentModels, recentOrders] = await Promise.all([
+  const [profile, modelCount, activeOrders, recentModels, recentOrders, freelancerProvider, vendorResult] = await Promise.all([
     getProfile(),
     getModelCount(),
     getActiveOrderCount(),
     getModels(4),
     getMartOrders(3),
+    getMyFreelanceProvider(),
+    getMyVendorProvider(),
   ]);
+
+  const freelancerStatus = freelancerProvider.data?.status ?? null;
+  const vendorStatus = vendorResult.provider?.status ?? null;
 
   const backendReady = profile.backendReady && modelCount.backendReady;
 
   return (
     <div className="flex flex-col gap-8">
       {backendReady ? null : <BackendNotice />}
+
+      {/* Approved partner role banners — 1-click access to specialized studios */}
+      {freelancerStatus === "approved" && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-accent/25 bg-accent/[0.04] px-4 py-3 text-sm">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="size-4 shrink-0 text-accent" />
+            <span className="font-medium text-fg">Verified CAD Specialist</span>
+            <span className="hidden sm:inline font-mono text-xs text-muted">• Studio and hire briefs active</span>
+          </div>
+          <Link href="/dashboard/freelancer" className="shrink-0 text-xs font-medium text-accent hover:underline">
+            Open Studio →
+          </Link>
+        </div>
+      )}
+      {vendorStatus === "approved" && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-accent/25 bg-accent/[0.04] px-4 py-3 text-sm">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="size-4 shrink-0 text-accent" />
+            <span className="font-medium text-fg">Certified Manufacturing Partner</span>
+            <span className="hidden sm:inline font-mono text-xs text-muted">• Print farm routing active</span>
+          </div>
+          <Link href="/dashboard/vendor" className="shrink-0 text-xs font-medium text-accent hover:underline">
+            Open Vendor Hub →
+          </Link>
+        </div>
+      )}
+
+      {/* Pending application banners — pulled from DB, not faked */}
+      {(freelancerStatus === "pending" || freelancerStatus === "changes_requested") && (
+        <div className="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3.5 text-sm">
+          <Clock className="mt-0.5 size-4 shrink-0 text-accent" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium text-fg">
+              {freelancerStatus === "changes_requested"
+                ? "Changes requested on your Specialist application"
+                : "Your CAD Specialist application is under review"}
+            </span>
+            <span className="text-xs text-muted">
+              {freelancerStatus === "changes_requested"
+                ? "Admin has requested adjustments. Review the feedback and resubmit."
+                : "Our engineering team verifies CAD experience before profiles go live."}
+            </span>
+          </div>
+          <Link href="/freelance/apply" className="ml-auto shrink-0 text-xs font-medium text-accent hover:underline">
+            {freelancerStatus === "changes_requested" ? "View & resubmit →" : "View status →"}
+          </Link>
+        </div>
+      )}
+      {(vendorStatus === "pending" || vendorStatus === "changes_requested") && (
+        <div className="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3.5 text-sm">
+          <AlertCircle className="mt-0.5 size-4 shrink-0 text-accent" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium text-fg">
+              {vendorStatus === "changes_requested"
+                ? "Changes requested on your Manufacturing Partner application"
+                : "Your Manufacturing Partner application is under review"}
+            </span>
+            <span className="text-xs text-muted">
+              {vendorStatus === "changes_requested"
+                ? "Admin has requested adjustments to your vendor profile."
+                : "Our operations team verifies print farm capacity before onboarding."}
+            </span>
+          </div>
+          <Link href="/vendor/apply" className="ml-auto shrink-0 text-xs font-medium text-accent hover:underline">
+            {vendorStatus === "changes_requested" ? "View & resubmit →" : "View status →"}
+          </Link>
+        </div>
+      )}
 
       {/* Fix §4 — zero-state: if no models yet, lead with the actionable card
           so new accounts aren't greeted with a row of inert zeros.

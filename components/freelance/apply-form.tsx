@@ -432,6 +432,9 @@ export function ApplyForm({
         portfolioUrls: cleanPortfolioUrls,
         rateType,
         baseRate: rateNum,
+        softwareProficiency: skills,                                      // CAD tools already in the skills list
+        rateExpectation: hourlyRate ? `${hourlyRate}/hr` : undefined,
+        specialization: specializations[0] || undefined,                  // primary specialization track
       });
 
       if (!res.success) {
